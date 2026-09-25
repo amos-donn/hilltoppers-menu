@@ -1,0 +1,48 @@
+{
+  "updatedAt": "2026-09-25T21:30:00Z",
+  "source": "https://stjacademy.campus-dining.com/menus/",
+  "days": {
+    "2026-09-25": {
+      "breakfast": {
+        "globalFare": ["Scrambled Eggs", "Toast", "Fruit"],
+        "classicKitchen": ["Bagel", "Cream Cheese", "Orange Juice"]
+      },
+      "lunch": {
+        "globalFare": ["Grilled Chicken", "Rice Pilaf", "Roasted Vegetables"],
+        "classicKitchen": ["Turkey Sandwich", "Potato Chips", "Apple Sauce"]
+      },
+      "dinner": {
+        "globalFare": ["Pasta Primavera", "Garlic Bread", "Garden Salad"],
+        "classicKitchen": ["Beef Meatballs", "Marinara Sauce", "Steamed Broccoli"]
+      }
+    },
+    "2026-09-26": {
+      "breakfast": {
+        "globalFare": ["Oatmeal", "Berries", "Honey"],
+        "classicKitchen": ["Waffle", "Syrup", "Sausage"]
+      },
+      "lunch": {
+        "globalFare": ["Thai Green Curry", "Jasmine Rice", "Spring Rolls"],
+        "classicKitchen": ["Ham & Cheese Wrap", "Pretzels", "Yogurt"]
+      },
+      "dinner": {
+        "globalFare": ["Baked Salmon", "Quinoa", "Asparagus"],
+        "classicKitchen": ["Pepperoni Pizza", "Caesar Salad", "Breadstick"]
+      }
+    },
+    "2026-09-27": {
+      "breakfast": {
+        "globalFare": ["Pancakes", "Blueberries", "Whipped Cream"],
+        "classicKitchen": ["English Muffin", "Peanut Butter", "Banana"]
+      },
+      "lunch": {
+        "globalFare": ["Vegetable Stir Fry", "Brown Rice", "Edamame"],
+        "classicKitchen": ["Tuna Salad Sandwich", "Baby Carrots", "Hummus"]
+      },
+      "dinner": {
+        "globalFare": ["Beef Tacos", "Black Beans", "Cilantro Lime Rice"],
+        "classicKitchen": ["Chicken Tenders", "Sweet Potato Fries", "Coleslaw"]
+      }
+    }
+  }
+}
