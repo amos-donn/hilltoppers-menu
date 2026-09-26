@@ -9,11 +9,68 @@ Standalone menu page for Saint Johnsbury Academy dining — designed for GitHub 
 ## Features
 
 - **Three dining periods:** Breakfast, Lunch, Dinner
-- **Two kitchen stations:** Global Fare, Classic Kitchen
-- **Day navigation:** Browse published menu dates with arrow buttons
-- **Iframe-safe:** All styles inline, no external dependencies
-- **Mobile responsive:** Works on any screen size
-- **Google dish search:** Click any item to search for it
+- **Two kitchen stations:** Global Fare, Classic Kitchen — always side by side, including in a narrow iframe
+- **Always visible:** no dropdown or collapse control; the widget renders its content directly
+- **Day navigation:** step through published menu dates with the arrows next to the Menu Website link
+- **Source links:** every dish links to the day it is served on, on the original dining site
+- **Star ratings:** each dish shows its current rating under its title; click a star to rate it
+- **Live data:** the menu and the ratings refresh on their own, and again the moment the tab regains focus
+- **Iframe-safe:** all styles inline, no external dependencies
+
+## How updates reach users
+
+Three things have to line up for a new menu to appear, and all three are handled:
+
+1. **`scripts/fetch-menu.mjs`** reads the dining site and writes `menu.json`. It only writes when the menu actually changed, so an idle run makes no commit.
+2. **`.github/workflows/update-menu.yml`** runs that script every 5 minutes and commits `menu.json` when it changed. This is the main lever on how fast new data lands — see *Keeping updates fast* below.
+3. **`index.html`** polls for the file (revalidating with an ETag, so a poll with nothing new costs a 304, not a download) and re-reads it on focus, visibility change, and reconnect.
+
+## Keeping updates fast
+
+The widget can only be as current as the file it reads, so the schedule matters:
+
+- The cron interval in `.github/workflows/update-menu.yml` sets the floor on update latency. Five minutes is close to the shortest interval GitHub honours reliably; GitHub's scheduler can still lag a few minutes under load.
+- For tighter latency, point a scheduler you control (an uptime pinger, a Cloudflare Worker cron, a `cron` on a server) at the `workflow_dispatch` endpoint so runs happen on a clock you own.
+- GitHub Pages caches assets for a few minutes. The widget revalidates on every poll, so it picks up a new `menu.json` as soon as Pages serves it.
+
+**GitHub Pages must be configured to serve from the repository root (`/`).** If Pages is set to a branch folder such as `/docs`, every build fails and the site keeps serving stale content — which is indistinguishable from "the menu never updates".
+
+## Ratings backend
+
+Ratings need shared storage, so they live in a Cloudflare Worker with a D1 database. The widget works without it (falling back to ratings stored in that browser) and switches to shared ratings as soon as the Worker URL is set.
+
+```
+worker/
+  schema.sql          tables: dishes, dish_days, dish_ratings, rater_writes
+  src/ratings.ts      the API: read, rate, catalogue
+  src/http.ts         CORS + JSON helpers
+  src/index.ts        entry point
+  src/ratings.test.ts tests, run against a real D1 database
+  wrangler.toml       Worker + D1 binding
+```
+
+### Endpoints
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/ratings?dishes=a,b` | Count, average, and (with `X-Rater-ID`) the caller's own rating |
+| `POST` | `/api/ratings` | Record a rating; body `{ "dish": "...", "rating": 1-5 }` |
+| `POST` | `/api/dishes/catalog` | Record the dishes served on a day; body `{ "date": "...", "dishes": [...] }` |
+| `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection |
+
+A dish is keyed by its normalised name (`"  Scrambled   Eggs "` → `"scrambled eggs"`), so it keeps one rating history across every day it is served. Ratings are counted from the rows on each read, so a number shown is always current rather than a nightly roll-up. Re-rating replaces your previous rating; `X-Rater-ID` is a random per-browser id, and writes are capped per rater per day.
+
+### Deploying it
+
+```bash
+cd worker
+npm install
+npx wrangler d1 create hilltoppers-menu-ratings   # put the id in wrangler.toml
+npx wrangler d1 execute hilltoppers-menu-ratings --config wrangler.toml --file=schema.sql --remote
+npm run deploy
+```
+
+Then set `RATINGS_API` in `index.html` to the deployed Worker URL.
 
 ## Embedding
 
@@ -29,24 +86,24 @@ Use an iframe with the following sandbox configuration:
 ```
 
 **Sandbox permissions:**
-- `allow-scripts` — JavaScript for tab switching, date navigation
-- `allow-same-origin` — fetch `menu.json` from the same origin
-- `allow-popups` — open Google search links in new tabs
+- `allow-scripts` — JavaScript for tab switching, day navigation and ratings
+- `allow-same-origin` — fetch `menu.json` from the same origin, and talk to the ratings API
+- `allow-popups` — open dish and source links in new tabs
 
 ## Menu Data Format
 
-Edit `menu.json` to update the menu. Structure:
+`menu.json` is generated; edit it only by hand as a stopgap. Structure:
 
 ```json
 {
-  "updatedAt": "ISO 8601 timestamp (optional)",
-  "source": "URL to campus dining website (optional)",
+  "updatedAt": "ISO 8601 timestamp",
+  "source": "menus.tenkites.com",
+  "menuDate": "YYYY-MM-DD (today; kept for older clients)",
+  "menus": { "breakfast": { ... }, "lunch": { ... }, "dinner": { ... } },
+  "daysUpdatedAt": "ISO 8601 timestamp",
   "days": {
     "YYYY-MM-DD": {
-      "breakfast": {
-        "globalFare": ["Item 1", "Item 2"],
-        "classicKitchen": ["Item 1", "Item 2"]
-      },
+      "breakfast": { "globalFare": ["Item 1"], "classicKitchen": ["Item 2"] },
       "lunch": { ... },
       "dinner": { ... }
     }
@@ -55,15 +112,23 @@ Edit `menu.json` to update the menu. Structure:
 ```
 
 **Notes:**
-- Dates must be in `YYYY-MM-DD` format and sorted ascending
-- Items are automatically deduplicated and trimmed
-- Missing items show "No items" gracefully
+- Dates are `YYYY-MM-DD` and sorted ascending
+- Items are trimmed and de-duplicated
+- A missing or empty station shows "No item found" rather than breaking the layout
 
-## Updating the Menu
+## Before this goes live
 
-1. Edit `menu.json` directly in GitHub
-2. Commit to `main`
-3. GitHub Pages rebuilds automatically (within 1 minute)
+1. **Set the cron interval.** `.github/workflows/update-menu.yml` runs every 5 minutes. Shorten it if you want tighter latency; it is the single biggest lever on how fast a new menu reaches users.
+2. **Deploy the ratings Worker** and set `RATINGS_API` in `index.html` (see *Ratings backend*). Until then, ratings are per-browser.
+3. **Confirm Pages serves from the repository root (`/`).**
+
+## Development
+
+```bash
+node --test scripts/          # menu fetch + parsing (fixtures are checked in)
+cd worker && npm test         # ratings API against a real D1 database
+cd worker && npm run typecheck
+```
 
 ## Styling
 
