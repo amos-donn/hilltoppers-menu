@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hilltoppers Menu</title>
+    <style>
+      :root {
+        --bg: #f7f8fb;
+        --panel: #ffffff;
+        --panel-alt: #fbfcff;
+        --text: #161b22;
+        --muted: #7d8591;
+        --line: rgba(17, 17, 17, 0.12);
+        --green: #1a7f37;
+        --green-soft: rgba(26, 127, 55, 0.1);
+        --green-ring: rgba(26, 127, 55, 0.25);
+        --danger: #d1242f;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .container {
+        width: min(100%, 620px);
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        gap: 12px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.2;
+        font-weight: 700;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 6px;
+        padding: 2px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(17,17,17,0.14);
+        border-radius: 999px;
+        background: var(--panel-alt);
+      }
+
+      .tab {
+        flex: 1 1 0;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #555f6a;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 8px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+
+      .tab.active {
+        background: var(--green-soft);
+        color: var(--green);
+        box-shadow: inset 0 0 0 1px var(--green-ring);
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .station {
+        background: var(--panel-alt);
+        border: 1px solid rgba(17,17,17,0.10);
+        border-radius: 8px;
+        padding: 10px;
+      }
+
+      .station-name {
+        display: block;
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .item {
+        padding: 6px 0;
+        border-top: 1px solid rgba(17,17,17,0.08);
+        font-size: 13px;
+        line-height: 1.4;
+        font-weight: 600;
+      }
+
+      .item:first-child {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .item a {
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .item a:hover {
+        color: var(--green);
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(17,17,17,0.08);
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .source-link {
+        color: var(--green);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .source-link:hover {
+        text-decoration: underline;
+      }
+
+      .day-picker {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .day-button {
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 4px;
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .day-button:hover:not(:disabled) {
+        background: rgba(17,17,17,0.06);
+      }
+
+      .day-button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .day-label {
+        min-width: 74px;
+        text-align: center;
+        color: #2f3842;
+        font-weight: 700;
+      }
+
+      .loading, .error {
+        padding: 18px 12px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .error {
+        color: var(--danger);
+        background: rgba(209, 36, 47, 0.08);
+        border: 1px solid rgba(209, 36, 47, 0.18);
+        border-radius: 8px;
+        margin-top: 12px;
+      }
+
+      @media (max-width: 420px) {
+        .menu-grid { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <section class="card">
+        <div class="topbar">
+          <h1 class="title">Hilltoppers Menu</h1>
+          <div class="meta" id="updatedAt">Loading…</div>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Menu period">
+          <button class="tab active" type="button" data-period="Breakfast" role="tab" aria-selected="true">Breakfast</button>
+          <button class="tab" type="button" data-period="Lunch" role="tab" aria-selected="false">Lunch</button>
+          <button class="tab" type="button" data-period="Dinner" role="tab" aria-selected="false">Dinner</button>
+        </div>
+
+        <div id="menuContent" class="loading">Loading menu…</div>
+
+        <div class="footer">
+          <a class="source-link" href="https://stjacademy.campus-dining.com/menus/" target="_blank" rel="noreferrer noopener">Menu Website</a>
+          <div class="day-picker" id="dayPicker"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const MENU_URL = './menu.json';
+      let selectedPeriod = 'Breakfast';
+      let selectedDate = null;
+      let availableDates = [];
+      let menuData = null;
+
+      const menuContent = document.getElementById('menuContent');
+      const updatedAtEl = document.getElementById('updatedAt');
+      const dayPickerEl = document.getElementById('dayPicker');
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function normalizeItems(value) {
+        if (!Array.isArray(value)) return [];
+        const seen = new Set();
+        const items = [];
+        for (const item of value) {
+          if (typeof item !== 'string') continue;
+          const trimmed = item.trim();
+          if (!trimmed) continue;
+          const key = trimmed.toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            items.push(trimmed);
+          }
+        }
+        return items;
+      }
+
+      function formatUpdatedAt(raw) {
+        if (!raw) return '';
+        const date = new Date(raw);
+        if (Number.isNaN(date.getTime())) return raw;
+        return new Intl.DateTimeFormat('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        }).format(date);
+      }
+
+      function listDates(data) {
+        if (!data || !data.days || typeof data.days !== 'object') return [];
+        const keys = Object.keys(data.days).filter((key) => /^\d{4}-\d{2}-\d{2}$/.test(key));
+        return keys.sort();
+      }
+
+      function formatDateLabel(ymd) {
+        const date = new Date(`${ymd}T12:00:00Z`);
+        return new Intl.DateTimeFormat('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        }).format(date);
+      }
+
+      function renderDayPicker() {
+        if (availableDates.length <= 1) {
+          dayPickerEl.innerHTML = '';
+          return;
+        }
+
+        const idx = availableDates.indexOf(selectedDate);
+        const prevDisabled = idx <= 0;
+        const nextDisabled = idx >= availableDates.length - 1;
+
+        dayPickerEl.innerHTML = `
+          <button class="day-button" type="button" aria-label="Previous day" ${prevDisabled ? 'disabled' : ''} data-step="-1">&#8249;</button>
+          <span class="day-label">${escapeHtml(formatDateLabel(selectedDate))}</span>
+          <button class="day-button" type="button" aria-label="Next day" ${nextDisabled ? 'disabled' : ''} data-step="1">&#8250;</button>
+        `;
+
+        dayPickerEl.querySelectorAll('[data-step]').forEach((button) => {
+          button.addEventListener('click', () => {
+            if (button.disabled) return;
+            const step = Number(button.getAttribute('data-step'));
+            const nextIndex = idx + step;
+            if (nextIndex < 0 || nextIndex >= availableDates.length) return;
+            selectedDate = availableDates[nextIndex];
+            render();
+          });
+        });
+      }
+
+      function renderMenu() {
+        if (!menuData || !selectedDate) {
+          menuContent.innerHTML = '<div class="loading">No menu available.</div>';
+          return;
+        }
+
+        const dayData = menuData.days?.[selectedDate] ?? menuData.menus;
+        if (!dayData) {
+          menuContent.innerHTML = '<div class="error">Menu data is missing for this day.</div>';
+          return;
+        }
+
+        const entry = dayData[selectedPeriod.toLowerCase()] ?? dayData[selectedPeriod];
+        if (!entry) {
+          menuContent.innerHTML = `<div class="error">No ${selectedPeriod.toLowerCase()} served this day.</div>`;
+          return;
+        }
+
+        const globalFare = normalizeItems(entry.globalFare);
+        const classicKitchen = normalizeItems(entry.classicKitchen);
+
+        if (globalFare.length === 0 && classicKitchen.length === 0) {
+          menuContent.innerHTML = `<div class="error">No items found for ${selectedPeriod}.</div>`;
+          return;
+        }
+
+        const renderStation = (stationName, items) => `
+          <div class="station">
+            <span class="station-name">${stationName}</span>
+            <ul class="item-list">
+              ${items.length ? items.map((item) => `
+                <li class="item">
+                  <a href="https://www.google.com/search?q=${encodeURIComponent(item)}" target="_blank" rel="noreferrer noopener">${escapeHtml(item)}</a>
+                </li>
+              `).join('') : '<li class="item">No items</li>'}
+            </ul>
+          </div>
+        `;
+
+        menuContent.innerHTML = `
+          <div class="menu-grid">
+            ${renderStation('Global Fare', globalFare)}
+            ${renderStation('Classic Kitchen', classicKitchen)}
+          </div>
+        `;
+      }
+
+      function render() {
+        renderMenu();
+        renderDayPicker();
+      }
+
+      async function loadMenu() {
+        try {
+          const response = await fetch(MENU_URL, { cache: 'no-cache' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          menuData = await response.json();
+          updatedAtEl.textContent = formatUpdatedAt(menuData.updatedAt) || 'Updated recently';
+          availableDates = listDates(menuData);
+          if (!availableDates.length) {
+            menuContent.innerHTML = '<div class="error">No published menu dates were found.</div>';
+            return;
+          }
+          selectedDate = availableDates[availableDates.length - 1];
+          render();
+        } catch (error) {
+          menuContent.innerHTML = `<div class="error">Failed to load the menu: ${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      document.querySelectorAll('.tab').forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextPeriod = button.dataset.period;
+          if (!nextPeriod || nextPeriod === selectedPeriod) return;
+          selectedPeriod = nextPeriod;
+          document.querySelectorAll('.tab').forEach((tab) => {
+            const isActive = tab.dataset.period === selectedPeriod;
+            tab.classList.toggle('active', isActive);
+            tab.setAttribute('aria-selected', String(isActive));
+          });
+          renderMenu();
+        });
+      });
+
+      loadMenu();
+    </script>
+  </body>
+</html>
