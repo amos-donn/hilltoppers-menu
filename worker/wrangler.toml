@@ -1,0 +1,9 @@
+name = "hilltoppers-menu-ratings"
+main = "src/index.ts"
+compatibility_date = "2026-09-17"
+workers_dev = true
+
+[[d1_databases]]
+binding = "RATINGS_DB"
+database_name = "hilltoppers-menu-ratings"
+database_id = "REPLACE_WITH_DATABASE_ID"

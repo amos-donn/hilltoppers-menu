@@ -1,0 +1,13 @@
+{
+  "name": "hilltoppers-menu-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch": "node fetch-menu.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}

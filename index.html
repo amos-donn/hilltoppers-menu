@@ -11,11 +11,10 @@
         --panel-alt: #fbfcff;
         --text-primary: #161b22;
         --text-muted: #7d8591;
-        --border: 1px solid rgba(17, 17, 17, 0.12);
-        --border-light: 1px solid rgba(17, 17, 17, 0.08);
         --green: #1a7f37;
         --green-bg: rgba(26, 127, 55, 0.12);
         --green-ring: rgba(26, 127, 55, 0.25);
+        --star: #e3a008;
       }
 
       * {
@@ -45,60 +44,6 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
-        margin-top: 12px;
-      }
-
-      .toggle-button {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid rgba(17, 17, 17, 0.12);
-        border-radius: 6px;
-        background: var(--panel);
-        font: inherit;
-        font-size: 13px;
-        font-weight: 500;
-        color: #4a5560;
-        cursor: pointer;
-        transition: background 0.2s ease, border-color 0.2s ease;
-      }
-
-      .toggle-button:hover {
-        background: #f3f5f7;
-        border-color: rgba(17, 17, 17, 0.18);
-      }
-
-      .toggle-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .toggle-icon {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-      }
-
-      .chevron {
-        width: 0;
-        height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 4px solid #161b22;
-        transition: transform 0.2s ease;
-        margin-left: auto;
-      }
-
-      .chevron.open {
-        transform: rotate(180deg);
-      }
-
-      .collapsed ul,
-      .collapsed .dining-content {
-        display: none;
       }
 
       .dining-content {
@@ -106,7 +51,6 @@
         border-radius: 8px;
         background: var(--panel);
         padding: 12px;
-        margin-top: 6px;
       }
 
       .dining-tabs {
@@ -145,6 +89,8 @@
         box-shadow: 0 0 0 1px var(--green-ring) inset;
       }
 
+      /* Always two columns: Global Fare and Classic Kitchen sit side by side,
+         including inside a narrow iframe. */
       .dining-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -157,6 +103,7 @@
         border-radius: 6px;
         padding: 8px;
         background: #fbfcff;
+        min-width: 0;
       }
 
       .dining-station {
@@ -170,7 +117,7 @@
 
       .dining-item {
         margin: 0;
-        padding-bottom: 6px;
+        padding: 6px 0;
         border-bottom: 1px solid rgba(17, 17, 17, 0.1);
         font-size: 13px;
         color: #161b22;
@@ -178,53 +125,82 @@
         line-height: 1.35;
       }
 
+      .dining-item:first-of-type {
+        padding-top: 0;
+      }
+
       .dining-item:last-child {
         border-bottom: none;
         padding-bottom: 0;
       }
 
-      .dining-item a {
+      .dining-item-name {
         color: #161b22;
         text-decoration: none;
         display: block;
         transition: color 0.15s ease;
       }
 
-      .dining-item a:hover {
-        color: #7d8591;
+      .dining-item-name:hover {
+        color: var(--green);
+        text-decoration: underline;
       }
 
-      .dining-more-list {
-        margin: 6px 0 0;
-        padding: 0;
-        list-style: none;
+      .dish-rating {
         display: flex;
-        flex-direction: column;
-        gap: 0;
-        font-size: 13px;
-        line-height: 1.35;
-        color: #161b22;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px 6px;
+        margin-top: 3px;
+        font-weight: 500;
+        min-width: 0;
+      }
+
+      .stars {
+        display: inline-flex;
+        align-items: center;
+        gap: 1px;
+        flex: 0 0 auto;
+      }
+
+      .star {
+        border: none;
+        background: none;
+        padding: 1px;
+        cursor: pointer;
+        color: rgba(17, 17, 17, 0.22);
+        line-height: 0;
+        border-radius: 50%;
+        transition: transform 0.1s ease, color 0.15s ease;
+      }
+
+      .star svg {
+        width: 13px;
+        height: 13px;
+        display: block;
+        fill: currentColor;
+      }
+
+      .star:hover {
+        transform: scale(1.15);
+      }
+
+      .star.filled {
+        color: var(--star);
+      }
+
+      /* The star matching your own rating gets a green ring. */
+      .star.mine {
+        box-shadow: 0 0 0 1.5px var(--green);
+      }
+
+      .rating-summary {
+        font-size: 11px;
+        color: var(--text-muted);
         font-weight: 600;
-      }
-
-      .dining-more-list li {
-        margin: 0;
-        padding: 6px 0 0;
-      }
-
-      .dining-more-list li + li {
-        margin-top: 6px;
-        border-top: 1px solid rgba(17, 17, 17, 0.08);
-      }
-
-      .dining-more-list a {
-        color: #161b22;
-        text-decoration: none;
-        transition: color 0.15s ease;
-      }
-
-      .dining-more-list a:hover {
-        color: #7d8591;
+        white-space: nowrap;
+        min-width: 0;
+        overflow-wrap: anywhere;
       }
 
       .dining-meta {
@@ -343,13 +319,12 @@
           padding: 8px;
         }
 
-        .dining-grid {
-          grid-template-columns: 1fr;
+        .dining-content {
+          padding: 9px;
         }
 
-        .dining-meta {
-          flex-direction: column;
-          align-items: flex-start;
+        .dining-column {
+          padding: 6px;
         }
       }
     </style>
@@ -357,16 +332,6 @@
   <body>
     <main class="popup">
       <section class="section">
-        <button type="button" class="toggle-button" id="menuToggle">
-          <span class="toggle-title">
-            <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7M2.1 21.8l6.4-6.3M19 5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Menu</span>
-          </span>
-          <span class="chevron" aria-hidden="true"></span>
-        </button>
-
         <div class="dining-content" id="menuContent">
           <div class="dining-tabs" role="tablist" aria-label="Menu period">
             <button class="dining-tab active" type="button" data-period="Breakfast" role="tab" aria-selected="true">Breakfast</button>
@@ -381,48 +346,77 @@
             </p>
           </div>
 
-          <p class="dining-meta">
-            <a class="dining-link" href="https://stjacademy.campus-dining.com/menus/" target="_blank" rel="noreferrer noopener">
+          <div class="dining-meta">
+            <div class="menu-day-picker" id="dayPicker"></div>
+            <a class="dining-link" id="sourceLink" href="https://menus.campus-dining.com/eliorna/d0358" target="_blank" rel="noreferrer noopener">
               <svg class="dining-link-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span>Menu Website</span>
             </a>
-            <div class="menu-day-picker" id="dayPicker"></div>
-          </p>
+          </div>
           <p class="refresh-info" id="refreshInfo"></p>
         </div>
       </section>
     </main>
 
     <script>
-      const MENU_URL = './menu.json';
-      const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
-      const FORCE_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
+      // This repo's own menu.json is refreshed by .github/workflows/update-menu.yml
+      // on a short schedule, so it is read first: it is same-origin (no CORS
+      // concerns) and usually the freshest. The reference project's published
+      // feed is the fallback.
+      const MENU_URLS = [
+        './menu.json',
+        'https://hilltoppers.pages.dev/menu.json'
+      ];
+      // The widget is meant to show new data almost immediately, so it polls
+      // often and also refreshes the moment the tab regains focus. Polling
+      // revalidates instead of downloading, so a poll with nothing new costs a
+      // 304 rather than the whole file.
+      const MENU_POLL_MS = 15 * 1000;
+      const RATINGS_POLL_MS = 20 * 1000;
 
-      let selectedPeriod = 'Breakfast';
-      let selectedDate = null;
-      let availableDates = [];
+      // Ratings backend (see worker/). Leave empty to fall back to ratings
+      // stored in this browser only; set it to the deployed Worker URL to share
+      // ratings between everyone.
+      const RATINGS_API = '';
+      const RATER_ID_KEY = 'hilltoppers-rater-id';
+      const LOCAL_RATINGS_KEY = 'hilltoppers-ratings-v1';
+
+      // The original source of the menu. The source site has no per-dish URL,
+      // so an item links to the day it was served on, on that site.
+      const SOURCE_MENU_BASE = 'https://menus.campus-dining.com/eliorna/d0358';
+      const SCHOOL_TZ = 'America/New_York';
+
+      const STAR_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.9-4.7 4.5 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z"/></svg>';
+
       let menuData = null;
+      let availableDates = [];
+      let selectedDate = null;
+      let selectedPeriod = 'Breakfast';
       let lastFetchTime = null;
-      let refreshTimeoutId = null;
+      let renderedKey = null;
+      let menuTimer = null;
+      let ratingsTimer = null;
+      let ratingsBusy = false;
 
-      const menuToggle = document.getElementById('menuToggle');
-      const menuContent = document.getElementById('menuContent');
       const menuDisplay = document.getElementById('menuDisplay');
       const dayPickerEl = document.getElementById('dayPicker');
       const refreshInfoEl = document.getElementById('refreshInfo');
-
-      // Toggle menu expansion
-      menuToggle.addEventListener('click', () => {
-        menuContent.style.display = menuContent.style.display === 'none' ? 'block' : 'none';
-        menuToggle.classList.toggle('open');
-      });
+      const sourceLinkEl = document.getElementById('sourceLink');
 
       function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+      }
+
+      function escapeAttr(str) {
+        return escapeHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function dishId(name) {
+        return String(name).trim().toLowerCase().replace(/\s+/g, ' ');
       }
 
       function normalizeItems(value) {
@@ -433,7 +427,7 @@
           if (typeof item !== 'string') continue;
           const trimmed = item.trim();
           if (!trimmed) continue;
-          const key = trimmed.toLowerCase();
+          const key = dishId(trimmed);
           if (!seen.has(key)) {
             seen.add(key);
             items.push(trimmed);
@@ -448,6 +442,15 @@
         return keys.sort();
       }
 
+      function todayKey() {
+        return new Intl.DateTimeFormat('en-CA', {
+          timeZone: SCHOOL_TZ,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(new Date());
+      }
+
       function formatDateLabel(ymd) {
         const date = new Date(`${ymd}T12:00:00Z`);
         return new Intl.DateTimeFormat('en-US', {
@@ -457,23 +460,186 @@
         }).format(date);
       }
 
+      function sourceDayUrl(ymd) {
+        return `${SOURCE_MENU_BASE}?mldate=${encodeURIComponent(ymd)}`;
+      }
+
       function updateRefreshInfo() {
         if (!lastFetchTime) {
           refreshInfoEl.textContent = '';
           return;
         }
-        const now = Date.now();
-        const diff = now - lastFetchTime;
-        const minutes = Math.floor(diff / 60000);
+        const minutes = Math.floor((Date.now() - lastFetchTime) / 60000);
         if (minutes < 1) {
           refreshInfoEl.textContent = 'Just updated';
         } else if (minutes < 60) {
           refreshInfoEl.textContent = `Updated ${minutes}m ago`;
         } else {
-          const hours = Math.floor(minutes / 60);
-          refreshInfoEl.textContent = `Updated ${hours}h ago`;
+          refreshInfoEl.textContent = `Updated ${Math.floor(minutes / 60)}h ago`;
         }
       }
+
+      /* ---------- ratings ---------- */
+
+      function getRaterId() {
+        let id = null;
+        try {
+          id = localStorage.getItem(RATER_ID_KEY);
+        } catch (_) {
+          // Private mode can block storage; a per-load id still works.
+        }
+        if (!id) {
+          id = (crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `r-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          try {
+            localStorage.setItem(RATER_ID_KEY, id);
+          } catch (_) {
+            // Ignore: ratings then do not survive a reload in this browser.
+          }
+        }
+        return id;
+      }
+
+      const RATER_ID = getRaterId();
+
+      function readLocalRatings() {
+        try {
+          const raw = localStorage.getItem(LOCAL_RATINGS_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (_) {
+          return {};
+        }
+      }
+
+      function writeLocalRatings(all) {
+        try {
+          localStorage.setItem(LOCAL_RATINGS_KEY, JSON.stringify(all));
+        } catch (_) {
+          // Ignore: the rating still shows for this session.
+        }
+      }
+
+      function localEntry(id) {
+        const mine = readLocalRatings()[id];
+        return mine ? { count: 1, average: mine, myRating: mine } : null;
+      }
+
+      async function fetchSharedRatings(ids) {
+        if (!RATINGS_API || !ids.length) return null;
+        try {
+          const url = `${RATINGS_API}/api/ratings?dishes=${encodeURIComponent(ids.join(','))}`;
+          const response = await fetch(url, {
+            cache: 'no-store',
+            headers: { 'X-Rater-ID': RATER_ID }
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          return data && data.ratings ? data.ratings : {};
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function paintRating(el, entry) {
+        const stars = Array.from(el.querySelectorAll('.star'));
+        const average = entry && entry.count ? Number(entry.average) : 0;
+        const count = entry && entry.count ? Number(entry.count) : 0;
+        const mine = entry && entry.myRating ? Number(entry.myRating) : 0;
+        const filled = Math.round(average);
+
+        stars.forEach((star) => {
+          const value = Number(star.dataset.value);
+          star.classList.toggle('filled', value <= filled);
+          star.classList.toggle('mine', value === mine);
+          star.setAttribute('aria-pressed', String(value === mine));
+        });
+
+        const summary = el.querySelector('.rating-summary');
+        if (!count) {
+          summary.textContent = 'No ratings yet';
+        } else {
+          summary.textContent = `${average.toFixed(1)} (${count})${mine ? ` · you ${mine}` : ''}`;
+        }
+      }
+
+      function ratingNodes() {
+        return Array.from(menuDisplay.querySelectorAll('.dish-rating'));
+      }
+
+      async function refreshRatings() {
+        const nodes = ratingNodes();
+        if (!nodes.length) return;
+        const ids = nodes.map((node) => node.dataset.dishId);
+        const shared = await fetchSharedRatings(ids);
+        nodes.forEach((node) => {
+          const id = node.dataset.dishId;
+          paintRating(node, shared ? (shared[id] || null) : localEntry(id));
+        });
+      }
+
+      async function submitRating(id, value) {
+        if (RATINGS_API) {
+          try {
+            const response = await fetch(`${RATINGS_API}/api/ratings`, {
+              method: 'POST',
+              cache: 'no-store',
+              headers: { 'Content-Type': 'application/json', 'X-Rater-ID': RATER_ID },
+              body: JSON.stringify({ dish: id, rating: value })
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            return data && data.rating ? data.rating : null;
+          } catch (_) {
+            // Fall through to the local rating so a click is never lost.
+          }
+        }
+        const all = readLocalRatings();
+        all[id] = value;
+        writeLocalRatings(all);
+        return { count: 1, average: value, myRating: value };
+      }
+
+      async function catalogDishes() {
+        if (!RATINGS_API || !menuData) return;
+        const day = menuData.days ? menuData.days[selectedDate] : null;
+        if (!day) return;
+        const dishes = [];
+        ['breakfast', 'lunch', 'dinner'].forEach((period) => {
+          const entry = day[period];
+          if (!entry) return;
+          dishes.push(...normalizeItems(entry.globalFare), ...normalizeItems(entry.classicKitchen));
+        });
+        if (!dishes.length) return;
+        try {
+          await fetch(`${RATINGS_API}/api/dishes/catalog`, {
+            method: 'POST',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: selectedDate, dishes })
+          });
+        } catch (_) {
+          // Cataloguing is best effort; rating still works without it.
+        }
+      }
+
+      menuDisplay.addEventListener('click', async (event) => {
+        const star = event.target.closest('.star');
+        if (!star) return;
+        const container = star.closest('.dish-rating');
+        if (!container) return;
+        const id = container.dataset.dishId;
+        const value = Number(star.dataset.value);
+        if (!id || !value) return;
+
+        star.disabled = true;
+        const entry = await submitRating(id, value);
+        if (entry) paintRating(container, entry);
+        star.disabled = false;
+      });
+
+      /* ---------- rendering ---------- */
 
       function renderDayPicker() {
         if (availableDates.length <= 1) {
@@ -499,8 +665,37 @@
             if (nextIndex < 0 || nextIndex >= availableDates.length) return;
             selectedDate = availableDates[nextIndex];
             renderMenu();
+            catalogDishes();
+            refreshRatings();
           });
         });
+      }
+
+      function renderItem(name, url) {
+        const id = dishId(name);
+        const stars = [1, 2, 3, 4, 5].map((value) => `
+          <button type="button" class="star" data-value="${value}" aria-label="Rate ${escapeAttr(name)} ${value} star${value > 1 ? 's' : ''}" aria-pressed="false">${STAR_SVG}</button>
+        `).join('');
+        return `
+          <div class="dining-item">
+            <a class="dining-item-name" href="${escapeAttr(url)}" target="_blank" rel="noreferrer noopener">${escapeHtml(name)}</a>
+            <div class="dish-rating" data-dish-id="${escapeAttr(id)}">
+              <span class="stars" role="radiogroup" aria-label="Rate ${escapeAttr(name)}">${stars}</span>
+              <span class="rating-summary">No ratings yet</span>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderStation(name, items, url) {
+        return `
+          <article class="dining-column">
+            <p class="dining-station">${escapeHtml(name)}</p>
+            ${items.length
+              ? items.map((item) => renderItem(item, url)).join('')
+              : '<p class="dining-item">No item found</p>'}
+          </article>
+        `;
       }
 
       function renderMenu() {
@@ -517,7 +712,7 @@
 
         const entry = dayData[selectedPeriod.toLowerCase()] ?? dayData[selectedPeriod];
         if (!entry) {
-          menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No ${selectedPeriod.toLowerCase()} served</span></p>`;
+          menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No ${escapeHtml(selectedPeriod.toLowerCase())} served</span></p>`;
           return;
         }
 
@@ -529,37 +724,99 @@
           return;
         }
 
-        const renderStation = (name, items) => {
-          const firstItem = items[0];
-          const moreItems = items.slice(1);
-          return `
-            <article class="dining-column">
-              <p class="dining-station">${escapeHtml(name)}</p>
-              <p class="dining-item">
-                ${firstItem ? `<a href="https://www.google.com/search?q=${encodeURIComponent(firstItem)}" target="_blank" rel="noreferrer noopener">${escapeHtml(firstItem)}</a>` : 'No item found'}
-              </p>
-              ${moreItems.length > 0 ? `
-                <ul class="dining-more-list">
-                  ${moreItems.map((item) => `
-                    <li>
-                      <a href="https://www.google.com/search?q=${encodeURIComponent(item)}" target="_blank" rel="noreferrer noopener">${escapeHtml(item)}</a>
-                    </li>
-                  `).join('')}
-                </ul>
-              ` : ''}
-            </article>
-          `;
-        };
-
+        const url = sourceDayUrl(selectedDate);
         menuDisplay.innerHTML = `
           <div class="dining-grid">
-            ${renderStation('Global Fare', globalFare)}
-            ${renderStation('Classic Kitchen', classicKitchen)}
+            ${renderStation('Global Fare', globalFare, url)}
+            ${renderStation('Classic Kitchen', classicKitchen, url)}
           </div>
         `;
 
+        sourceLinkEl.href = url;
         renderDayPicker();
         updateRefreshInfo();
+        renderedKey = `${selectedDate}|${selectedPeriod}|${menuData.updatedAt || ''}`;
+      }
+
+      /* ---------- data loading ---------- */
+
+      async function fetchMenuData() {
+        let lastError = null;
+        for (const base of MENU_URLS) {
+          try {
+            const response = await fetch(base, { cache: 'no-cache' });
+            // 304 means the copy already held is current; nothing to redraw.
+            if (response.status === 304) {
+              if (menuData) return menuData;
+              throw new Error('not modified without a cached menu');
+            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            if (!data || !data.days) throw new Error('missing days');
+            return data;
+          } catch (error) {
+            lastError = error;
+          }
+        }
+        throw lastError || new Error('no menu source');
+      }
+
+      async function loadMenu() {
+        try {
+          const data = await fetchMenuData();
+          menuData = data;
+          lastFetchTime = Date.now();
+          availableDates = listDates(menuData);
+
+          if (!availableDates.length) {
+            menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No menu dates available</span></p>';
+            return;
+          }
+
+          const today = todayKey();
+          if (!selectedDate || !availableDates.includes(selectedDate)) {
+            selectedDate = availableDates.includes(today)
+              ? today
+              : availableDates[availableDates.length - 1];
+          }
+
+          // Only rebuild the DOM when something visible actually changed, so a
+          // background poll never makes the widget flicker.
+          const nextKey = `${selectedDate}|${selectedPeriod}|${menuData.updatedAt || ''}`;
+          if (nextKey !== renderedKey) {
+            renderMenu();
+            catalogDishes();
+          } else {
+            renderDayPicker();
+            updateRefreshInfo();
+          }
+          refreshRatings();
+        } catch (error) {
+          console.error('Menu load failed:', error);
+          if (!menuData) {
+            menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Failed to load menu</span></p>';
+          }
+        }
+      }
+
+      function scheduleMenuRefresh() {
+        if (menuTimer) clearTimeout(menuTimer);
+        menuTimer = setTimeout(loadMenu, MENU_POLL_MS);
+      }
+
+      function scheduleRatingsRefresh() {
+        if (ratingsTimer) clearTimeout(ratingsTimer);
+        ratingsTimer = setTimeout(async () => {
+          if (document.visibilityState === 'visible' && !ratingsBusy) {
+            ratingsBusy = true;
+            try {
+              await refreshRatings();
+            } finally {
+              ratingsBusy = false;
+            }
+          }
+          scheduleRatingsRefresh();
+        }, RATINGS_POLL_MS);
       }
 
       // Tab switching
@@ -574,38 +831,26 @@
             tab.setAttribute('aria-selected', String(isActive));
           });
           renderMenu();
+          refreshRatings();
         });
       });
 
-      async function loadMenu() {
-        try {
-          const response = await fetch(MENU_URL, { cache: 'no-cache' });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          menuData = await response.json();
-          lastFetchTime = Date.now();
-          availableDates = listDates(menuData);
-          if (!availableDates.length) {
-            menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No menu dates available</span></p>';
-            return;
-          }
-          selectedDate = availableDates[availableDates.length - 1];
-          renderMenu();
-        } catch (error) {
-          menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Failed to load menu</span></p>`;
-          console.error('Menu load failed:', error);
+      // Come back to a visible tab and the data is refreshed at once.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          loadMenu();
+          refreshRatings();
         }
-        scheduleNextRefresh();
-      }
+      });
+      window.addEventListener('focus', () => {
+        loadMenu();
+        refreshRatings();
+      });
+      window.addEventListener('online', loadMenu);
 
-      function scheduleNextRefresh() {
-        if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
-        refreshTimeoutId = setTimeout(loadMenu, REFRESH_INTERVAL);
-      }
-
-      // Initial load
       loadMenu();
-
-      // Update refresh info every minute
+      scheduleMenuRefresh();
+      scheduleRatingsRefresh();
       setInterval(updateRefreshInfo, 60000);
     </script>
   </body>
