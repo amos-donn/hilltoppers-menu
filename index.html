@@ -9,264 +9,409 @@
         --bg: #f7f8fb;
         --panel: #ffffff;
         --panel-alt: #fbfcff;
-        --text: #161b22;
-        --muted: #7d8591;
-        --line: rgba(17, 17, 17, 0.12);
+        --text-primary: #161b22;
+        --text-muted: #7d8591;
+        --border: 1px solid rgba(17, 17, 17, 0.12);
+        --border-light: 1px solid rgba(17, 17, 17, 0.08);
         --green: #1a7f37;
-        --green-soft: rgba(26, 127, 55, 0.1);
+        --green-bg: rgba(26, 127, 55, 0.12);
         --green-ring: rgba(26, 127, 55, 0.25);
-        --danger: #d1242f;
       }
 
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
 
       html, body {
         margin: 0;
-        min-height: 100%;
+        padding: 0;
         background: var(--bg);
-        color: var(--text);
+        color: var(--text-primary);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
       }
 
       body {
+        padding: 12px;
+      }
+
+      .popup {
+        max-width: 360px;
+        margin: 0 auto;
+      }
+
+      .section {
         display: flex;
-        justify-content: center;
-        padding: 16px;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 12px;
       }
 
-      .container {
-        width: min(100%, 620px);
-      }
-
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 14px;
-      }
-
-      .topbar {
+      .toggle-button {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 12px;
-        gap: 12px;
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid rgba(17, 17, 17, 0.12);
+        border-radius: 6px;
+        background: var(--panel);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        color: #4a5560;
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease;
       }
 
-      .title {
-        margin: 0;
-        font-size: 16px;
-        line-height: 1.2;
-        font-weight: 700;
+      .toggle-button:hover {
+        background: #f3f5f7;
+        border-color: rgba(17, 17, 17, 0.18);
       }
 
-      .meta {
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .tabs {
+      .toggle-title {
         display: flex;
-        gap: 6px;
-        padding: 2px;
-        margin-bottom: 12px;
-        border: 1px solid rgba(17,17,17,0.14);
-        border-radius: 999px;
-        background: var(--panel-alt);
+        align-items: center;
+        gap: 8px;
       }
 
-      .tab {
+      .toggle-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+
+      .chevron {
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid #161b22;
+        transition: transform 0.2s ease;
+        margin-left: auto;
+      }
+
+      .chevron.open {
+        transform: rotate(180deg);
+      }
+
+      .collapsed ul,
+      .collapsed .dining-content {
+        display: none;
+      }
+
+      .dining-content {
+        border: 1px solid rgba(17, 17, 17, 0.18);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 12px;
+        margin-top: 6px;
+      }
+
+      .dining-tabs {
+        display: flex;
+        align-items: center;
+        border: 1px solid rgba(17, 17, 17, 0.14);
+        border-radius: 999px;
+        background: #fbfcff;
+        padding: 2px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        gap: 0;
+      }
+
+      .dining-tab {
         flex: 1 1 0;
-        border: 0;
+        border: none;
         border-radius: 999px;
         background: transparent;
         color: #555f6a;
-        font: inherit;
         font-size: 12px;
-        font-weight: 700;
-        padding: 7px 8px;
+        font-weight: 600;
+        padding: 5px 6px;
         cursor: pointer;
         transition: background 0.2s ease, color 0.2s ease;
       }
 
-      .tab.active {
-        background: var(--green-soft);
-        color: var(--green);
-        box-shadow: inset 0 0 0 1px var(--green-ring);
+      .dining-tab:hover:not(.active) {
+        background: rgba(17, 17, 17, 0.06);
+        color: #2f3842;
       }
 
-      .menu-grid {
+      .dining-tab.active {
+        background: var(--green-bg);
+        color: #1f6f2b;
+        box-shadow: 0 0 0 1px var(--green-ring) inset;
+      }
+
+      .dining-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
+        margin-bottom: 8px;
       }
 
-      .station {
-        background: var(--panel-alt);
-        border: 1px solid rgba(17,17,17,0.10);
-        border-radius: 8px;
-        padding: 10px;
+      .dining-column {
+        border: 1px solid rgba(17, 17, 17, 0.1);
+        border-radius: 6px;
+        padding: 8px;
+        background: #fbfcff;
       }
 
-      .station-name {
-        display: block;
-        margin: 0 0 8px;
-        color: var(--muted);
+      .dining-station {
+        margin: 0 0 4px;
         font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 700;
       }
 
-      .item-list {
-        list-style: none;
-        padding: 0;
+      .dining-item {
         margin: 0;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(17, 17, 17, 0.1);
+        font-size: 13px;
+        color: #161b22;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .dining-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .dining-item a {
+        color: inherit;
+        text-decoration: none;
+        display: block;
+      }
+
+      .dining-item a:hover {
+        color: var(--green);
+      }
+
+      .dining-more-list {
+        margin: 6px 0 0;
+        padding: 0;
+        list-style: none;
         display: flex;
         flex-direction: column;
         gap: 0;
-      }
-
-      .item {
-        padding: 6px 0;
-        border-top: 1px solid rgba(17,17,17,0.08);
         font-size: 13px;
-        line-height: 1.4;
+        line-height: 1.35;
+        color: #161b22;
         font-weight: 600;
       }
 
-      .item:first-child {
-        border-top: none;
-        padding-top: 0;
+      .dining-more-list li {
+        margin: 0;
+        padding: 6px 0 0;
       }
 
-      .item a {
-        color: var(--text);
-        text-decoration: none;
+      .dining-more-list li + li {
+        margin-top: 6px;
+        border-top: 1px solid rgba(17, 17, 17, 0.08);
       }
 
-      .item a:hover {
-        color: var(--green);
-      }
-
-      .footer {
+      .dining-meta {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        margin-top: 12px;
-        padding-top: 10px;
-        border-top: 1px solid rgba(17,17,17,0.08);
+        margin: 8px 0 0;
         font-size: 12px;
-        color: var(--muted);
+        color: var(--text-muted);
       }
 
-      .source-link {
+      .dining-link {
         color: var(--green);
         text-decoration: none;
-        font-weight: 700;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
       }
 
-      .source-link:hover {
+      .dining-link:hover {
         text-decoration: underline;
       }
 
-      .day-picker {
+      .dining-link-icon {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
+      }
+
+      .menu-day-picker {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 2px;
       }
 
-      .day-button {
+      .menu-day-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         border: none;
         background: transparent;
-        color: var(--muted);
+        padding: 4px;
         border-radius: 4px;
-        width: 22px;
-        height: 22px;
         cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
+        transition: background 0.15s ease;
+        color: var(--text-muted);
+        font-size: 14px;
       }
 
-      .day-button:hover:not(:disabled) {
-        background: rgba(17,17,17,0.06);
+      .menu-day-step:hover:not(:disabled) {
+        background: rgba(17, 17, 17, 0.06);
       }
 
-      .day-button:disabled {
-        opacity: 0.35;
+      .menu-day-step:disabled {
         cursor: default;
+        opacity: 0.3;
       }
 
-      .day-label {
-        min-width: 74px;
+      .menu-day-label {
+        min-width: 58px;
         text-align: center;
+        font-weight: 600;
         color: #2f3842;
-        font-weight: 700;
+        font-size: 12px;
       }
 
-      .loading, .error {
-        padding: 18px 12px;
-        text-align: center;
-        color: var(--muted);
+      .dining-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0;
         font-size: 13px;
+        color: var(--text-muted);
       }
 
-      .error {
-        color: var(--danger);
-        background: rgba(209, 36, 47, 0.08);
-        border: 1px solid rgba(209, 36, 47, 0.18);
-        border-radius: 8px;
-        margin-top: 12px;
+      .dining-spinner {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
+        border: 2px solid rgba(26, 127, 55, 0.2);
+        border-top-color: var(--green);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      .dining-error {
+        margin: 0;
+        font-size: 13px;
+        color: #d1242f;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .dining-error-icon {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
+      }
+
+      .refresh-info {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: center;
+        margin-top: 6px;
       }
 
       @media (max-width: 420px) {
-        .menu-grid { grid-template-columns: 1fr; }
-        .topbar { flex-direction: column; align-items: flex-start; }
+        body {
+          padding: 8px;
+        }
+
+        .dining-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .dining-meta {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="container">
-      <section class="card">
-        <div class="topbar">
-          <h1 class="title">Hilltoppers Menu</h1>
-          <div class="meta" id="updatedAt">Loading…</div>
-        </div>
+    <main class="popup">
+      <section class="section">
+        <button type="button" class="toggle-button" id="menuToggle">
+          <span class="toggle-title">
+            <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7M2.1 21.8l6.4-6.3M19 5l-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Menu</span>
+          </span>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
 
-        <div class="tabs" role="tablist" aria-label="Menu period">
-          <button class="tab active" type="button" data-period="Breakfast" role="tab" aria-selected="true">Breakfast</button>
-          <button class="tab" type="button" data-period="Lunch" role="tab" aria-selected="false">Lunch</button>
-          <button class="tab" type="button" data-period="Dinner" role="tab" aria-selected="false">Dinner</button>
-        </div>
+        <div class="dining-content" id="menuContent">
+          <div class="dining-tabs" role="tablist" aria-label="Menu period">
+            <button class="dining-tab active" type="button" data-period="Breakfast" role="tab" aria-selected="true">Breakfast</button>
+            <button class="dining-tab" type="button" data-period="Lunch" role="tab" aria-selected="false">Lunch</button>
+            <button class="dining-tab" type="button" data-period="Dinner" role="tab" aria-selected="false">Dinner</button>
+          </div>
 
-        <div id="menuContent" class="loading">Loading menu…</div>
+          <div id="menuDisplay">
+            <p class="dining-loading">
+              <span class="dining-spinner"></span>
+              <span>Loading menu…</span>
+            </p>
+          </div>
 
-        <div class="footer">
-          <a class="source-link" href="https://stjacademy.campus-dining.com/menus/" target="_blank" rel="noreferrer noopener">Menu Website</a>
-          <div class="day-picker" id="dayPicker"></div>
+          <p class="dining-meta">
+            <a class="dining-link" href="https://stjacademy.campus-dining.com/menus/" target="_blank" rel="noreferrer noopener">
+              <svg class="dining-link-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M14 4h6v6m0-6-8 8M10 6H7a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-3" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Menu Website</span>
+            </a>
+            <div class="menu-day-picker" id="dayPicker"></div>
+          </p>
+          <p class="refresh-info" id="refreshInfo"></p>
         </div>
       </section>
     </main>
 
     <script>
       const MENU_URL = './menu.json';
+      const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
+      const FORCE_REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour
+
       let selectedPeriod = 'Breakfast';
       let selectedDate = null;
       let availableDates = [];
       let menuData = null;
+      let lastFetchTime = null;
+      let refreshTimeoutId = null;
 
+      const menuToggle = document.getElementById('menuToggle');
       const menuContent = document.getElementById('menuContent');
-      const updatedAtEl = document.getElementById('updatedAt');
+      const menuDisplay = document.getElementById('menuDisplay');
       const dayPickerEl = document.getElementById('dayPicker');
+      const refreshInfoEl = document.getElementById('refreshInfo');
+
+      // Toggle menu expansion
+      menuToggle.addEventListener('click', () => {
+        menuContent.style.display = menuContent.style.display === 'none' ? 'block' : 'none';
+        menuToggle.classList.toggle('open');
+      });
 
       function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
       }
 
       function normalizeItems(value) {
@@ -286,18 +431,6 @@
         return items;
       }
 
-      function formatUpdatedAt(raw) {
-        if (!raw) return '';
-        const date = new Date(raw);
-        if (Number.isNaN(date.getTime())) return raw;
-        return new Intl.DateTimeFormat('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit'
-        }).format(date);
-      }
-
       function listDates(data) {
         if (!data || !data.days || typeof data.days !== 'object') return [];
         const keys = Object.keys(data.days).filter((key) => /^\d{4}-\d{2}-\d{2}$/.test(key));
@@ -313,6 +446,24 @@
         }).format(date);
       }
 
+      function updateRefreshInfo() {
+        if (!lastFetchTime) {
+          refreshInfoEl.textContent = '';
+          return;
+        }
+        const now = Date.now();
+        const diff = now - lastFetchTime;
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 1) {
+          refreshInfoEl.textContent = 'Just updated';
+        } else if (minutes < 60) {
+          refreshInfoEl.textContent = `Updated ${minutes}m ago`;
+        } else {
+          const hours = Math.floor(minutes / 60);
+          refreshInfoEl.textContent = `Updated ${hours}h ago`;
+        }
+      }
+
       function renderDayPicker() {
         if (availableDates.length <= 1) {
           dayPickerEl.innerHTML = '';
@@ -324,9 +475,9 @@
         const nextDisabled = idx >= availableDates.length - 1;
 
         dayPickerEl.innerHTML = `
-          <button class="day-button" type="button" aria-label="Previous day" ${prevDisabled ? 'disabled' : ''} data-step="-1">&#8249;</button>
-          <span class="day-label">${escapeHtml(formatDateLabel(selectedDate))}</span>
-          <button class="day-button" type="button" aria-label="Next day" ${nextDisabled ? 'disabled' : ''} data-step="1">&#8250;</button>
+          <button class="menu-day-step" type="button" aria-label="Previous day" ${prevDisabled ? 'disabled' : ''} data-step="-1">‹</button>
+          <span class="menu-day-label">${escapeHtml(formatDateLabel(selectedDate))}</span>
+          <button class="menu-day-step" type="button" aria-label="Next day" ${nextDisabled ? 'disabled' : ''} data-step="1">›</button>
         `;
 
         dayPickerEl.querySelectorAll('[data-step]').forEach((button) => {
@@ -336,26 +487,26 @@
             const nextIndex = idx + step;
             if (nextIndex < 0 || nextIndex >= availableDates.length) return;
             selectedDate = availableDates[nextIndex];
-            render();
+            renderMenu();
           });
         });
       }
 
       function renderMenu() {
         if (!menuData || !selectedDate) {
-          menuContent.innerHTML = '<div class="loading">No menu available.</div>';
+          menuDisplay.innerHTML = '<p class="dining-loading"><span class="dining-spinner"></span><span>Loading…</span></p>';
           return;
         }
 
         const dayData = menuData.days?.[selectedDate] ?? menuData.menus;
         if (!dayData) {
-          menuContent.innerHTML = '<div class="error">Menu data is missing for this day.</div>';
+          menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No menu for this date</span></p>';
           return;
         }
 
         const entry = dayData[selectedPeriod.toLowerCase()] ?? dayData[selectedPeriod];
         if (!entry) {
-          menuContent.innerHTML = `<div class="error">No ${selectedPeriod.toLowerCase()} served this day.</div>`;
+          menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No ${selectedPeriod.toLowerCase()} served</span></p>`;
           return;
         }
 
@@ -363,60 +514,50 @@
         const classicKitchen = normalizeItems(entry.classicKitchen);
 
         if (globalFare.length === 0 && classicKitchen.length === 0) {
-          menuContent.innerHTML = `<div class="error">No items found for ${selectedPeriod}.</div>`;
+          menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No items found</span></p>';
           return;
         }
 
-        const renderStation = (stationName, items) => `
-          <div class="station">
-            <span class="station-name">${stationName}</span>
-            <ul class="item-list">
-              ${items.length ? items.map((item) => `
-                <li class="item">
-                  <a href="https://www.google.com/search?q=${encodeURIComponent(item)}" target="_blank" rel="noreferrer noopener">${escapeHtml(item)}</a>
-                </li>
-              `).join('') : '<li class="item">No items</li>'}
-            </ul>
-          </div>
-        `;
+        const renderStation = (name, items) => {
+          const firstItem = items[0];
+          const moreItems = items.slice(1);
+          return `
+            <article class="dining-column">
+              <p class="dining-station">${escapeHtml(name)}</p>
+              <p class="dining-item">
+                ${firstItem ? `<a href="https://www.google.com/search?q=${encodeURIComponent(firstItem)}" target="_blank" rel="noreferrer noopener">${escapeHtml(firstItem)}</a>` : 'No item found'}
+              </p>
+              ${moreItems.length > 0 ? `
+                <ul class="dining-more-list">
+                  ${moreItems.map((item) => `
+                    <li>
+                      <a href="https://www.google.com/search?q=${encodeURIComponent(item)}" target="_blank" rel="noreferrer noopener">${escapeHtml(item)}</a>
+                    </li>
+                  `).join('')}
+                </ul>
+              ` : ''}
+            </article>
+          `;
+        };
 
-        menuContent.innerHTML = `
-          <div class="menu-grid">
+        menuDisplay.innerHTML = `
+          <div class="dining-grid">
             ${renderStation('Global Fare', globalFare)}
             ${renderStation('Classic Kitchen', classicKitchen)}
           </div>
         `;
-      }
 
-      function render() {
-        renderMenu();
         renderDayPicker();
+        updateRefreshInfo();
       }
 
-      async function loadMenu() {
-        try {
-          const response = await fetch(MENU_URL, { cache: 'no-cache' });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          menuData = await response.json();
-          updatedAtEl.textContent = formatUpdatedAt(menuData.updatedAt) || 'Updated recently';
-          availableDates = listDates(menuData);
-          if (!availableDates.length) {
-            menuContent.innerHTML = '<div class="error">No published menu dates were found.</div>';
-            return;
-          }
-          selectedDate = availableDates[availableDates.length - 1];
-          render();
-        } catch (error) {
-          menuContent.innerHTML = `<div class="error">Failed to load the menu: ${escapeHtml(error.message)}</div>`;
-        }
-      }
-
-      document.querySelectorAll('.tab').forEach((button) => {
+      // Tab switching
+      document.querySelectorAll('.dining-tab').forEach((button) => {
         button.addEventListener('click', () => {
           const nextPeriod = button.dataset.period;
           if (!nextPeriod || nextPeriod === selectedPeriod) return;
           selectedPeriod = nextPeriod;
-          document.querySelectorAll('.tab').forEach((tab) => {
+          document.querySelectorAll('.dining-tab').forEach((tab) => {
             const isActive = tab.dataset.period === selectedPeriod;
             tab.classList.toggle('active', isActive);
             tab.setAttribute('aria-selected', String(isActive));
@@ -425,7 +566,36 @@
         });
       });
 
+      async function loadMenu() {
+        try {
+          const response = await fetch(MENU_URL, { cache: 'no-cache' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          menuData = await response.json();
+          lastFetchTime = Date.now();
+          availableDates = listDates(menuData);
+          if (!availableDates.length) {
+            menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No menu dates available</span></p>';
+            return;
+          }
+          selectedDate = availableDates[availableDates.length - 1];
+          renderMenu();
+        } catch (error) {
+          menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Failed to load menu</span></p>`;
+          console.error('Menu load failed:', error);
+        }
+        scheduleNextRefresh();
+      }
+
+      function scheduleNextRefresh() {
+        if (refreshTimeoutId) clearTimeout(refreshTimeoutId);
+        refreshTimeoutId = setTimeout(loadMenu, REFRESH_INTERVAL);
+      }
+
+      // Initial load
       loadMenu();
+
+      // Update refresh info every minute
+      setInterval(updateRefreshInfo, 60000);
     </script>
   </body>
 </html>
