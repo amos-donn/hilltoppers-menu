@@ -20,6 +20,15 @@ const FUTURE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 const MEALS = ["breakfast", "lunch", "dinner"];
 
+// The source names a meal's stations differently depending on the period. The
+// morning period posts under Jumpstart/Sweet Shop/Soupside rather than the
+// Global Fare/Classic Kitchen used at lunch and dinner, so each widget station
+// maps to whichever source sections hold that food.
+export const STATION_SECTIONS = {
+  globalFare: ["Global Fare", "Jumpstart"],
+  classicKitchen: ["Classic Kitchen", "Sweet Shop", "Soupside"]
+};
+
 const norm = (value) => value.trim().toLowerCase().replace(/\s+/g, " ");
 
 const uniq = (values) => [...new Set(values.map((value) => value.trim()).filter(Boolean))];
@@ -75,6 +84,19 @@ export function extractSectionItems(html, sectionName) {
   return uniq(course.find(".k10-recipe__name").map((_, el) => $(el).text()).get());
 }
 
+export function extractStationItems(html, sections) {
+  const seen = new Set();
+  const items = [];
+  for (const section of sections) {
+    for (const item of extractSectionItems(html, section)) {
+      if (seen.has(item)) continue;
+      seen.add(item);
+      items.push(item);
+    }
+  }
+  return items;
+}
+
 function emptyMeals() {
   return {
     breakfast: { classicKitchen: [], globalFare: [] },
@@ -104,8 +126,8 @@ async function fetchMealsForDate(date, locationGuid, knownMeta) {
     if (!menuGuid) continue;
     const html = await fetchHtml(buildMealUrl({ locationGuid, date, menuGuid }));
     meals[meal] = {
-      classicKitchen: extractSectionItems(html, "Classic Kitchen"),
-      globalFare: extractSectionItems(html, "Global Fare")
+      globalFare: extractStationItems(html, STATION_SECTIONS.globalFare),
+      classicKitchen: extractStationItems(html, STATION_SECTIONS.classicKitchen)
     };
   }
 
