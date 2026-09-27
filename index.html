@@ -767,6 +767,10 @@
       // keyboard focus so hovering star 3 shows 3.0 before anything is saved.
       const dialogState = { dishId: null, dishName: '', value: 0, preview: 0 };
 
+      // Focusing a star on open must not read as a hover preview, or an
+      // unrated dish would appear to have one star already picked.
+      let focusPreviewArmed = true;
+
       function dialogStars() {
         return Array.from(ratingDialogStars.querySelectorAll('.rating-dialog-star'));
       }
@@ -813,12 +817,17 @@
         ratingDialogSave.disabled = !dialogState.value;
         renderDialogStars();
         updateDialogHint();
+        // showModal autofocuses the first star, and the explicit focus below is
+        // a focus too; neither is a hover preview, so ignore focus events while
+        // the dialog settles, then re-arm.
+        focusPreviewArmed = false;
         if (!ratingDialog.open) ratingDialog.showModal();
         // Focus the current rating if there is one, so keyboard users can
         // adjust it, otherwise the first star.
         const focusValue = dialogState.value || 1;
         const focusStar = ratingDialogStars.querySelector(`.rating-dialog-star[data-value="${focusValue}"]`);
         if (focusStar) focusStar.focus();
+        focusPreviewArmed = true;
       }
 
       function closeRatingDialog() {
@@ -839,6 +848,7 @@
       });
       ratingDialogStars.addEventListener('pointerleave', () => setDialogPreview(0));
       ratingDialogStars.addEventListener('focusin', (event) => {
+        if (!focusPreviewArmed) { focusPreviewArmed = true; return; }
         const star = event.target.closest('.rating-dialog-star');
         if (star) setDialogPreview(Number(star.dataset.value));
       });
