@@ -430,16 +430,11 @@
       }
 
       @media (max-width: 420px) {
+        /* Keep the base scale inside a narrow iframe. The embed is 360px wide,
+           so shrinking padding here made the card render smaller than the
+           extension's own menu. */
         body {
           padding: 8px;
-        }
-
-        .dining-content {
-          padding: 9px;
-        }
-
-        .dining-column {
-          padding: 6px;
         }
       }
     </style>
