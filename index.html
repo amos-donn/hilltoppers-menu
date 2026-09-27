@@ -1004,12 +1004,12 @@
         }
 
         if (!entry) {
-          menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No ${escapeHtml(selectedPeriod.toLowerCase())} served</span></p>`;
+          menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Nothing\'s being served today.</span></p>';
           return;
         }
 
         if (globalFare.length === 0 && classicKitchen.length === 0) {
-          menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No items found</span></p>';
+          menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Nothing\'s being served today.</span></p>';
           return;
         }
 
