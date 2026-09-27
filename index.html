@@ -146,14 +146,32 @@
         text-decoration: underline;
       }
 
+      /* The inline stars are a read-only summary of the dish's average; the
+         whole row is the button that opens the rating dialog. */
       .dish-rating {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
         gap: 4px 6px;
         margin-top: 3px;
+        padding: 3px 6px 3px 3px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: none;
+        font: inherit;
         font-weight: 500;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
         min-width: 0;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .dish-rating:hover,
+      .dish-rating:focus-visible {
+        background: rgba(17, 17, 17, 0.05);
+        border-color: rgba(17, 17, 17, 0.12);
+        outline: none;
       }
 
       .stars {
@@ -164,14 +182,9 @@
       }
 
       .star {
-        border: none;
-        background: none;
         padding: 1px;
-        cursor: pointer;
         color: rgba(17, 17, 17, 0.22);
         line-height: 0;
-        border-radius: 50%;
-        transition: transform 0.1s ease, color 0.15s ease;
       }
 
       .star svg {
@@ -181,17 +194,8 @@
         fill: currentColor;
       }
 
-      .star:hover {
-        transform: scale(1.15);
-      }
-
       .star.filled {
         color: var(--star);
-      }
-
-      /* The star matching your own rating gets a green ring. */
-      .star.mine {
-        box-shadow: 0 0 0 1.5px var(--green);
       }
 
       .rating-summary {
@@ -201,6 +205,118 @@
         white-space: nowrap;
         min-width: 0;
         overflow-wrap: anywhere;
+      }
+
+      .rating-dialog {
+        border: none;
+        border-radius: 12px;
+        padding: 0;
+        width: min(300px, calc(100vw - 32px));
+        box-shadow: 0 14px 34px rgba(17, 17, 17, 0.28);
+        color: var(--text-primary);
+      }
+
+      .rating-dialog::backdrop {
+        background: rgba(17, 17, 17, 0.45);
+      }
+
+      .rating-dialog-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+      }
+
+      .rating-dialog-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .rating-dialog-dish {
+        margin: -8px 0 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2f3842;
+      }
+
+      .rating-dialog-stars {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .rating-dialog-star {
+        border: none;
+        background: none;
+        padding: 2px;
+        cursor: pointer;
+        color: rgba(17, 17, 17, 0.22);
+        line-height: 0;
+        border-radius: 50%;
+        transition: transform 0.1s ease, color 0.15s ease;
+      }
+
+      .rating-dialog-star svg {
+        width: 26px;
+        height: 26px;
+        display: block;
+        fill: currentColor;
+      }
+
+      .rating-dialog-star:hover,
+      .rating-dialog-star:focus-visible {
+        transform: scale(1.12);
+        outline: none;
+      }
+
+      .rating-dialog-star.active {
+        color: var(--star);
+      }
+
+      .rating-dialog-hint {
+        margin: 0;
+        min-height: 16px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .rating-dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .rating-dialog-button {
+        border: 1px solid rgba(17, 17, 17, 0.18);
+        border-radius: 8px;
+        background: #ffffff;
+        color: #2f3842;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 7px 14px;
+        cursor: pointer;
+        transition: background 0.15s ease, opacity 0.15s ease;
+      }
+
+      .rating-dialog-button:hover:not(:disabled) {
+        background: #f2f4f8;
+      }
+
+      .rating-dialog-button.primary {
+        border-color: transparent;
+        background: var(--green);
+        color: #ffffff;
+      }
+
+      .rating-dialog-button.primary:hover:not(:disabled) {
+        background: #15692c;
+      }
+
+      .rating-dialog-button:disabled {
+        opacity: 0.5;
+        cursor: default;
       }
 
       .dining-meta {
@@ -360,6 +476,19 @@
       </section>
     </main>
 
+    <dialog class="rating-dialog" id="ratingDialog" aria-labelledby="ratingDialogTitle">
+      <form method="dialog" class="rating-dialog-form" id="ratingDialogForm">
+        <h2 class="rating-dialog-title" id="ratingDialogTitle">Rate this dish</h2>
+        <p class="rating-dialog-dish" id="ratingDialogDish"></p>
+        <div class="rating-dialog-stars" id="ratingDialogStars" role="radiogroup" aria-label="Your rating"></div>
+        <p class="rating-dialog-hint" id="ratingDialogHint"></p>
+        <div class="rating-dialog-actions">
+          <button type="button" class="rating-dialog-button" id="ratingDialogCancel">Cancel</button>
+          <button type="submit" class="rating-dialog-button primary" id="ratingDialogSave" disabled>Save</button>
+        </div>
+      </form>
+    </dialog>
+
     <script>
       // This repo's own menu.json is refreshed by .github/workflows/update-menu.yml
       // on a short schedule, so it is read first: it is same-origin (no CORS
@@ -379,7 +508,7 @@
       // Ratings backend (see worker/). Leave empty to fall back to ratings
       // stored in this browser only; set it to the deployed Worker URL to share
       // ratings between everyone.
-      const RATINGS_API = '';
+      const RATINGS_API = 'https://hilltoppers-menu-ratings.amos-donn.workers.dev';
       const RATER_ID_KEY = 'hilltoppers-rater-id';
       const LOCAL_RATINGS_KEY = 'hilltoppers-ratings-v1';
 
@@ -399,11 +528,20 @@
       let menuTimer = null;
       let ratingsTimer = null;
       let ratingsBusy = false;
+      // Latest known aggregate per dish, so the dialog can preload your rating.
+      const ratingsById = new Map();
 
       const menuDisplay = document.getElementById('menuDisplay');
       const dayPickerEl = document.getElementById('dayPicker');
       const refreshInfoEl = document.getElementById('refreshInfo');
       const sourceLinkEl = document.getElementById('sourceLink');
+      const ratingDialog = document.getElementById('ratingDialog');
+      const ratingDialogForm = document.getElementById('ratingDialogForm');
+      const ratingDialogDish = document.getElementById('ratingDialogDish');
+      const ratingDialogStars = document.getElementById('ratingDialogStars');
+      const ratingDialogHint = document.getElementById('ratingDialogHint');
+      const ratingDialogSave = document.getElementById('ratingDialogSave');
+      const ratingDialogCancel = document.getElementById('ratingDialogCancel');
 
       function escapeHtml(str) {
         const div = document.createElement('div');
@@ -549,11 +687,10 @@
         const mine = entry && entry.myRating ? Number(entry.myRating) : 0;
         const filled = Math.round(average);
 
+        ratingsById.set(el.dataset.dishId, entry || null);
+
         stars.forEach((star) => {
-          const value = Number(star.dataset.value);
-          star.classList.toggle('filled', value <= filled);
-          star.classList.toggle('mine', value === mine);
-          star.setAttribute('aria-pressed', String(value === mine));
+          star.classList.toggle('filled', Number(star.dataset.value) <= filled);
         });
 
         const summary = el.querySelector('.rating-summary');
@@ -624,19 +761,130 @@
         }
       }
 
-      menuDisplay.addEventListener('click', async (event) => {
-        const star = event.target.closest('.star');
-        if (!star) return;
-        const container = star.closest('.dish-rating');
-        if (!container) return;
-        const id = container.dataset.dishId;
-        const value = Number(star.dataset.value);
-        if (!id || !value) return;
+      /* ---------- rating dialog ---------- */
 
-        star.disabled = true;
+      // What the dialog is currently editing. `preview` follows the pointer or
+      // keyboard focus so hovering star 3 shows 3.0 before anything is saved.
+      const dialogState = { dishId: null, dishName: '', value: 0, preview: 0 };
+
+      function dialogStars() {
+        return Array.from(ratingDialogStars.querySelectorAll('.rating-dialog-star'));
+      }
+
+      function renderDialogStars() {
+        const shown = dialogState.preview || dialogState.value;
+        dialogStars().forEach((star) => {
+          const value = Number(star.dataset.value);
+          star.classList.toggle('active', value <= shown);
+          star.setAttribute('aria-checked', String(value === dialogState.value));
+        });
+      }
+
+      function updateDialogHint() {
+        if (!dialogState.preview && !dialogState.value) {
+          ratingDialogHint.textContent = 'Pick a star rating.';
+          return;
+        }
+        const value = dialogState.preview || dialogState.value;
+        ratingDialogHint.textContent = `${value.toFixed(1)} out of 5`;
+      }
+
+      function setDialogPreview(value) {
+        dialogState.preview = value;
+        renderDialogStars();
+        updateDialogHint();
+      }
+
+      function setDialogValue(value) {
+        dialogState.value = value;
+        dialogState.preview = 0;
+        ratingDialogSave.disabled = !value;
+        renderDialogStars();
+        updateDialogHint();
+      }
+
+      function openRatingDialog(id, name) {
+        const entry = ratingsById.get(id) || null;
+        dialogState.dishId = id;
+        dialogState.dishName = name;
+        dialogState.value = entry && entry.myRating ? Number(entry.myRating) : 0;
+        dialogState.preview = 0;
+        ratingDialogDish.textContent = name;
+        ratingDialogSave.disabled = !dialogState.value;
+        renderDialogStars();
+        updateDialogHint();
+        if (!ratingDialog.open) ratingDialog.showModal();
+        // Focus the current rating if there is one, so keyboard users can
+        // adjust it, otherwise the first star.
+        const focusValue = dialogState.value || 1;
+        const focusStar = ratingDialogStars.querySelector(`.rating-dialog-star[data-value="${focusValue}"]`);
+        if (focusStar) focusStar.focus();
+      }
+
+      function closeRatingDialog() {
+        if (ratingDialog.open) ratingDialog.close();
+        dialogState.dishId = null;
+        dialogState.value = 0;
+        dialogState.preview = 0;
+      }
+
+      // Build the dialog's stars once.
+      ratingDialogStars.innerHTML = [1, 2, 3, 4, 5].map((value) => `
+        <button type="button" class="rating-dialog-star" data-value="${value}" role="radio" aria-checked="false" aria-label="${value} star${value > 1 ? 's' : ''}">${STAR_SVG}</button>
+      `).join('');
+
+      ratingDialogStars.addEventListener('pointerover', (event) => {
+        const star = event.target.closest('.rating-dialog-star');
+        if (star) setDialogPreview(Number(star.dataset.value));
+      });
+      ratingDialogStars.addEventListener('pointerleave', () => setDialogPreview(0));
+      ratingDialogStars.addEventListener('focusin', (event) => {
+        const star = event.target.closest('.rating-dialog-star');
+        if (star) setDialogPreview(Number(star.dataset.value));
+      });
+      ratingDialogStars.addEventListener('focusout', () => setDialogPreview(0));
+      ratingDialogStars.addEventListener('click', (event) => {
+        const star = event.target.closest('.rating-dialog-star');
+        if (star) setDialogValue(Number(star.dataset.value));
+      });
+
+      // The dialog's own close button (Escape also closes it) is a dismissal.
+      ratingDialogCancel.addEventListener('click', closeRatingDialog);
+      // Clicking the backdrop — anywhere outside the form — also dismisses.
+      ratingDialog.addEventListener('click', (event) => {
+        if (event.target === ratingDialog) closeRatingDialog();
+      });
+      ratingDialog.addEventListener('close', () => {
+        dialogState.dishId = null;
+        dialogState.value = 0;
+        dialogState.preview = 0;
+      });
+
+      ratingDialogForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!dialogState.dishId || !dialogState.value) return;
+        const id = dialogState.dishId;
+        const value = dialogState.value;
+        const name = dialogState.dishName;
+        ratingDialogSave.disabled = true;
         const entry = await submitRating(id, value);
-        if (entry) paintRating(container, entry);
-        star.disabled = false;
+        closeRatingDialog();
+        if (entry) {
+          ratingsById.set(id, entry);
+          const node = menuDisplay.querySelector(`.dish-rating[data-dish-id="${CSS.escape(id)}"]`);
+          if (node) paintRating(node, entry);
+          else console.debug('Rated a dish that is no longer on screen:', name);
+        }
+      });
+
+      // Opening the dialog: the whole rating row is the button.
+      menuDisplay.addEventListener('click', (event) => {
+        const row = event.target.closest('.dish-rating');
+        if (!row || !menuDisplay.contains(row)) return;
+        const id = row.dataset.dishId;
+        if (!id) return;
+        const nameEl = row.closest('.dining-item')?.querySelector('.dining-item-name');
+        openRatingDialog(id, nameEl ? nameEl.textContent : id);
       });
 
       /* ---------- rendering ---------- */
@@ -664,7 +912,7 @@
             const nextIndex = idx + step;
             if (nextIndex < 0 || nextIndex >= availableDates.length) return;
             selectedDate = availableDates[nextIndex];
-            renderMenu();
+            renderMenu({ allowPeriodFallback: true });
             catalogDishes();
             refreshRatings();
           });
@@ -674,15 +922,15 @@
       function renderItem(name, url) {
         const id = dishId(name);
         const stars = [1, 2, 3, 4, 5].map((value) => `
-          <button type="button" class="star" data-value="${value}" aria-label="Rate ${escapeAttr(name)} ${value} star${value > 1 ? 's' : ''}" aria-pressed="false">${STAR_SVG}</button>
+          <span class="star" data-value="${value}" aria-hidden="true">${STAR_SVG}</span>
         `).join('');
         return `
           <div class="dining-item">
             <a class="dining-item-name" href="${escapeAttr(url)}" target="_blank" rel="noreferrer noopener">${escapeHtml(name)}</a>
-            <div class="dish-rating" data-dish-id="${escapeAttr(id)}">
-              <span class="stars" role="radiogroup" aria-label="Rate ${escapeAttr(name)}">${stars}</span>
+            <button type="button" class="dish-rating" data-dish-id="${escapeAttr(id)}" aria-haspopup="dialog" aria-label="Rate ${escapeAttr(name)}">
+              <span class="stars" aria-hidden="true">${stars}</span>
               <span class="rating-summary">No ratings yet</span>
-            </div>
+            </button>
           </div>
         `;
       }
@@ -698,7 +946,28 @@
         `;
       }
 
-      function renderMenu() {
+      function syncPeriodTabs() {
+        document.querySelectorAll('.dining-tab').forEach((tab) => {
+          const isActive = tab.dataset.period === selectedPeriod;
+          tab.classList.toggle('active', isActive);
+          tab.setAttribute('aria-selected', String(isActive));
+        });
+      }
+
+      // A period the source has not posted yet has no stations and no dishes,
+      // so nothing is ratable. Prefer the first period that does have items.
+      function firstPopulatedPeriod(dayData) {
+        for (const period of ['breakfast', 'lunch', 'dinner']) {
+          const entry = dayData?.[period];
+          if (!entry) continue;
+          const hasItems = normalizeItems(entry.globalFare).length > 0
+            || normalizeItems(entry.classicKitchen).length > 0;
+          if (hasItems) return period;
+        }
+        return null;
+      }
+
+      function renderMenu({ allowPeriodFallback = false } = {}) {
         if (!menuData || !selectedDate) {
           menuDisplay.innerHTML = '<p class="dining-loading"><span class="dining-spinner"></span><span>Loading…</span></p>';
           return;
@@ -710,14 +979,25 @@
           return;
         }
 
-        const entry = dayData[selectedPeriod.toLowerCase()] ?? dayData[selectedPeriod];
+        let entry = dayData[selectedPeriod.toLowerCase()] ?? dayData[selectedPeriod];
+        let globalFare = entry ? normalizeItems(entry.globalFare) : [];
+        let classicKitchen = entry ? normalizeItems(entry.classicKitchen) : [];
+
+        if (allowPeriodFallback && (!entry || (globalFare.length === 0 && classicKitchen.length === 0))) {
+          const fallback = firstPopulatedPeriod(dayData);
+          if (fallback && fallback !== selectedPeriod.toLowerCase()) {
+            selectedPeriod = fallback.charAt(0).toUpperCase() + fallback.slice(1);
+            syncPeriodTabs();
+            entry = dayData[fallback];
+            globalFare = normalizeItems(entry.globalFare);
+            classicKitchen = normalizeItems(entry.classicKitchen);
+          }
+        }
+
         if (!entry) {
           menuDisplay.innerHTML = `<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No ${escapeHtml(selectedPeriod.toLowerCase())} served</span></p>`;
           return;
         }
-
-        const globalFare = normalizeItems(entry.globalFare);
-        const classicKitchen = normalizeItems(entry.classicKitchen);
 
         if (globalFare.length === 0 && classicKitchen.length === 0) {
           menuDisplay.innerHTML = '<p class="dining-error"><svg class="dining-error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>No items found</span></p>';
@@ -784,7 +1064,7 @@
           // background poll never makes the widget flicker.
           const nextKey = `${selectedDate}|${selectedPeriod}|${menuData.updatedAt || ''}`;
           if (nextKey !== renderedKey) {
-            renderMenu();
+            renderMenu({ allowPeriodFallback: true });
             catalogDishes();
           } else {
             renderDayPicker();
@@ -825,11 +1105,7 @@
           const nextPeriod = button.dataset.period;
           if (!nextPeriod || nextPeriod === selectedPeriod) return;
           selectedPeriod = nextPeriod;
-          document.querySelectorAll('.dining-tab').forEach((tab) => {
-            const isActive = tab.dataset.period === selectedPeriod;
-            tab.classList.toggle('active', isActive);
-            tab.setAttribute('aria-selected', String(isActive));
-          });
+          syncPeriodTabs();
           renderMenu();
           refreshRatings();
         });

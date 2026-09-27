@@ -13,7 +13,9 @@ Standalone menu page for Saint Johnsbury Academy dining — designed for GitHub 
 - **Always visible:** no dropdown or collapse control; the widget renders its content directly
 - **Day navigation:** step through published menu dates with the arrows next to the Menu Website link
 - **Source links:** every dish links to the day it is served on, on the original dining site
-- **Star ratings:** each dish shows its current rating under its title; click a star to rate it
+- **Star ratings:** each dish shows its average rating under its title as read-only stars; the rating row is a button that opens a dialog to rate it
+- **Confirm-before-save:** the dialog previews a value as you hover or focus a star, keeps Save disabled until you pick one, and lets Cancel, Escape, or an outside click discard without saving
+- **Shared ratings:** once the Worker URL is set, ratings are shared between everyone rather than stored per browser
 - **Live data:** the menu and the ratings refresh on their own, and again the moment the tab regains focus
 - **Iframe-safe:** all styles inline, no external dependencies
 
@@ -119,7 +121,7 @@ Use an iframe with the following sandbox configuration:
 ## Before this goes live
 
 1. **Set the cron interval.** `.github/workflows/update-menu.yml` runs every 5 minutes. Shorten it if you want tighter latency; it is the single biggest lever on how fast a new menu reaches users.
-2. **Deploy the ratings Worker** and set `RATINGS_API` in `index.html` (see *Ratings backend*). Until then, ratings are per-browser.
+2. **Keep the ratings Worker deployed.** `RATINGS_API` in `index.html` points at the deployed Worker (`https://hilltoppers-menu-ratings.amos-donn.workers.dev`). If that Worker is ever removed, clear `RATINGS_API` to fall back to per-browser ratings rather than leaving the widget pointing at a dead URL.
 3. **Confirm Pages serves from the repository root (`/`).**
 
 ## Development

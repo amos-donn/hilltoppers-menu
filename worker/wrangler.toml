@@ -6,4 +6,4 @@ workers_dev = true
 [[d1_databases]]
 binding = "RATINGS_DB"
 database_name = "hilltoppers-menu-ratings"
-database_id = "REPLACE_WITH_DATABASE_ID"
+database_id = "a75b428f-04c4-4a22-9097-c3068447aa01"
