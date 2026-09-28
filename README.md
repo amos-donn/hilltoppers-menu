@@ -93,6 +93,25 @@ Use an iframe with the following sandbox configuration:
 - `allow-same-origin` — fetch `menu.json` from the same origin, and talk to the ratings API
 - `allow-popups` — open dish and source links in new tabs
 
+### Height modes (Hilltoppers Toppings)
+
+The extension can embed this page with either a fixed height or "Fit content".
+Fit content needs the page to report its own height, which `resize.js` does.
+
+When the extension loads the page it appends `?session=<id>&host=<origin>` to the
+URL and posts a `context` message naming the chosen mode. `resize.js` replies
+with `{channel: 'hilltoppers-topping-v1', session, type: 'resize', height}`
+whenever the content size changes, and only while the mode is `content`. It
+ignores context messages whose origin or session do not match, and stays silent
+when the page is opened directly rather than embedded.
+
+The height is measured from the `[data-topping-content]` wrapper on `<main>`, so
+it reflects real content rather than the iframe viewport. Keep that attribute on
+whatever element wraps the whole page, including any footer, and do not give it
+`height: 100vh`, `min-height: 100%`, or a fixed scrolling height — any of those
+would stop the frame from shrinking. The extension clamps reports to 120–10,000px
+and keeps the fixed layout until a valid one arrives.
+
 ## Menu Data Format
 
 `menu.json` is generated; edit it only by hand as a stopgap. Structure:
