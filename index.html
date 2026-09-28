@@ -24,6 +24,9 @@
       html, body {
         margin: 0;
         padding: 0;
+        /* Let the page shrink as well as grow when embedded with "Fit content".
+           A min-height or fixed height here would stop the iframe contracting. */
+        min-height: 0;
         background: var(--panel);
         color: var(--text-primary);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -33,6 +36,12 @@
 
       body {
         padding: 12px;
+      }
+
+      /* Natural-height wrapper measured by resize.js. flow-root stops margins
+         from collapsing through it, which would under-report the height. */
+      [data-topping-content] {
+        display: flow-root;
       }
 
       .popup {
@@ -450,7 +459,7 @@
     </style>
   </head>
   <body>
-    <main class="popup">
+    <main class="popup" data-topping-content>
       <section class="section">
         <div class="dining-content" id="menuContent">
           <div class="dining-tabs" role="tablist" aria-label="Menu period">
@@ -1227,5 +1236,6 @@
       scheduleRatingsRefresh();
       setInterval(updateRefreshInfo, 60000);
     </script>
+    <script src="./resize.js" defer></script>
   </body>
 </html>
