@@ -515,6 +515,7 @@
       let availableDates = [];
       let selectedDate = null;
       let selectedPeriod = 'Breakfast';
+      let periodPinnedByUser = false;
       let lastFetchTime = null;
       let renderedKey = null;
       let menuTimer = null;
@@ -579,6 +580,28 @@
           month: '2-digit',
           day: '2-digit'
         }).format(new Date());
+      }
+
+      function schoolMinutesNow() {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: SCHOOL_TZ,
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23'
+        }).formatToParts(new Date());
+        const value = (type) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+        return value('hour') * 60 + value('minute');
+      }
+
+      // The source posts breakfast, lunch and dinner under the same date, so on
+      // open we pick the period that matches the school clock rather than always
+      // starting at breakfast. The reference extension does the same, switching
+      // to dinner at 2 PM when it has no schedule to read a lunch end from.
+      function defaultPeriodForNow() {
+        const minutes = schoolMinutesNow();
+        if (minutes < 10 * 60) return 'Breakfast';
+        if (minutes < 14 * 60) return 'Lunch';
+        return 'Dinner';
       }
 
       function formatDateLabel(ymd) {
@@ -914,6 +937,7 @@
             const nextIndex = idx + step;
             if (nextIndex < 0 || nextIndex >= availableDates.length) return;
             selectedDate = availableDates[nextIndex];
+            periodPinnedByUser = false;
             renderMenu({ allowPeriodFallback: true });
             catalogDishes();
             refreshRatings();
@@ -1060,6 +1084,17 @@
             selectedDate = availableDates.includes(today)
               ? today
               : availableDates[availableDates.length - 1];
+            // A new day resets to that day's default, so a widget left open
+            // overnight does not stay on yesterday's dinner.
+            periodPinnedByUser = false;
+          }
+
+          // Follow the clock until the visitor picks a tab themselves; after
+          // that their choice wins. Only the current day follows the clock, so
+          // browsing yesterday still opens on breakfast.
+          if (!periodPinnedByUser && selectedDate === today) {
+            selectedPeriod = defaultPeriodForNow();
+            syncPeriodTabs();
           }
 
           // Only rebuild the DOM when something visible actually changed, so a
@@ -1106,6 +1141,7 @@
         button.addEventListener('click', () => {
           const nextPeriod = button.dataset.period;
           if (!nextPeriod || nextPeriod === selectedPeriod) return;
+          periodPinnedByUser = true;
           selectedPeriod = nextPeriod;
           syncPeriodTabs();
           renderMenu();
