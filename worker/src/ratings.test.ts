@@ -141,6 +141,69 @@ describe('writing ratings', () => {
   });
 });
 
+describe('removing ratings', () => {
+  const remove = (dish: unknown, raterId: string | null = RATER) =>
+    worker.fetch(req('/api/ratings', 'DELETE', { dish }, raterId), env);
+
+  test('clears only the caller own rating and returns the new aggregate', async () => {
+    await rate('Scrambled Eggs', 5);
+    await rate('Scrambled Eggs', 3, 'rater-2');
+    await rate('Scrambled Eggs', 4, 'rater-3');
+
+    const after = (await (await remove('Scrambled Eggs')).json()) as any;
+    expect(after.rating).toEqual({ count: 2, average: 3.5, myRating: null });
+
+    const mine = (await (await read(['scrambled eggs'])).json()) as any;
+    expect(mine.ratings['scrambled eggs']).toEqual({ count: 2, average: 3.5, myRating: null });
+    // Another rater's rating is untouched.
+    const other = (await (await read(['scrambled eggs'], 'rater-2')).json()) as any;
+    expect(other.ratings['scrambled eggs'].myRating).toBe(3);
+  });
+
+  test('deleting the last rating leaves the dish unrated', async () => {
+    await rate('Poutine', 4);
+    const after = (await (await remove('Poutine')).json()) as any;
+    expect(after.rating).toEqual({ count: 0, average: 0, myRating: null });
+
+    // A dish with no ratings is absent from the read map, as before this change.
+    const data = (await (await read(['Poutine'])).json()) as any;
+    expect(data.ratings.poutine).toBeUndefined();
+    expect(data.ratings).toEqual({});
+  });
+
+  test('deleting a rating you never made is a no-op, not an error', async () => {
+    await rate('Poutine', 4, 'rater-2');
+    const response = await remove('Poutine');
+    expect(response.status).toBe(200);
+    const after = (await response.json()) as any;
+    expect(after.rating).toEqual({ count: 1, average: 4, myRating: null });
+  });
+
+  test('matches dish names case- and space-insensitively', async () => {
+    await rate('Scrambled Eggs', 5);
+    const response = await remove('  scrambled   eggs ');
+    expect(response.status).toBe(200);
+    const after = (await response.json()) as any;
+    expect(after.rating).toEqual({ count: 0, average: 0, myRating: null });
+  });
+
+  test('requires a rater id and a valid dish', async () => {
+    expect((await remove('Poutine', null)).status).toBe(400);
+    expect((await remove('Poutine', 'has spaces')).status).toBe(400);
+    expect((await remove('   ')).status).toBe(400);
+    expect((await remove('x'.repeat(141))).status).toBe(400);
+    expect((await worker.fetch(req('/api/ratings', 'DELETE', undefined), env)).status).toBe(400);
+  });
+
+  test('after clearing, the rater can rate the dish again', async () => {
+    await rate('Poutine', 5);
+    await remove('Poutine');
+    expect(await (await rate('Poutine', 2)).json()).toMatchObject({
+      rating: { count: 1, average: 2, myRating: 2 }
+    });
+  });
+});
+
 describe('cataloguing', () => {
   test('records each dish once and keeps ratings across days', async () => {
     expect(await (await catalog('2026-09-25', ['Scrambled Eggs', 'scrambled eggs', 'Poutine'])).json())
@@ -176,7 +239,12 @@ describe('routing', () => {
     expect(options.headers.get('Access-Control-Allow-Origin')).toBe('*');
 
     expect((await worker.fetch(req('/api/nope'), env)).status).toBe(404);
-    expect((await worker.fetch(req('/api/ratings', 'DELETE'), env)).status).toBe(404);
+    expect((await worker.fetch(req('/api/dishes', 'DELETE'), env)).status).toBe(404);
+  });
+
+  test('DELETE is advertised in the CORS methods', async () => {
+    const options = await worker.fetch(req('/api/ratings', 'OPTIONS'), env);
+    expect(options.headers.get('Access-Control-Allow-Methods')).toContain('DELETE');
   });
 
   test('GET responses carry CORS so an iframe on another site can read them', async () => {

@@ -57,10 +57,11 @@ worker/
 | --- | --- | --- |
 | `GET` | `/api/ratings?dishes=a,b` | Count, average, and (with `X-Rater-ID`) the caller's own rating |
 | `POST` | `/api/ratings` | Record a rating; body `{ "dish": "...", "rating": 1-5 }` |
+| `DELETE` | `/api/ratings` | Remove the caller's own rating; body `{ "dish": "..." }` |
 | `POST` | `/api/dishes/catalog` | Record the dishes served on a day; body `{ "date": "...", "dishes": [...] }` |
 | `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection |
 
-A dish is keyed by its normalised name (`"  Scrambled   Eggs "` → `"scrambled eggs"`), so it keeps one rating history across every day it is served. Ratings are counted from the rows on each read, so a number shown is always current rather than a nightly roll-up. Re-rating replaces your previous rating; `X-Rater-ID` is a random per-browser id, and writes are capped per rater per day.
+A dish is keyed by its normalised name (`"  Scrambled   Eggs "` → `"scrambled eggs"`), so it keeps one rating history across every day it is served. Ratings are counted from the rows on each read, so a number shown is always current rather than a nightly roll-up. Re-rating replaces your previous rating; `DELETE` clears it and returns the dish to the community aggregate, or to "No ratings yet" if you were the last rater. It only ever removes the caller's own row, and it does not refund the daily write cap. `X-Rater-ID` is a random per-browser id, and writes are capped per rater per day.
 
 ### Deploying it
 

@@ -197,6 +197,57 @@ export async function postRating(
 }
 
 /**
+ * Removes the caller's rating for one dish and returns the updated aggregate.
+ * Deleting a rating does not refund the daily write cap, so clearing and
+ * re-rating in a loop still costs writes like any other change.
+ */
+export async function deleteRating(
+  request: Request,
+  env: RatingsEnv
+): Promise<Response> {
+  const raterId = readRaterId(request);
+  if (!raterId) {
+    return json({ error: 'Missing rater id.' }, 400);
+  }
+
+  let body: { dish?: unknown };
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return json({ error: 'Invalid JSON.' }, 400);
+  }
+
+  const id = typeof body.dish === 'string' ? dishId(body.dish) : '';
+  if (!id || id.length > MAX_DISH_ID_LENGTH) {
+    return json({ error: 'A dish name is required.' }, 400);
+  }
+
+  await env.RATINGS_DB
+    .prepare('DELETE FROM dish_ratings WHERE dish_id = ? AND rater_id = ?')
+    .bind(id, raterId)
+    .run();
+
+  const aggregate = await env.RATINGS_DB
+    .prepare(
+      `SELECT COUNT(*) AS count, AVG(rating) AS average
+       FROM dish_ratings WHERE dish_id = ?`
+    )
+    .bind(id)
+    .first<{ count: number; average: number }>();
+
+  return json(
+    {
+      rating: {
+        count: Number(aggregate?.count) || 0,
+        average: Math.round((Number(aggregate?.average) || 0) * 10) / 10,
+        myRating: null
+      }
+    },
+    200
+  );
+}
+
+/**
  * Catalogues the dishes served on a day. The widget calls this once per day
  * it renders, so a dish enters the catalogue the first time it is posted to
  * the menu and keeps its ratings when it comes back.
@@ -313,6 +364,7 @@ export async function handleRatings(
   if (path === '/api/ratings') {
     if (method === 'GET') return getRatings(request, env);
     if (method === 'POST') return postRating(request, env);
+    if (method === 'DELETE') return deleteRating(request, env);
   }
   if (path === '/api/dishes/catalog' && method === 'POST') {
     return catalogDishes(request, env);
