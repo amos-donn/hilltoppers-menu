@@ -312,6 +312,18 @@
         background: #15692c;
       }
 
+      /* Delete sits apart from the dismiss/save pair: it destroys a rating
+         rather than committing one. */
+      .rating-dialog-button.danger {
+        margin-right: auto;
+        border-color: rgba(180, 35, 24, 0.28);
+        color: #b42318;
+      }
+
+      .rating-dialog-button.danger:hover:not(:disabled) {
+        background: rgba(180, 35, 24, 0.08);
+      }
+
       .rating-dialog-button:disabled {
         opacity: 0.5;
         cursor: default;
@@ -475,6 +487,7 @@
         <div class="rating-dialog-stars" id="ratingDialogStars" role="radiogroup" aria-label="Your rating"></div>
         <p class="rating-dialog-hint" id="ratingDialogHint"></p>
         <div class="rating-dialog-actions">
+          <button type="button" class="rating-dialog-button danger" id="ratingDialogDelete" hidden>Delete</button>
           <button type="button" class="rating-dialog-button" id="ratingDialogCancel">Cancel</button>
           <button type="submit" class="rating-dialog-button primary" id="ratingDialogSave" disabled>Save</button>
         </div>
@@ -535,6 +548,7 @@
       const ratingDialogHint = document.getElementById('ratingDialogHint');
       const ratingDialogSave = document.getElementById('ratingDialogSave');
       const ratingDialogCancel = document.getElementById('ratingDialogCancel');
+      const ratingDialogDelete = document.getElementById('ratingDialogDelete');
 
       function escapeHtml(str) {
         const div = document.createElement('div');
@@ -753,6 +767,26 @@
         return { count: 1, average: value, myRating: value };
       }
 
+      // Deleting is a removal, so a failed request must not look like success.
+      // Returns the updated aggregate, or null when nothing was removed.
+      async function clearRating(id) {
+        if (RATINGS_API) {
+          const response = await fetch(`${RATINGS_API}/api/ratings`, {
+            method: 'DELETE',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json', 'X-Rater-ID': RATER_ID },
+            body: JSON.stringify({ dish: id })
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          return data && data.rating ? data.rating : null;
+        }
+        const all = readLocalRatings();
+        delete all[id];
+        writeLocalRatings(all);
+        return { count: 0, average: 0, myRating: null };
+      }
+
       async function catalogDishes() {
         if (!RATINGS_API || !menuData) return;
         const day = menuData.days ? menuData.days[selectedDate] : null;
@@ -830,6 +864,9 @@
         dialogState.preview = 0;
         ratingDialogDish.textContent = name;
         ratingDialogSave.disabled = !dialogState.value;
+        // Nothing to delete unless this rater already has a rating here.
+        ratingDialogDelete.hidden = !dialogState.value;
+        ratingDialogDelete.disabled = false;
         renderDialogStars();
         updateDialogHint();
         // showModal autofocuses the first star, and the explicit focus below is
@@ -883,6 +920,29 @@
         dialogState.dishId = null;
         dialogState.value = 0;
         dialogState.preview = 0;
+      });
+
+      // Clearing removes your rating for the dish outright; the row falls back
+      // to the raw community average, or to "No ratings yet" if you were the
+      // last one. A failure leaves the dialog open rather than pretending.
+      ratingDialogDelete.addEventListener('click', async () => {
+        if (!dialogState.dishId || !dialogState.value) return;
+        const id = dialogState.dishId;
+        const name = dialogState.dishName;
+        ratingDialogDelete.disabled = true;
+        ratingDialogSave.disabled = true;
+        try {
+          const entry = await clearRating(id);
+          closeRatingDialog();
+          ratingsById.set(id, entry);
+          const node = menuDisplay.querySelector(`.dish-rating[data-dish-id="${CSS.escape(id)}"]`);
+          if (node) paintRating(node, entry);
+          else console.debug('Cleared a rating for a dish no longer on screen:', name);
+        } catch (_) {
+          ratingDialogHint.textContent = 'Could not remove your rating. Try again.';
+          ratingDialogDelete.disabled = false;
+          ratingDialogSave.disabled = !dialogState.value;
+        }
       });
 
       ratingDialogForm.addEventListener('submit', async (event) => {
