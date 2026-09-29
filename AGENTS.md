@@ -61,6 +61,13 @@ Miniflare accepts some SQL that the live D1 rejects, so a green suite is not pro
 the queries work in production. When changing SQL, also exercise the deployed
 Worker directly before trusting it.
 
+The browser suites stub the API. A stub that ignores the request (query string,
+body) will pass while the real call is malformed — that is how a dish drill-down
+shipped sending an empty `dish=` and 400ing on the live site while the suite was
+green. Make stubs validate what the real endpoint validates, and assert on the
+parameters the code actually sends. Before trusting a green suite, drive the
+deployed site once.
+
 ## Ratings data
 
 - The API has **no authentication**. Anyone with the URL can read and write
