@@ -109,6 +109,21 @@
         border: 1px solid var(--border);
         border-radius: 10px;
         overflow: hidden;
+        margin-bottom: 14px;
+      }
+
+      .panel-title {
+        padding: 9px 14px;
+        background: var(--panel-alt);
+        border-bottom: 1px solid rgba(17, 17, 17, 0.07);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .panel-title span {
+        color: var(--text-muted);
+        font-weight: 400;
       }
 
       table {
@@ -207,6 +222,7 @@
       <div class="cards" id="cards"></div>
 
       <div class="panel">
+        <div class="panel-title">Ranked<span id="rankedCount"></span></div>
         <table>
           <thead>
             <tr>
@@ -221,6 +237,22 @@
         </table>
       </div>
 
+      <div class="panel">
+        <div class="panel-title">Still gathering ratings<span id="unrankedCount"></span></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Dish</th>
+              <th class="num">Ratings</th>
+              <th class="num">Average</th>
+            </tr>
+          </thead>
+          <tbody id="unrankedRows">
+            <tr><td class="message" colspan="3">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <footer id="footnote"></footer>
     </div>
 
@@ -228,9 +260,16 @@
       // Same backend the menu widget writes to.
       const RATINGS_API = 'https://hilltoppers-menu-ratings.amos-donn.workers.dev';
 
+      // One rating can put a dish at 5.0, so ranking needs a few before the
+      // average means anything.
+      const MIN_RATINGS = 3;
+
       const statusEl = document.getElementById('status');
       const cardsEl = document.getElementById('cards');
       const rowsEl = document.getElementById('rows');
+      const unrankedRowsEl = document.getElementById('unrankedRows');
+      const rankedCountEl = document.getElementById('rankedCount');
+      const unrankedCountEl = document.getElementById('unrankedCount');
       const footnoteEl = document.getElementById('footnote');
       const refreshBtn = document.getElementById('refresh');
 
@@ -271,9 +310,16 @@
 
           const stats = await statsRes.json();
           const { dishes = [] } = await dishesRes.json();
-          const rated = dishes
-            .filter((d) => d.count > 0 && d.average !== null)
+
+          // A single rating can put a dish at 5.0, so a dish needs at least
+          // MIN_RATINGS to be ranked; the rest wait in their own table.
+          const rated = dishes.filter((d) => d.count > 0 && d.average !== null);
+          const ranked = rated
+            .filter((d) => d.count >= MIN_RATINGS)
             .sort((a, b) => b.average - a.average || b.count - a.count);
+          const unranked = rated
+            .filter((d) => d.count < MIN_RATINGS)
+            .sort((a, b) => b.count - a.count || b.average - a.average);
 
           cardsEl.innerHTML = [
             card(fmt(stats.totalRatings), 'Ratings cast'),
@@ -282,22 +328,32 @@
             card(stats.ratingsPerRater, 'Ratings per rater')
           ].join('');
 
-          if (!rated.length) {
-            rowsEl.innerHTML = '<tr><td class="message" colspan="3">No ratings yet.</td></tr>';
-          } else {
-            rowsEl.innerHTML = rated
+          // Bar length is the average as a share of five, so it agrees with the
+          // order the rows are sorted in.
+          const dishRows = (list, emptyMessage) => {
+            if (!list.length) {
+              return `<tr><td class="message" colspan="3">${emptyMessage}</td></tr>`;
+            }
+            return list
               .map((d) => {
-                // Bar length is the average as a share of five, matching the
-                // order the rows are now sorted in.
                 const pct = Math.round((d.average / 5) * 100);
                 return `<tr>
                   <td class="dish">${esc(d.name)}<div class="bar"><span style="width:${pct}%"></span></div></td>
                   <td class="num">${fmt(d.count)}</td>
-                  <td class="num">${d.average === null ? '—' : stars(d.average)} <span>${d.average === null ? '' : d.average}</span></td>
+                  <td class="num">${stars(d.average)} <span>${d.average}</span></td>
                 </tr>`;
               })
               .join('');
-          }
+          };
+
+          rankedCountEl.textContent = ranked.length ? ` · ${fmt(ranked.length)}` : '';
+          unrankedCountEl.textContent = unranked.length ? ` · ${fmt(unranked.length)}` : '';
+
+          rowsEl.innerHTML = dishRows(
+            ranked,
+            `No dish has ${MIN_RATINGS} ratings yet.`
+          );
+          unrankedRowsEl.innerHTML = dishRows(unranked, 'Nothing waiting.');
 
           footnoteEl.innerHTML =
             `${fmt(stats.catalogue)} dishes in the catalogue, including ones nobody has rated. ` +
@@ -310,6 +366,9 @@
           cardsEl.innerHTML = '';
           rowsEl.innerHTML =
             `<tr><td class="message error" colspan="3">Could not reach the ratings API.<br>${esc(error.message)}</td></tr>`;
+          unrankedRowsEl.innerHTML = '';
+          rankedCountEl.textContent = '';
+          unrankedCountEl.textContent = '';
           footnoteEl.textContent = '';
           statusEl.textContent = 'Failed to load.';
         } finally {
