@@ -56,6 +56,7 @@ beforeEach(async () => {
     env.RATINGS_DB.prepare('DELETE FROM rater_writes'),
     env.RATINGS_DB.prepare('DELETE FROM dish_days'),
     env.RATINGS_DB.prepare('DELETE FROM dish_stations'),
+    env.RATINGS_DB.prepare('DELETE FROM dish_periods'),
     env.RATINGS_DB.prepare('DELETE FROM dishes')
   ]);
 });
@@ -442,6 +443,7 @@ describe('dashboard stats', () => {
       totalRatings: 0,
       raters: 0,
       ratedDishes: 0,
+      average: 0,
       ratingsPerRater: 0
     });
 
@@ -677,5 +679,101 @@ describe('rating history', () => {
   test('history is readable cross-origin', async () => {
     const response = await history('dish=Salmon');
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+  });
+});
+
+describe('meal periods', () => {
+  const catalogPeriods = (date: string, periods: unknown, stations?: unknown) =>
+    worker.fetch(req('/api/dishes/catalog', 'POST', { date, dishes: [], stations, periods }), env);
+  const history = (query: string) => worker.fetch(req(`/api/ratings/history?${query}`), env);
+
+  test('records the meals a dish was listed in and folds it into the stats', async () => {
+    await catalogPeriods('2026-09-25', {
+      breakfast: ['Scrambled Eggs', 'Oatmeal'],
+      dinner: ['Scrambled Eggs', 'Poutine']
+    });
+    await rate('Scrambled Eggs', 5, 'rater-a');
+    await rate('Poutine', 3, 'rater-b');
+
+    const stats = await bodyOf(await worker.fetch(req('/api/stats'), env));
+    const byName = Object.fromEntries(stats.periods.map((p: any) => [p.period, p]));
+    // Scrambled Eggs was at both meals, so it counts toward both — a per-meal
+    // view, not a partition of the totals.
+    expect(byName.breakfast).toMatchObject({ ratings: 1, raters: 1, dishes: 1, average: 5 });
+    expect(byName.dinner).toMatchObject({ ratings: 2, raters: 2, dishes: 2, average: 4 });
+  });
+
+  test('lists every period even when nothing was rated in it', async () => {
+    await catalogPeriods('2026-09-25', { lunch: ['Tacos'] });
+
+    const stats = await bodyOf(await worker.fetch(req('/api/stats'), env));
+    expect(stats.periods.map((p: any) => p.period)).toEqual(['breakfast', 'lunch', 'dinner']);
+    const breakfast = stats.periods.find((p: any) => p.period === 'breakfast');
+    expect(breakfast).toMatchObject({ ratings: 0, raters: 0, dishes: 0, average: 0 });
+  });
+
+  test('rejects an unknown period rather than recording it', async () => {
+    await catalogPeriods('2026-09-25', { brunch: ['Tacos'], dinner: ['Poutine'] });
+    const rows = await env.RATINGS_DB
+      .prepare('SELECT period FROM dish_periods ORDER BY period')
+      .all<{ period: string }>();
+    expect((rows.results ?? []).map((r) => r.period)).toEqual(['dinner']);
+  });
+
+  test('filters the dish list by period, all-time and today', async () => {
+    // Stations are sent alongside the meals because `scope=today` also requires
+    // a station row for the day — that is the existing contract for "served
+    // today", and the widget always sends both.
+    await catalogPeriods(
+      '2026-09-25',
+      { breakfast: ['Scrambled Eggs'], dinner: ['Poutine'] },
+      { 'Global Fare': ['Scrambled Eggs', 'Poutine'] }
+    );
+    await catalogPeriods('2026-09-26', { dinner: ['Naan Bread'] }, { 'Global Fare': ['Naan Bread'] });
+
+    const breakfast = await bodyOf(await worker.fetch(req('/api/dishes?period=breakfast'), env));
+    expect(breakfast.dishes.map((d: any) => d.id)).toEqual(['scrambled eggs']);
+    expect(breakfast.period).toBe('breakfast');
+
+    // All-time means "ever listed under that meal", so a dinner dish from an
+    // earlier day is still there.
+    const dinner = await bodyOf(await worker.fetch(req('/api/dishes?period=dinner'), env));
+    expect(dinner.dishes.map((d: any) => d.id).sort()).toEqual(['naan bread', 'poutine']);
+
+    // Today narrows to that day's meal, so only the dish served that evening.
+    const todayDinner = await bodyOf(
+      await worker.fetch(req('/api/dishes?period=dinner&scope=today&date=2026-09-26&offset=240'), env)
+    );
+    expect(todayDinner.dishes.map((d: any) => d.id)).toEqual(['naan bread']);
+  });
+
+  test('rejects an unknown period in the dish list and history', async () => {
+    expect((await worker.fetch(req('/api/dishes?period=brunch'), env)).status).toBe(400);
+    expect((await worker.fetch(req('/api/ratings/history?period=brunch'), env)).status).toBe(400);
+  });
+
+  test('graphs a period timeline across its dishes', async () => {
+    await catalogPeriods('2026-09-25', { dinner: ['Poutine', 'Naan Bread'] });
+    await rate('Poutine', 5, 'rater-a');
+    await rate('Naan Bread', 3, 'rater-b');
+
+    const body = await bodyOf(await history('period=dinner'));
+    expect(body.scope).toBe('period');
+    expect(body.label).toBe('dinner');
+    expect(body.count).toBe(2);
+    expect(body.average).toBe(4);
+    expect(body.timeline).toHaveLength(1);
+    expect(body.timeline[0].runningCount).toBe(2);
+    // A meal is a side, not a dish, so there is no individual-rating list.
+    expect(body.ratings).toEqual([]);
+  });
+
+  test('creates dish_periods on demand for a database that predates it', async () => {
+    await env.RATINGS_DB.prepare('DROP TABLE IF EXISTS dish_periods').run();
+    await catalogPeriods('2026-09-25', { lunch: ['Tacos'] });
+    const stats = await bodyOf(await worker.fetch(req('/api/stats'), env));
+    expect(stats.periods.find((p: any) => p.period === 'lunch').dishes).toBe(0);
+    const rows = await env.RATINGS_DB.prepare('SELECT COUNT(*) AS n FROM dish_periods').first<{ n: number }>();
+    expect(Number(rows?.n)).toBe(1);
   });
 });

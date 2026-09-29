@@ -159,6 +159,34 @@ function ensureStationsTable(env: RatingsEnv): Promise<unknown> {
     .catch(() => undefined);
 }
 
+/**
+ * The meal periods a dish can be served in. The source site publishes three,
+ * and the widget catalogues each dish under the one it was listed in, so the
+ * dashboard can answer "what did people think of breakfast" rather than only
+ * "what did people think".
+ */
+const PERIODS = ['breakfast', 'lunch', 'dinner'] as const;
+
+function periodMatcher(value: string): (typeof PERIODS)[number] | null {
+  const lower = value.trim().toLowerCase();
+  return (PERIODS as readonly string[]).includes(lower) ? (lower as (typeof PERIODS)[number]) : null;
+}
+
+/** `dish_stations`'s counterpart for meal periods. */
+function ensurePeriodsTable(env: RatingsEnv): Promise<unknown> {
+  return env.RATINGS_DB
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS dish_periods (
+         dish_id TEXT NOT NULL,
+         period TEXT NOT NULL,
+         day TEXT NOT NULL,
+         PRIMARY KEY (dish_id, period, day)
+       )`
+    )
+    .run()
+    .catch(() => undefined);
+}
+
 interface RatingRow {
   dish_id: string;
   count: number;
@@ -365,6 +393,7 @@ export async function catalogDishes(
     date?: unknown;
     dishes?: unknown;
     stations?: unknown;
+    periods?: unknown;
   };
   try {
     body = (await request.json()) as typeof body;
@@ -378,15 +407,22 @@ export async function catalogDishes(
   if (!date) {
     return json({ error: 'A YYYY-MM-DD date is required.' }, 400);
   }
-  if (!Array.isArray(body.dishes) && (body.stations === undefined || typeof body.stations !== 'object')) {
+  // A caller may group by station, by meal, by both, or send a flat list; any
+  // one of the three shapes is enough, so none is required on its own.
+  const hasStations = body.stations !== undefined && typeof body.stations === 'object';
+  const hasPeriods = body.periods !== undefined && typeof body.periods === 'object';
+  if (!Array.isArray(body.dishes) && !hasStations && !hasPeriods) {
     return json({ error: 'dishes must be an array.' }, 400);
   }
 
   // id -> the set of stations it was reported under on this day, so a dish on
   // both stations is recorded under both.
   const stationOf = new Map<string, Set<string>>();
+  // id -> the set of meal periods it was listed in on this day. A dish served
+  // at both lunch and dinner is recorded under both.
+  const periodOf = new Map<string, Set<string>>();
   const names = new Map<string, string>();
-  const add = (value: unknown, station?: string) => {
+  const add = (value: unknown, station?: string, period?: string) => {
     if (typeof value !== 'string') return;
     const name = value.trim();
     const id = dishId(name);
@@ -396,6 +432,11 @@ export async function catalogDishes(
       const set = stationOf.get(id) ?? new Set<string>();
       set.add(station);
       stationOf.set(id, set);
+    }
+    if (period) {
+      const set = periodOf.get(id) ?? new Set<string>();
+      set.add(period);
+      periodOf.set(id, set);
     }
   };
 
@@ -408,6 +449,15 @@ export async function catalogDishes(
       for (const value of list) add(value, station.trim());
     }
   }
+  // Only the three known periods are recorded, so a stray value cannot fill the
+  // table with rows nothing can ever filter on.
+  if (body.periods && typeof body.periods === 'object') {
+    for (const [period, list] of Object.entries(body.periods as Record<string, unknown>)) {
+      const known = periodMatcher(period);
+      if (!Array.isArray(list) || !known) continue;
+      for (const value of list) add(value, undefined, known);
+    }
+  }
 
   const dishes = [...names.entries()].slice(0, MAX_CATALOG_DISHES);
   if (!dishes.length) {
@@ -415,10 +465,12 @@ export async function catalogDishes(
   }
 
   await ensureStationsTable(env);
+  await ensurePeriodsTable(env);
 
   const statements = [];
   for (const [id, name] of dishes) {
     const sides = [...(stationOf.get(id) ?? [])];
+    const periods = [...(periodOf.get(id) ?? [])];
     statements.push(
       env.RATINGS_DB
         .prepare(
@@ -433,6 +485,11 @@ export async function catalogDishes(
         env.RATINGS_DB
           .prepare('INSERT OR IGNORE INTO dish_stations (dish_id, station, day) VALUES (?, ?, ?)')
           .bind(id, station, date)
+      ),
+      ...periods.map((period) =>
+        env.RATINGS_DB
+          .prepare('INSERT OR IGNORE INTO dish_periods (dish_id, period, day) VALUES (?, ?, ?)')
+          .bind(id, period, date)
       )
     );
   }
@@ -462,12 +519,15 @@ export async function ratingStats(
               (SELECT COUNT(DISTINCT rater_id) FROM dish_ratings) AS raters,
               (SELECT COUNT(*) FROM dishes) AS catalogue,
               (SELECT COUNT(DISTINCT dish_id) FROM dish_ratings) AS rated_dishes,
+              (SELECT AVG(rating) FROM dish_ratings) AS average,
               (SELECT COUNT(*) FROM dish_ratings
                  WHERE updated_at >= ?1 AND updated_at < ?2) AS today_ratings,
               (SELECT COUNT(DISTINCT rater_id) FROM dish_ratings
                  WHERE updated_at >= ?1 AND updated_at < ?2) AS today_raters,
               (SELECT COUNT(DISTINCT dish_id) FROM dish_ratings
-                 WHERE updated_at >= ?1 AND updated_at < ?2) AS today_dishes`
+                 WHERE updated_at >= ?1 AND updated_at < ?2) AS today_dishes,
+              (SELECT AVG(rating) FROM dish_ratings
+                 WHERE updated_at >= ?1 AND updated_at < ?2) AS today_average`
     )
     .bind(scope.startMs, scope.endMs)
     .first<{
@@ -475,9 +535,11 @@ export async function ratingStats(
       raters: number;
       catalogue: number;
       rated_dishes: number;
+      average: number | null;
       today_ratings: number;
       today_raters: number;
       today_dishes: number;
+      today_average: number | null;
     }>();
 
   const totalRatings = Number(row?.total_ratings) || 0;
@@ -540,6 +602,73 @@ export async function ratingStats(
     }
   }));
 
+  // The same breakdown per meal period, so the dashboard can show "what did
+  // people think of breakfast". A dish served at both lunch and dinner counts
+  // toward both, exactly as a dish on two stations counts toward both, so these
+  // are a per-meal view rather than a partition of the totals.
+  await ensurePeriodsTable(env);
+  const periodRows = await env.RATINGS_DB
+    .prepare(
+      `WITH dish_meal AS (
+         SELECT DISTINCT dish_id, period FROM dish_periods
+       )
+       SELECT dish_meal.period AS period,
+              COUNT(*) AS ratings,
+              COUNT(DISTINCT dr.rater_id) AS raters,
+              COUNT(DISTINCT dr.dish_id) AS dishes,
+              AVG(dr.rating) AS average,
+              SUM(CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2 THEN 1 ELSE 0 END) AS today_ratings,
+              COUNT(DISTINCT CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
+                             THEN dr.rater_id END) AS today_raters,
+              COUNT(DISTINCT CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
+                             THEN dr.dish_id END) AS today_dishes,
+              AVG(CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
+                       THEN dr.rating END) AS today_average
+       FROM dish_meal
+       JOIN dish_ratings dr ON dr.dish_id = dish_meal.dish_id
+       GROUP BY 1
+       ORDER BY CASE period WHEN 'breakfast' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END`
+    )
+    .bind(scope.startMs, scope.endMs)
+    .all<{
+      period: string;
+      ratings: number;
+      raters: number;
+      dishes: number;
+      average: number;
+      today_ratings: number;
+      today_raters: number;
+      today_dishes: number;
+      today_average: number | null;
+    }>();
+
+  const byPeriod = new Map((periodRows.results ?? []).map((r) => [r.period, r]));
+  // Every period is listed even when nothing was rated in it, so the dashboard
+  // shows a stable Breakfast / Lunch / Dinner row set instead of the cards
+  // appearing and disappearing as ratings arrive.
+  const periods = PERIODS.map((name) => {
+    const r = byPeriod.get(name);
+    const ratings = Number(r?.ratings) || 0;
+    const ratersIn = Number(r?.raters) || 0;
+    const todayIn = Number(r?.today_ratings) || 0;
+    const todayRatersIn = Number(r?.today_raters) || 0;
+    return {
+      period: name,
+      ratings,
+      raters: ratersIn,
+      dishes: Number(r?.dishes) || 0,
+      average: round1(r?.average),
+      ratingsPerRater: perRater(ratings, ratersIn),
+      today: {
+        ratings: todayIn,
+        raters: todayRatersIn,
+        dishes: Number(r?.today_dishes) || 0,
+        average: r?.today_average === null || r?.today_average === undefined ? 0 : round1(r.today_average),
+        ratingsPerRater: perRater(todayIn, todayRatersIn)
+      }
+    };
+  });
+
   return json(
     {
       totalRatings,
@@ -547,15 +676,20 @@ export async function ratingStats(
       catalogue: Number(row?.catalogue) || 0,
       ratedDishes: Number(row?.rated_dishes) || 0,
       // Rounded to one decimal so the dashboard does not show 3.666666.
+      average: round1(row?.average),
       ratingsPerRater: perRater(totalRatings, raters),
       date: scope.date,
       today: {
         totalRatings: todayRatings,
         raters: todayRaters,
         ratedDishes: Number(row?.today_dishes) || 0,
+        average: row?.today_average === null || row?.today_average === undefined
+          ? 0
+          : round1(row.today_average),
         ratingsPerRater: perRater(todayRatings, todayRaters)
       },
-      stations
+      stations,
+      periods
     },
     200
   );
@@ -587,9 +721,10 @@ export async function ratingHistory(
   const scope = resolveScope(request);
   const dishParam = url.searchParams.get('dish');
   const stationParam = url.searchParams.get('station');
+  const periodParam = url.searchParams.get('period');
 
-  if (!dishParam && !stationParam) {
-    return json({ error: 'A dish or station is required.' }, 400);
+  if (!dishParam && !stationParam && !periodParam) {
+    return json({ error: 'A dish, station or period is required.' }, 400);
   }
 
   const offsetMinutes = Math.round((scope.startMs - Date.parse(`${scope.date}T00:00:00Z`)) / 60_000);
@@ -615,7 +750,7 @@ export async function ratingHistory(
     // Fall back to the id so an uncatalogued dish still resolves.
     label = named?.name ?? id;
     station = false;
-  } else {
+  } else if (stationParam) {
     const match = stationMatcher(String(stationParam));
     if (!match) {
       return json({ error: 'Unknown station.' }, 400);
@@ -624,6 +759,19 @@ export async function ratingHistory(
     filter = `dish_id IN (SELECT DISTINCT dish_id FROM dish_stations WHERE ${STATION_LABEL_SQL} = ?)`;
     params = [match];
     label = match;
+    station = true;
+  } else {
+    const match = periodMatcher(String(periodParam));
+    if (!match) {
+      return json({ error: 'Unknown period.' }, 400);
+    }
+    await ensurePeriodsTable(env);
+    filter = 'dish_id IN (SELECT DISTINCT dish_id FROM dish_periods WHERE period = ?)';
+    params = [match];
+    label = match;
+    // Treated as a side, not a dish: a meal holds many dishes, so the
+    // individual-rating list would be meaningless and the dashboard only graphs
+    // it.
     station = true;
   }
 
@@ -705,7 +853,7 @@ export async function ratingHistory(
 
   return json(
     {
-      scope: station ? 'station' : 'dish',
+      scope: dishParam ? 'dish' : periodParam ? 'period' : 'station',
       label,
       date: scope.date,
       count: summary.count,
@@ -736,16 +884,44 @@ export async function listDishes(
   const scope = resolveScope(request);
   const todayOnly = url.searchParams.get('scope') === 'today';
   if (todayOnly) await ensureStationsTable(env);
+
+  // `period=breakfast|lunch|dinner` narrows to the dishes the widget listed
+  // under that meal. An unknown period is rejected rather than ignored, so a
+  // typo shows up as an error instead of quietly returning everything.
+  const periodRaw = url.searchParams.get('period');
+  const period = periodRaw ? periodMatcher(periodRaw) : null;
+  if (periodRaw && !period) {
+    return json({ error: 'Unknown period.' }, 400);
+  }
+  if (period) await ensurePeriodsTable(env);
+
   const scopeParams = todayOnly ? [scope.startMs, scope.endMs] : [];
+
+  // The period filter is two different questions depending on scope: with
+  // `scope=today` it means "on that meal today", matching the day-scoped dish
+  // list; on its own it means "ever listed under that meal". The second is the
+  // one the all-time dashboard uses, so a breakfast dish rated weeks ago still
+  // shows under Breakfast.
+  const clauses: string[] = [];
+  const servedParams: unknown[] = [];
+  if (todayOnly) {
+    clauses.push('d.id IN (SELECT dish_id FROM dish_days WHERE day = ?)');
+    clauses.push('d.id IN (SELECT dish_id FROM dish_stations WHERE day = ?)');
+    servedParams.push(scope.date, scope.date);
+  }
+  if (period) {
+    if (todayOnly) {
+      clauses.push('d.id IN (SELECT dish_id FROM dish_periods WHERE period = ? AND day = ?)');
+      servedParams.push(period, scope.date);
+    } else {
+      clauses.push('d.id IN (SELECT dish_id FROM dish_periods WHERE period = ?)');
+      servedParams.push(period);
+    }
+  }
+  const servedClause = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
 
   // MAX_CATALOG_DISHES mirrors how many dishes one catalogue call can add, so a
   // day's browse covers the whole catalogue rather than an arbitrary prefix.
-  const servedClause = todayOnly
-    ? ` WHERE d.id IN (SELECT dish_id FROM dish_days WHERE day = ?)
-        AND d.id IN (SELECT dish_id FROM dish_stations WHERE day = ?)`
-    : '';
-  const servedParams = todayOnly ? [scope.date, scope.date] : [];
-
   const rows = await env.RATINGS_DB
     .prepare(
       `SELECT d.id, d.name, d.first_seen, d.last_seen,
@@ -771,6 +947,7 @@ export async function listDishes(
   return json(
     {
       scope: todayOnly ? 'today' : 'all',
+      period,
       date: scope.date,
       dishes: (rows.results ?? []).map((row) => ({
         id: row.id,

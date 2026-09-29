@@ -106,6 +106,26 @@
         color: #ffffff;
       }
 
+      /* Period filter: All / Breakfast / Lunch / Dinner. A second row of the
+         same pill control, so the two filters read as one pair. */
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .filters .scopes {
+        margin-bottom: 0;
+      }
+
+      .filters .label {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-right: 2px;
+      }
+
       .cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -398,9 +418,18 @@
         <button class="refresh" id="refresh" type="button">Refresh</button>
       </header>
 
-      <div class="scopes" role="group" aria-label="Ranking scope">
-        <button id="scopeAll" type="button" aria-pressed="true">All-time</button>
-        <button id="scopeToday" type="button" aria-pressed="false">Today</button>
+      <div class="filters">
+        <div class="scopes" role="group" aria-label="Ranking scope">
+          <button id="scopeAll" type="button" aria-pressed="true">All-time</button>
+          <button id="scopeToday" type="button" aria-pressed="false">Today</button>
+        </div>
+        <span class="label" id="periodLabel">Meal</span>
+        <div class="scopes" role="group" aria-label="Meal period">
+          <button id="periodAll" type="button" aria-pressed="true" data-period="">All meals</button>
+          <button id="periodBreakfast" type="button" aria-pressed="false" data-period="breakfast">Breakfast</button>
+          <button id="periodLunch" type="button" aria-pressed="false" data-period="lunch">Lunch</button>
+          <button id="periodDinner" type="button" aria-pressed="false" data-period="dinner">Dinner</button>
+        </div>
       </div>
 
       <div class="cards" id="cards"></div>
@@ -465,9 +494,18 @@
       const refreshBtn = document.getElementById('refresh');
       const scopeAllBtn = document.getElementById('scopeAll');
       const scopeTodayBtn = document.getElementById('scopeToday');
+      const periodBtns = [...document.querySelectorAll('[data-period]')];
+      const periodLabelEl = document.getElementById('periodLabel');
+
+      // The three meals, in the order the dining hall serves them. Used for
+      // labels and for the per-meal cards; the Worker sends the same set.
+      const PERIODS = ['breakfast', 'lunch', 'dinner'];
+      const periodName = (p) => p.charAt(0).toUpperCase() + p.slice(1);
 
       const state = {
         scope: 'all',
+        // '' means every meal; otherwise one of PERIODS.
+        period: '',
         stats: null,
         dishes: { all: [], today: [] },
         expanded: new Set(),
@@ -697,12 +735,44 @@
         // deploys catch up with each other.
         const block = (today && stats.today) || (today ? { totalRatings: 0, ratedDishes: 0, raters: 0, ratingsPerRater: 0 } : stats);
 
+        // When a meal is selected the cards describe that meal, so every figure
+        // on the page belongs to one thing. The Worker sends a per-meal block
+        // with the same fields; a Worker that predates it sends none, in which
+        // case the page falls back to the overall figures rather than blanking.
+        const meal = state.period ? findPeriod(state.period) : null;
+        const mealBlock = meal ? (today && meal.today ? meal.today : meal) : null;
+        const periodSuffix = state.period ? ` at ${periodName(state.period).toLowerCase()}` : '';
+
+        const c = mealBlock
+          ? {
+              ratings: mealBlock.ratings,
+              dishes: mealBlock.dishes,
+              raters: mealBlock.raters,
+              perRater: mealBlock.ratingsPerRater,
+              average: mealBlock.average
+            }
+          : {
+              ratings: block.totalRatings,
+              dishes: block.ratedDishes,
+              raters: block.raters,
+              perRater: block.ratingsPerRater,
+              average: block.average
+            };
+
+        const avg = c.average ? `${stars(c.average)} ${c.average}` : '—';
         cardsEl.innerHTML = [
-          card(fmt(block.totalRatings), today ? 'Ratings cast today' : 'Ratings cast'),
-          card(fmt(block.ratedDishes), today ? 'Dishes rated today' : 'Dishes rated'),
-          card(fmt(block.raters), today ? 'Rater IDs today' : 'Rater IDs'),
-          card(block.ratingsPerRater, 'Ratings per rater')
+          card(fmt(c.ratings), today ? `Ratings cast today${periodSuffix}` : `Ratings cast${periodSuffix}`),
+          card(fmt(c.dishes), today ? `Dishes rated today${periodSuffix}` : `Dishes rated${periodSuffix}`),
+          card(fmt(c.raters), today ? `Rater IDs today${periodSuffix}` : `Rater IDs${periodSuffix}`),
+          card(fmt(c.perRater), 'Ratings per rater'),
+          card(avg, 'Average rating')
         ].join('');
+      }
+
+      /** The Worker's per-meal block for one meal, or null on an older Worker. */
+      function findPeriod(period) {
+        const list = Array.isArray(state.stats?.periods) ? state.stats.periods : [];
+        return list.find((p) => p.period === period) || null;
       }
 
       /**
@@ -711,48 +781,60 @@
        */
       function renderSides() {
         const stations = Array.isArray(state.stats?.stations) ? state.stats.stations : [];
-        if (!stations.length) {
+        const meals = Array.isArray(state.stats?.periods) ? state.stats.periods : [];
+        // The station cards are per-side detail for the daily menu, so they are
+        // hidden when the reader has narrowed to one meal: that view is already
+        // described by the stat cards and the meal cards below.
+        const stationCards = state.period ? [] : stations;
+        if (!stationCards.length && !meals.length) {
           sidesEl.innerHTML =
             '<div class="side"><div class="side-head">Per side</div>' +
             '<div class="muted">No station data yet.</div></div>';
           return;
         }
-        sidesEl.innerHTML = stations
-          .map((s) => {
-            const today = s.today || { ratings: 0, raters: 0, average: 0 };
-            const all = s.ratings === 0 ? '—' : s.average;
-            const day = today.ratings === 0 ? '—' : today.average;
-            const key = `station:${s.station}`;
-            const shown = state.expanded.has(key);
-            return `<div class="side">
-              <div class="side-head">
-                <span>${esc(s.station)}</span>
-                <button class="twist" type="button" data-graph="${esc(key)}"
-                  aria-expanded="${shown}">${shown ? 'Hide trend' : 'Trend'}</button>
-              </div>
-              <table>
-                <thead>
-                  <tr><th>Scope</th><th class="num">Avg.</th><th class="num">Ratings</th><th class="num">Raters</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>All-time</td>
-                    <td class="num">${all === '—' ? '—' : `${stars(s.average)} ${all}`}</td>
-                    <td class="num">${fmt(s.ratings)}</td>
-                    <td class="num">${fmt(s.raters)}</td>
-                  </tr>
-                  <tr>
-                    <td>Today</td>
-                    <td class="num">${day === '—' ? '—' : `${stars(today.average)} ${day}`}</td>
-                    <td class="num">${fmt(today.ratings)}</td>
-                    <td class="num">${fmt(today.raters)}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div id="graph-${esc(key)}" data-graphslot="${esc(key)}"></div>
-            </div>`;
-          })
-          .join('');
+        sidesEl.innerHTML =
+          stationCards
+            .map((s) => sideCard(`station:${s.station}`, s.station, s, s.today))
+            .join('') +
+          meals.map((m) => sideCard(`period:${m.period}`, periodName(m.period), m, m.today)).join('');
+      }
+
+      /**
+       * One side card: a label, a Trend toggle, and an All-time / Today table.
+       * Shared by the station cards and the meal cards so the two read alike.
+       */
+      function sideCard(key, label, all, todayBlock) {
+        const today = todayBlock || { ratings: 0, raters: 0, average: 0 };
+        const allValue = all.ratings === 0 ? '—' : all.average;
+        const day = today.ratings === 0 ? '—' : today.average;
+        const shown = state.expanded.has(key);
+        return `<div class="side">
+          <div class="side-head">
+            <span>${esc(label)}</span>
+            <button class="twist" type="button" data-graph="${esc(key)}"
+              aria-expanded="${shown}">${shown ? 'Hide trend' : 'Trend'}</button>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Scope</th><th class="num">Avg.</th><th class="num">Ratings</th><th class="num">Raters</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>All-time</td>
+                <td class="num">${allValue === '—' ? '—' : `${stars(all.average)} ${allValue}`}</td>
+                <td class="num">${fmt(all.ratings)}</td>
+                <td class="num">${fmt(all.raters)}</td>
+              </tr>
+              <tr>
+                <td>Today</td>
+                <td class="num">${day === '—' ? '—' : `${stars(today.average)} ${day}`}</td>
+                <td class="num">${fmt(today.ratings)}</td>
+                <td class="num">${fmt(today.raters)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="graph-${esc(key)}" data-graphslot="${esc(key)}"></div>
+        </div>`;
       }
 
       /**
@@ -781,9 +863,10 @@
       function renderTables() {
         const { ranked, unranked } = split(state.scope);
         const today = state.scope === 'today';
+        const periodSuffix = state.period ? ` · ${periodName(state.period)}` : '';
 
-        rankedTitleEl.textContent = today ? 'Today’s rankings' : 'Ranked';
-        unrankedTitleEl.textContent = today ? 'Served today, no ratings yet' : 'Still gathering ratings';
+        rankedTitleEl.textContent = (today ? 'Today’s rankings' : 'Ranked') + periodSuffix;
+        unrankedTitleEl.textContent = (today ? 'Served today, no ratings yet' : 'Still gathering ratings') + periodSuffix;
 
         rankedCountEl.textContent = ranked.length ? ` · ${fmt(ranked.length)}` : '';
         unrankedCountEl.textContent = unranked.length ? ` · ${fmt(unranked.length)}` : '';
@@ -810,6 +893,10 @@
       function render() {
         scopeAllBtn.setAttribute('aria-pressed', String(state.scope === 'all'));
         scopeTodayBtn.setAttribute('aria-pressed', String(state.scope === 'today'));
+        periodBtns.forEach((btn) =>
+          btn.setAttribute('aria-pressed', String(btn.getAttribute('data-period') === state.period))
+        );
+        periodLabelEl.textContent = state.period ? `${periodName(state.period)} only` : 'Meal';
         renderCards();
         renderSides();
         renderTables();
@@ -817,14 +904,22 @@
 
       async function historyFor(key) {
         if (state.histories.has(key)) return state.histories.get(key);
-        // Station keys are prefixed ("station:Global Fare"); a dish key is the
-        // bare id. Dish ids are normalised names, so they can contain spaces and
-        // every other character except a colon — which the prefix owns.
+        // Station and meal keys are prefixed ("station:Global Fare",
+        // "period:dinner"); a dish key is the bare id. Dish ids are normalised
+        // names, so they can contain spaces and every other character except a
+        // colon — which the prefix owns.
         const isStation = key.startsWith('station:');
-        const value = isStation ? key.slice('station:'.length) : key;
+        const isPeriod = key.startsWith('period:');
+        const value = isStation
+          ? key.slice('station:'.length)
+          : isPeriod
+            ? key.slice('period:'.length)
+            : key;
         const param = isStation
           ? `station=${encodeURIComponent(value)}`
-          : `dish=${encodeURIComponent(value)}`;
+          : isPeriod
+            ? `period=${encodeURIComponent(value)}`
+            : `dish=${encodeURIComponent(value)}`;
         const response = await fetch(
           `${RATINGS_API}/api/ratings/history?${param}&${scopeQuery()}`,
           { cache: 'no-store' }
@@ -939,8 +1034,19 @@
         hydrate();
       }
 
+      /** Switching meal changes which dishes are on the page, so it refetches. */
+      function setPeriod(period) {
+        state.period = period;
+        state.expanded.clear();
+        state.histories.clear();
+        load();
+      }
+
       scopeAllBtn.addEventListener('click', () => setScope('all'));
       scopeTodayBtn.addEventListener('click', () => setScope('today'));
+      periodBtns.forEach((btn) =>
+        btn.addEventListener('click', () => setPeriod(btn.getAttribute('data-period')))
+      );
       refreshBtn.addEventListener('click', async () => {
         state.histories.clear();
         await load();
@@ -950,12 +1056,15 @@
         refreshBtn.disabled = true;
         statusEl.textContent = 'Loading…';
         const query = scopeQuery();
+        // The all-time dish list honours the meal filter; the today list also
+        // honours it (and narrows it to that day's meal, not any day's).
+        const periodQuery = state.period ? `&period=${encodeURIComponent(state.period)}` : '';
 
         try {
           const [statsRes, allRes, todayRes] = await Promise.all([
             fetch(`${RATINGS_API}/api/stats?${query}`, { cache: 'no-store' }),
-            fetch(`${RATINGS_API}/api/dishes?scope=all`, { cache: 'no-store' }),
-            fetch(`${RATINGS_API}/api/dishes?scope=today&${query}`, { cache: 'no-store' })
+            fetch(`${RATINGS_API}/api/dishes?scope=all${periodQuery}`, { cache: 'no-store' }),
+            fetch(`${RATINGS_API}/api/dishes?scope=today&${query}${periodQuery}`, { cache: 'no-store' })
           ]);
           if (!statsRes.ok) throw new Error(`stats returned ${statsRes.status}`);
           if (!allRes.ok) throw new Error(`dishes returned ${allRes.status}`);

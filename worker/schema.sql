@@ -29,6 +29,15 @@ CREATE TABLE IF NOT EXISTS dish_stations (
   PRIMARY KEY (dish_id, station, day)
 );
 
+-- Which meal periods a dish was listed in on which day. A dish can appear at
+-- both lunch and dinner, so this is a many-to-many like dish_stations.
+CREATE TABLE IF NOT EXISTS dish_periods (
+  dish_id TEXT NOT NULL,
+  period TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (dish_id, period, day)
+);
+
 -- One rating per dish per rater. Re-rating replaces the previous value.
 CREATE TABLE IF NOT EXISTS dish_ratings (
   dish_id TEXT NOT NULL,

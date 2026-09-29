@@ -866,9 +866,12 @@
         if (!RATINGS_API || !menuData) return;
         const day = menuData.days ? menuData.days[selectedDate] : null;
         if (!day) return;
-        // Grouped by station so the dashboard can break ratings down per side.
-        // A dish on both stations is sent under both.
+        // Grouped by station so the dashboard can break ratings down per side,
+        // and by meal period so it can also answer "what did people think of
+        // breakfast". A dish on both stations, or served at two meals, is sent
+        // under each.
         const stations = {};
+        const periods = {};
         const seen = new Set();
         ['breakfast', 'lunch', 'dinner'].forEach((period) => {
           const entry = day[period];
@@ -877,7 +880,9 @@
             ([label, key]) => {
               normalizeItems(entry[key]).forEach((item) => {
                 const id = dishId(item);
-                if (!id || seen.has(id)) return;
+                if (!id) return;
+                (periods[period] = periods[period] || []).push(item);
+                if (seen.has(id)) return;
                 seen.add(id);
                 (stations[label] = stations[label] || []).push(item);
               });
@@ -901,7 +906,7 @@
             method: 'POST',
             cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date: selectedDate, dishes, stations })
+            body: JSON.stringify({ date: selectedDate, dishes, stations, periods })
           });
         } catch (_) {
           // Cataloguing is best effort; rating still works without it.
