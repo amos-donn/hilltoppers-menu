@@ -5,8 +5,8 @@ product and API docs.
 
 ## Layout
 
-- `index.html` — the embeddable menu widget (all styles inline, no dependencies, must stay iframe-safe)
-- `dashboard.html` — the ratings dashboard, served by GitHub Pages
+- `index.html` — the menu widget **and** the ratings dashboard: one page, two columns, with the widget on the left and the dashboard on the right. It is what GitHub Pages serves at the site root. Must stay iframe-safe — embedded in the extension it collapses to the widget alone (see *One page, two shapes* in `README.md`).
+- `dashboard.html` — a redirect to the site root. The dashboard is now the right-hand column of `index.html`; this page only exists so an old bookmark or link still lands somewhere.
 - `menu.json` — **generated**. Do not hand-edit. Produced by `.github/workflows/update-menu.yml` from the source dining site and changes several times a day.
 - `worker/` — Cloudflare Worker + D1 ratings backend (see `README.md`)
 

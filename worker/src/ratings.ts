@@ -112,13 +112,26 @@ const STATION_LABEL_SQL = `CASE
              ELSE station
            END`;
 
+/**
+ * The permanent sections the menu carries below the two daily stations. They
+ * are the same every day, but the widget catalogues them like a station so the
+ * dashboard can break ratings down per section. Kept in sync with
+ * `STATIC_SECTIONS` in index.html.
+ */
+const STATIC_SECTIONS = ['Soupside', 'Sauce + Stone', 'Greens', 'Sandwich'];
+
 /** Resolves a caller's station name to the folded label, or null if unknown. */
 function stationMatcher(value: string): string | null {
   const lower = value.trim().toLowerCase();
   if (!lower) return null;
   if (lower.startsWith('classic')) return 'Classic Kitchen';
   if (lower.startsWith('global')) return 'Global Fare';
-  return null;
+  // The static sections are catalogued under their exact section name, so they
+  // are matched exactly rather than by prefix ("Sauce + Stone" would otherwise
+  // be ambiguous with nothing, but exactness keeps a typo from silently
+  // matching a different section).
+  const section = STATIC_SECTIONS.find((name) => name.toLowerCase() === lower);
+  return section ?? null;
 }
 
 function parseDishList(value: string | null): string[] {
@@ -962,6 +975,94 @@ export async function listDishes(
   );
 }
 
+/**
+ * How many ratings were cast on each day, for the dashboard's volume graph.
+ *
+ * One rating is one count, so unlike the average-over-time line this is a
+ * simple histogram. Days run in the caller's timezone (same reason as
+ * `resolveScope`) and the range is filled with zeroes between the first and the
+ * last day that has a rating, because the gaps are the point: a spike on a
+ * Friday is only readable next to the quiet weekend either side of it.
+ *
+ * Optionally narrowed to one meal (`period=`) or one category (`category=`,
+ * either a station like "Global Fare" or a static section like "Greens").
+ */
+export async function dailyCounts(
+  request: Request,
+  env: RatingsEnv
+): Promise<Response> {
+  const url = new URL(request.url);
+  const scope = resolveScope(request);
+
+  const offsetMinutes = Math.round((scope.startMs - Date.parse(`${scope.date}T00:00:00Z`)) / 60_000);
+  const dayModifier = `${-offsetMinutes} minutes`;
+
+  // The same meal / category filter the other endpoints take, so the volume
+  // graph can answer "ratings per day at dinner" as well as overall.
+  const periodRaw = url.searchParams.get('period');
+  const period = periodRaw ? periodMatcher(periodRaw) : null;
+  if (periodRaw && !period) {
+    return json({ error: 'Unknown period.' }, 400);
+  }
+
+  const categoryRaw = url.searchParams.get('category');
+  let filter = '';
+  const params: unknown[] = [];
+  if (period) {
+    await ensurePeriodsTable(env);
+    filter = 'WHERE dish_id IN (SELECT DISTINCT dish_id FROM dish_periods WHERE period = ?)';
+    params.push(period);
+  } else if (categoryRaw) {
+    const match = stationMatcher(categoryRaw);
+    if (!match) {
+      return json({ error: 'Unknown category.' }, 400);
+    }
+    await ensureStationsTable(env);
+    filter = `WHERE dish_id IN (SELECT DISTINCT dish_id FROM dish_stations WHERE ${STATION_LABEL_SQL} = ?)`;
+    params.push(match);
+  }
+
+  const rows = await env.RATINGS_DB
+    .prepare(
+      `SELECT date(updated_at / 1000, 'unixepoch', ?) AS day, COUNT(*) AS count
+       FROM dish_ratings
+       ${filter}
+       GROUP BY 1
+       ORDER BY 1`
+    )
+    .bind(dayModifier, ...params)
+    .all<{ day: string; count: number }>();
+
+  const byDay = new Map((rows.results ?? []).map((r) => [r.day, Number(r.count) || 0]));
+  const days: { day: string; count: number }[] = [];
+  if (byDay.size) {
+    // Walk the calendar from the first rated day to the last, filling the quiet
+    // days with zero so the histogram has an even time axis. Capped so a
+    // database left running for years cannot emit an unbounded payload.
+    const keys = [...byDay.keys()].sort();
+    const start = Date.parse(`${keys[0]}T00:00:00Z`);
+    const end = Date.parse(`${keys[keys.length - 1]}T00:00:00Z`);
+    const MAX_DAYS = 366;
+    let at = start;
+    for (let n = 0; n < MAX_DAYS && at <= end; n++) {
+      const day = new Date(at).toISOString().slice(0, 10);
+      days.push({ day, count: byDay.get(day) ?? 0 });
+      at += 86_400_000;
+    }
+  }
+
+  return json(
+    {
+      date: scope.date,
+      period,
+      category: categoryRaw ? stationMatcher(categoryRaw) : null,
+      total: days.reduce((sum, d) => sum + d.count, 0),
+      days
+    },
+    200
+  );
+}
+
 export async function handleRatings(
   request: Request,
   env: RatingsEnv
@@ -985,6 +1086,9 @@ export async function handleRatings(
   }
   if (path === '/api/ratings/history' && method === 'GET') {
     return ratingHistory(request, env);
+  }
+  if (path === '/api/ratings/daily' && method === 'GET') {
+    return dailyCounts(request, env);
   }
   if (path === '/api/stats' && method === 'GET') {
     return ratingStats(request, env);
