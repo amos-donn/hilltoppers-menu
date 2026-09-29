@@ -174,6 +174,21 @@ describe('removing ratings', () => {
     expect(data.ratings).toEqual({});
   });
 
+  test('deleting a rating does not refund the daily write cap', async () => {
+    // The cap counts writes, not net ratings, so deleting and re-rating must
+    // not let a rater past it.
+    await rate('Scrambled Eggs', 5);
+    await remove('Scrambled Eggs');
+    await rate('Scrambled Eggs', 4);
+
+    const day = new Date().toISOString().slice(0, 10);
+    const usage = await env.RATINGS_DB
+      .prepare('SELECT count FROM rater_writes WHERE rater_id = ? AND day = ?')
+      .bind(RATER, day)
+      .first<{ count: number }>();
+    expect(Number(usage?.count)).toBe(2);
+  });
+
   test('deleting a rating you never made is a no-op, not an error', async () => {
     await rate('Poutine', 4, 'rater-2');
     const response = await remove('Poutine');
