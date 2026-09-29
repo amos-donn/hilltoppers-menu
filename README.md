@@ -62,17 +62,30 @@ worker/
 | `POST` | `/api/dishes/catalog` | Record the dishes served on a day; body `{ "date": "...", "dishes": [...] }`, optionally grouped by station as `"stations": { "Global Fare": [...], "Classic Kitchen": [...] }` |
 | `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection. `scope=today` narrows it to dishes served on the request's day |
 | `GET` | `/api/stats` | Totals plus a per-station breakdown, for the dashboard |
-| `GET` | `/api/ratings/history` | Per-day rating history for one dish (`?dish=`) or one station (`?station=`), plus every individual rating for a dish |
+| `GET` | `/api/ratings/history` | Per-minute rating history for one dish (`?dish=`) or one station (`?station=`), plus every individual rating for a dish |
 
 ### Scopes and timezones
 
-`/api/stats` and `/api/dishes` answer twice: all-time, and restricted to a single day. The day is not the UTC day. Callers pass `date=YYYY-MM-DD&offset=<getTimezoneOffset()>` — the dashboard sends its own calendar date and offset — because the hall is in Vermont, and at 8pm Eastern the UTC date has already rolled over. Without the offset, a rating cast over dinner would land on tomorrow's menu. Ratings are stamped with `Date.now()`, so a day is a half-open window over `updated_at`; the history endpoint buckets days with the same offset.
+`/api/stats` and `/api/dishes` answer twice: all-time, and restricted to a single day. The day is not the UTC day. Callers pass `date=YYYY-MM-DD&offset=<getTimezoneOffset()>` — the dashboard sends its own calendar date and offset — because the hall is in Vermont, and at 8pm Eastern the UTC date has already rolled over. Without the offset, a rating cast over dinner would land on tomorrow's menu. Ratings are stamped with `Date.now()`, so a day is a half-open window over `updated_at`; the history endpoint buckets with the same offset.
 
 "Today" filters two different things on purpose: the dish list comes from `dish_days` (what the menu served), while the counts come from the `updated_at` window (what people rated). A dish that is on today's menu but unrated today stays listed at zero rather than disappearing, and a dish rated today but not served today does not appear.
 
 ### Dashboard drill-downs
 
-`/api/ratings/history` returns a `timeline` (each day's own average plus the running average up to that day) and, for a dish, the itemised `ratings`. The running average is the one the charts plot: a single day's average swings wildly over two or three ratings, while the running figure is what a reader means by the number having moved.
+`/api/ratings/history` returns a `timeline` (each minute's own average plus the running average up to that minute) and, for a dish, the itemised `ratings`. The running average is the one the charts plot: a single minute's average swings wildly over two or three ratings, while the running figure is what a reader means by the number having moved.
+
+Points are bucketed by **minute**, not by day. A dish rated three times over dinner would otherwise be a single dot, which hides the only shape there is to see. Each point carries:
+
+| Field | Meaning |
+| --- | --- |
+| `minute` | `YYYY-MM-DDTHH:MM` in the caller's timezone — the axis label |
+| `day` | The calendar day that minute belongs to, so a chart can tell a gap of minutes from a gap of days |
+| `at` | The start of that minute, as epoch ms — the x position, so the point sits under its label |
+| `rawAt` | The latest real instant in the bucket; a bucket labelled `12:01` can hold a rating cast at `12:01:47` |
+| `count`, `average` | That minute's own ratings |
+| `running`, `runningCount` | The average and count up to and including that minute |
+
+The dashboard spaces points by `at`, not by index, so the line leans where rating was brisk and stretches where it was quiet; it marks each day boundary with a divider, because a long gap and a short one look alike on a line. The chart falls back to even spacing and day labels if `at` is absent, so it still renders against an older Worker.
 
 Rater ids are truncated to an eight-character prefix in that response. A full `X-Rater-ID` is a write credential — the API trusts it without proof, so anyone holding one can post as that browser — and the dashboard only needs to show that two raters were different.
 
@@ -95,6 +108,8 @@ The `dish_stations` table was added after the first deploy. This Worker has no m
 A dish served on both stations counts toward both, so the per-station figures are a per-side view and can add up to more than the overall totals.
 
 The dashboard and the Worker deploy separately, and Pages usually finishes first. Until the Worker catches up, the dashboard detects the older API (the `scope` marker on the dish listing) and shows "Waiting for the ratings backend to publish today's data" rather than rendering the whole catalogue as if it were today's menu.
+
+The minute-bucketed history needs a Worker deploy to take effect. Until then the dashboard falls back to even spacing and day labels, so the graphs still render — they just are not yet drawn against real time.
 
 ## Embedding
 
