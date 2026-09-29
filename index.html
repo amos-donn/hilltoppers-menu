@@ -818,19 +818,32 @@
         if (!RATINGS_API || !menuData) return;
         const day = menuData.days ? menuData.days[selectedDate] : null;
         if (!day) return;
-        const dishes = [];
+        // Grouped by station so the dashboard can break ratings down per side.
+        // A dish on both stations is sent under both.
+        const stations = {};
+        const seen = new Set();
         ['breakfast', 'lunch', 'dinner'].forEach((period) => {
           const entry = day[period];
           if (!entry) return;
-          dishes.push(...normalizeItems(entry.globalFare), ...normalizeItems(entry.classicKitchen));
+          [['Global Fare', 'globalFare'], ['Classic Kitchen', 'classicKitchen']].forEach(
+            ([label, key]) => {
+              normalizeItems(entry[key]).forEach((item) => {
+                const id = dishId(item);
+                if (!id || seen.has(id)) return;
+                seen.add(id);
+                (stations[label] = stations[label] || []).push(item);
+              });
+            }
+          );
         });
+        const dishes = Object.values(stations).flat();
         if (!dishes.length) return;
         try {
           await fetch(`${RATINGS_API}/api/dishes/catalog`, {
             method: 'POST',
             cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date: selectedDate, dishes })
+            body: JSON.stringify({ date: selectedDate, dishes, stations })
           });
         } catch (_) {
           // Cataloguing is best effort; rating still works without it.

@@ -58,6 +58,29 @@ function parseDishList(value: string | null): string[] {
   return dishes;
 }
 
+/**
+ * `dish_stations` was added after the first deploy, and this Worker has no
+ * migration step, so the table is created on first use. `wrangler deploy` does
+ * not run schema.sql, so without this the per-side cards would silently stay
+ * empty on the live database until someone applied the schema by hand. The
+ * statement is idempotent, so running it per catalogue call is cheap.
+ */
+function ensureStationsTable(env: RatingsEnv): Promise<unknown> {
+  return env.RATINGS_DB
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS dish_stations (
+         dish_id TEXT NOT NULL,
+         station TEXT NOT NULL,
+         day TEXT NOT NULL,
+         PRIMARY KEY (dish_id, station, day)
+       )`
+    )
+    .run()
+    // A failure here should not take the whole request down; the per-side
+    // cards will just be empty.
+    .catch(() => undefined);
+}
+
 interface RatingRow {
   dish_id: string;
   count: number;
@@ -251,12 +274,20 @@ export async function deleteRating(
  * Catalogues the dishes served on a day. The widget calls this once per day
  * it renders, so a dish enters the catalogue the first time it is posted to
  * the menu and keeps its ratings when it comes back.
+ *
+ * Dishes can be sent either flat (`dishes`) or grouped by the kitchen station
+ * that served them (`stations`). The grouped form is what lets the dashboard
+ * break ratings down per side; a dish on both stations is recorded under both.
  */
 export async function catalogDishes(
   request: Request,
   env: RatingsEnv
 ): Promise<Response> {
-  let body: { date?: unknown; dishes?: unknown };
+  let body: {
+    date?: unknown;
+    dishes?: unknown;
+    stations?: unknown;
+  };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -269,39 +300,62 @@ export async function catalogDishes(
   if (!date) {
     return json({ error: 'A YYYY-MM-DD date is required.' }, 400);
   }
-  if (!Array.isArray(body.dishes)) {
+  if (!Array.isArray(body.dishes) && (body.stations === undefined || typeof body.stations !== 'object')) {
     return json({ error: 'dishes must be an array.' }, 400);
   }
 
-  const seen = new Set<string>();
-  const dishes: { id: string; name: string }[] = [];
-  for (const value of body.dishes) {
-    if (typeof value !== 'string') continue;
+  // id -> the set of stations it was reported under on this day, so a dish on
+  // both stations is recorded under both.
+  const stationOf = new Map<string, Set<string>>();
+  const names = new Map<string, string>();
+  const add = (value: unknown, station?: string) => {
+    if (typeof value !== 'string') return;
     const name = value.trim();
     const id = dishId(name);
-    if (!id || id.length > MAX_DISH_ID_LENGTH) continue;
-    if (seen.has(id)) continue;
-    seen.add(id);
-    dishes.push({ id, name });
-    if (dishes.length >= MAX_CATALOG_DISHES) break;
+    if (!id || id.length > MAX_DISH_ID_LENGTH) return;
+    if (!names.has(id)) names.set(id, name);
+    if (station) {
+      const set = stationOf.get(id) ?? new Set<string>();
+      set.add(station);
+      stationOf.set(id, set);
+    }
+  };
+
+  if (Array.isArray(body.dishes)) {
+    for (const value of body.dishes) add(value);
+  }
+  if (body.stations && typeof body.stations === 'object') {
+    for (const [station, list] of Object.entries(body.stations as Record<string, unknown>)) {
+      if (!Array.isArray(list) || !station.trim()) continue;
+      for (const value of list) add(value, station.trim());
+    }
   }
 
+  const dishes = [...names.entries()].slice(0, MAX_CATALOG_DISHES);
   if (!dishes.length) {
     return json({ catalogued: 0 }, 200);
   }
 
+  await ensureStationsTable(env);
+
   const statements = [];
-  for (const dish of dishes) {
+  for (const [id, name] of dishes) {
+    const sides = [...(stationOf.get(id) ?? [])];
     statements.push(
       env.RATINGS_DB
         .prepare(
           `INSERT INTO dishes (id, name, first_seen, last_seen) VALUES (?, ?, ?, ?)
            ON CONFLICT (id) DO UPDATE SET last_seen = excluded.last_seen`
         )
-        .bind(dish.id, dish.name, date, date),
+        .bind(id, name, date, date),
       env.RATINGS_DB
         .prepare('INSERT OR IGNORE INTO dish_days (dish_id, day) VALUES (?, ?)')
-        .bind(dish.id, date)
+        .bind(id, date),
+      ...sides.map((station) =>
+        env.RATINGS_DB
+          .prepare('INSERT OR IGNORE INTO dish_stations (dish_id, station, day) VALUES (?, ?, ?)')
+          .bind(id, station, date)
+      )
     );
   }
   await env.RATINGS_DB.batch(statements);
@@ -312,6 +366,10 @@ export async function catalogDishes(
 /**
  * Aggregate counts for the dashboard. Rater ids are random per-browser values,
  * not accounts, so `raters` counts browsers rather than people.
+ *
+ * `stations` breaks the same numbers down per kitchen station. A dish served
+ * on both stations counts toward both, so the station totals can exceed the
+ * overall totals — they are a per-side view, not a partition.
  */
 export async function ratingStats(
   _request: Request,
@@ -334,6 +392,47 @@ export async function ratingStats(
   const totalRatings = Number(row?.total_ratings) || 0;
   const raters = Number(row?.raters) || 0;
 
+  // A dish counts toward a station if it was ever catalogued under it. Sorting
+  // the days out first is what keeps the counts right: dish_stations holds one
+  // row per dish, station and day, so joining ratings to it directly would
+  // multiply a long-running dish's ratings by the days it was served. Grouping
+  // by the label rather than the raw string also folds the two spellings of
+  // "Classic Kitchen" together.
+  await ensureStationsTable(env);
+  const stationRows = await env.RATINGS_DB
+    .prepare(
+      `WITH dish_side AS (
+         SELECT DISTINCT dish_id,
+           CASE
+             WHEN station LIKE 'classic%' THEN 'Classic Kitchen'
+             WHEN station LIKE 'global%' THEN 'Global Fare'
+             ELSE station
+           END AS station
+         FROM dish_stations
+       )
+       SELECT dish_side.station AS station,
+              COUNT(*) AS ratings,
+              COUNT(DISTINCT dr.rater_id) AS raters,
+              AVG(dr.rating) AS average
+       FROM dish_side
+       JOIN dish_ratings dr ON dr.dish_id = dish_side.dish_id
+       GROUP BY 1
+       ORDER BY 1`
+    )
+    .all<{
+      station: string;
+      ratings: number;
+      raters: number;
+      average: number;
+    }>();
+
+  const stations = (stationRows.results ?? []).map((r) => ({
+    station: r.station,
+    ratings: Number(r.ratings) || 0,
+    raters: Number(r.raters) || 0,
+    average: Math.round((Number(r.average) || 0) * 10) / 10
+  }));
+
   return json(
     {
       totalRatings,
@@ -341,7 +440,8 @@ export async function ratingStats(
       catalogue: Number(row?.catalogue) || 0,
       ratedDishes: Number(row?.rated_dishes) || 0,
       // Rounded to one decimal so the dashboard does not show 3.666666.
-      ratingsPerRater: raters === 0 ? 0 : Math.round((totalRatings / raters) * 10) / 10
+      ratingsPerRater: raters === 0 ? 0 : Math.round((totalRatings / raters) * 10) / 10,
+      stations
     },
     200
   );
