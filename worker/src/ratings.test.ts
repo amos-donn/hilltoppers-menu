@@ -252,3 +252,59 @@ describe('routing', () => {
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
   });
 });
+
+describe('dashboard stats', () => {
+  const stats = () => worker.fetch(req('/api/stats'), env);
+
+  test('reports zeroes on an empty database rather than dividing by zero', async () => {
+    const body = await (await stats()).json();
+    expect(body).toEqual({
+      totalRatings: 0,
+      raters: 0,
+      catalogue: 0,
+      ratedDishes: 0,
+      ratingsPerRater: 0
+    });
+  });
+
+  test('counts ratings, distinct raters and distinct rated dishes', async () => {
+    await catalog('2026-09-28', ['Salmon', 'Poutine', 'Unrated Dish']);
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Salmon', 3, 'rater-b');
+    await rate('Poutine', 4, 'rater-a');
+
+    const body = await (await stats()).json();
+    expect(body.totalRatings).toBe(3);
+    expect(body.raters).toBe(2);
+    expect(body.ratedDishes).toBe(2);
+    expect(body.catalogue).toBe(3);
+    // 3 ratings across 2 raters.
+    expect(body.ratingsPerRater).toBe(1.5);
+  });
+
+  test('re-rating one dish does not inflate the rater count', async () => {
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Salmon', 1, 'rater-a');
+
+    const body = await (await stats()).json();
+    expect(body.totalRatings).toBe(1);
+    expect(body.raters).toBe(1);
+  });
+
+  test('deleting a rating updates the totals', async () => {
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Poutine', 4, 'rater-b');
+    await worker.fetch(req('/api/ratings', 'DELETE', { dish: 'Salmon' }, 'rater-a'), env);
+
+    const body = await (await stats()).json();
+    expect(body.totalRatings).toBe(1);
+    expect(body.raters).toBe(1);
+    expect(body.ratedDishes).toBe(1);
+  });
+
+  test('stats are readable cross-origin and reject other methods', async () => {
+    const response = await stats();
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect((await worker.fetch(req('/api/stats', 'POST'), env)).status).toBe(404);
+  });
+});

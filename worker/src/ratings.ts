@@ -310,6 +310,44 @@ export async function catalogDishes(
 }
 
 /**
+ * Aggregate counts for the dashboard. Rater ids are random per-browser values,
+ * not accounts, so `raters` counts browsers rather than people.
+ */
+export async function ratingStats(
+  _request: Request,
+  env: RatingsEnv
+): Promise<Response> {
+  const row = await env.RATINGS_DB
+    .prepare(
+      `SELECT (SELECT COUNT(*) FROM dish_ratings) AS total_ratings,
+              (SELECT COUNT(DISTINCT rater_id) FROM dish_ratings) AS raters,
+              (SELECT COUNT(*) FROM dishes) AS catalogue,
+              (SELECT COUNT(DISTINCT dish_id) FROM dish_ratings) AS rated_dishes`
+    )
+    .first<{
+      total_ratings: number;
+      raters: number;
+      catalogue: number;
+      rated_dishes: number;
+    }>();
+
+  const totalRatings = Number(row?.total_ratings) || 0;
+  const raters = Number(row?.raters) || 0;
+
+  return json(
+    {
+      totalRatings,
+      raters,
+      catalogue: Number(row?.catalogue) || 0,
+      ratedDishes: Number(row?.rated_dishes) || 0,
+      // Rounded to one decimal so the dashboard does not show 3.666666.
+      ratingsPerRater: raters === 0 ? 0 : Math.round((totalRatings / raters) * 10) / 10
+    },
+    200
+  );
+}
+
+/**
  * Every dish in the catalogue with its rating, newest first. Not used by the
  * widget; it makes the catalogue inspectable from a browser.
  */
@@ -371,6 +409,9 @@ export async function handleRatings(
   }
   if (path === '/api/dishes' && method === 'GET') {
     return listDishes(request, env);
+  }
+  if (path === '/api/stats' && method === 'GET') {
+    return ratingStats(request, env);
   }
 
   return json({ error: 'Not found.' }, 404);
