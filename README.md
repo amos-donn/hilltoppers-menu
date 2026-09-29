@@ -17,7 +17,7 @@ Standalone menu page for Saint Johnsbury Academy dining — designed for GitHub 
 - **Star ratings:** each dish shows its average rating under its title as read-only stars; the rating row is a button that opens a dialog to rate it
 - **Confirm-before-save:** the dialog previews a value as you hover or focus a star, keeps Save disabled until you pick one, and lets Cancel, Escape, or an outside click discard without saving
 - **Shared ratings:** once the Worker URL is set, ratings are shared between everyone rather than stored per browser
-- **Ratings dashboard:** `dashboard.html` has a scope toggle (all-time vs. today), per-side stat cards showing both scopes with stars and a trend graph, and clickable dish rows that expand into the individual ratings behind the average plus a rating-over-time chart
+- **Ratings dashboard:** `dashboard.html` has a scope toggle (all-time vs. today) and a meal filter (all meals, breakfast, lunch or dinner), per-side and per-meal stat cards showing both scopes with stars and a trend graph, five stat cards for the selected meal, and clickable dish rows that expand into the individual ratings behind the average plus a rating-over-time chart
 - **Live data:** the menu and the ratings refresh on their own, and again the moment the tab regains focus
 - **Iframe-safe:** all styles inline, no external dependencies
 
@@ -45,7 +45,7 @@ Ratings need shared storage, so they live in a Cloudflare Worker with a D1 datab
 
 ```
 worker/
-  schema.sql          tables: dishes, dish_days, dish_stations, dish_ratings, rater_writes
+  schema.sql          tables: dishes, dish_days, dish_stations, dish_periods, dish_ratings, rater_writes
   src/ratings.ts      the API: read, rate, catalogue
   src/http.ts         CORS + JSON helpers
   src/index.ts        entry point
@@ -60,10 +60,10 @@ worker/
 | `GET` | `/api/ratings?dishes=a,b` | Count, average, and (with `X-Rater-ID`) the caller's own rating |
 | `POST` | `/api/ratings` | Record a rating; body `{ "dish": "...", "rating": 1-5 }` |
 | `DELETE` | `/api/ratings` | Remove the caller's own rating; body `{ "dish": "..." }` |
-| `POST` | `/api/dishes/catalog` | Record the dishes served on a day; body `{ "date": "...", "dishes": [...] }`, optionally grouped by station as `"stations": { "Global Fare": [...], "Classic Kitchen": [...] }` |
-| `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection. `scope=today` narrows it to dishes served on the request's day |
-| `GET` | `/api/stats` | Totals plus a per-station breakdown, for the dashboard |
-| `GET` | `/api/ratings/history` | Per-minute rating history for one dish (`?dish=`) or one station (`?station=`), plus every individual rating for a dish |
+| `POST` | `/api/dishes/catalog` | Record the dishes served on a day; body `{ "date": "...", "dishes": [...] }`, optionally grouped by station as `"stations": { "Global Fare": [...], "Classic Kitchen": [...] }` and by meal as `"periods": { "breakfast": [...], "lunch": [...], "dinner": [...] }` |
+| `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection. `scope=today` narrows it to dishes served on the request's day; `period=breakfast\|lunch\|dinner` narrows it to a meal (that day's meal when combined with `scope=today`, any day's otherwise) |
+| `GET` | `/api/stats` | Totals plus a per-station and per-meal breakdown, for the dashboard |
+| `GET` | `/api/ratings/history` | Per-minute rating history for one dish (`?dish=`), one station (`?station=`) or one meal (`?period=`), plus every individual rating for a dish |
 
 ### Scopes and timezones
 
@@ -104,13 +104,17 @@ npm run deploy
 
 Then set `RATINGS_API` in `index.html` to the deployed Worker URL.
 
-The `dish_stations` table was added after the first deploy. This Worker has no migration step and `wrangler deploy` does not apply `schema.sql`, so the table is created on demand on the first catalogue call (and by `/api/stats`), which heals a database created before the per-side breakdown existed. Applying `schema.sql` by hand is still the cleanest option for a new database.
+The `dish_stations` table was added after the first deploy, and `dish_periods` after that. This Worker has no migration step and `wrangler deploy` does not apply `schema.sql`, so each is created on demand on the first catalogue call (and by `/api/stats`), which heals a database created before the per-side and per-meal breakdowns existed. Applying `schema.sql` by hand is still the cleanest option for a new database.
 
-A dish served on both stations counts toward both, so the per-station figures are a per-side view and can add up to more than the overall totals.
+A dish served on both stations counts toward both, so the per-station figures are a per-side view and can add up to more than the overall totals. The per-meal figures work the same way: a dish served at both lunch and dinner counts toward both.
+
+Because the meals are recorded only when the widget catalogues a dish, the dashboard's meal filter fills in from the moment this deploys forward. Ratings and dishes catalogued before it have no meal, so they appear only under "All meals" — nothing is lost, but the per-meal counts start lower than the overall ones and catch up as the menu is re-catalogued.
 
 The dashboard and the Worker deploy separately, and Pages usually finishes first. Until the Worker catches up, the dashboard detects the older API (the `scope` marker on the dish listing) and shows "Waiting for the ratings backend to publish today's data" rather than rendering the whole catalogue as if it were today's menu.
 
 The minute-bucketed history needs a Worker deploy to take effect. Until then the dashboard falls back to even spacing and day labels, so the graphs still render — they just are not yet drawn against real time.
+
+The meal filter has the same catch-up rule: an older Worker ignores `period=` and answers with the whole catalogue, and sends no per-meal blocks in `/api/stats`. The dashboard detects that (a missing `periods` array) and falls back to the overall figures for the cards and to "all meals" for the list, so nothing breaks while Pages is ahead of the Worker.
 
 ## Embedding
 
