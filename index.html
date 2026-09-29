@@ -449,6 +449,16 @@
         margin-top: 6px;
       }
 
+      .refresh-link {
+        color: var(--green);
+        margin-left: 6px;
+        text-decoration: none;
+      }
+
+      .refresh-link:hover {
+        text-decoration: underline;
+      }
+
       @media (max-width: 420px) {
         /* Inside a narrow iframe the card is the whole surface, so let it reach
            the container edges the way the extension's own menu does. */
@@ -484,7 +494,15 @@
               <span>Menu Website</span>
             </a>
           </div>
-          <p class="refresh-info" id="refreshInfo"></p>
+          <p class="refresh-info">
+            <span id="refreshInfo"></span>
+            <a
+              class="refresh-link"
+              href="./dashboard.html"
+              target="_blank"
+              rel="noopener"
+            >View stats</a>
+          </p>
         </div>
       </section>
     </main>
