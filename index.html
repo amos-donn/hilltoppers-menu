@@ -106,6 +106,41 @@
         margin-bottom: 8px;
       }
 
+      /* Separates the daily stations from the four sections below, which are
+         the same every day. */
+      .dining-divider {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 14px 0 6px;
+        color: var(--text-muted);
+      }
+
+      .dining-divider::before,
+      .dining-divider::after {
+        content: '';
+        flex: 1 1 auto;
+        height: 1px;
+        background: rgba(17, 17, 17, 0.14);
+      }
+
+      .dining-divider-label {
+        flex: 0 0 auto;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      .dining-note {
+        margin: 0 0 8px;
+        font-size: 11px;
+        line-height: 1.4;
+        color: var(--text-muted);
+        text-align: center;
+      }
+
       .dining-column {
         border: 1px solid rgba(17, 17, 17, 0.1);
         border-radius: 6px;
@@ -549,6 +584,19 @@
       const SOURCE_MENU_BASE = 'https://menus.campus-dining.com/eliorna/d0358';
       const SCHOOL_TZ = 'America/New_York';
 
+      // Four sections that are the same every day. The daily feed only carries
+      // Global Fare and Classic Kitchen, so these are listed here rather than
+      // read from it — hence "static" in the note shown above them.
+      //
+      // Order is the visual order: the grid fills row by row, so the first two
+      // are the top row and the last two the bottom.
+      const STATIC_SECTIONS = [
+        { key: 'Soupside', items: ['Daily Soup'] },
+        { key: 'Sauce + Stone', items: ['Pepperoni', 'Cheese', 'Variety'] },
+        { key: 'Greens', items: ['Salad'] },
+        { key: 'Sandwich', items: ['Sandwich'] }
+      ];
+
       const STAR_SVG = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.9-4.7 4.5 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z"/></svg>';
 
       let menuData = null;
@@ -836,6 +884,16 @@
             }
           );
         });
+        // The static sections are the same every day, so cataloguing them on
+        // each day is what gives the dashboard a history to chart.
+        STATIC_SECTIONS.forEach((section) => {
+          section.items.forEach((item) => {
+            const id = dishId(item);
+            if (!id || seen.has(id)) return;
+            seen.add(id);
+            (stations[section.key] = stations[section.key] || []).push(item);
+          });
+        });
         const dishes = Object.values(stations).flat();
         if (!dishes.length) return;
         try {
@@ -1050,9 +1108,14 @@
         const stars = [1, 2, 3, 4, 5].map((value) => `
           <span class="star" data-value="${value}" aria-hidden="true">${STAR_SVG}</span>
         `).join('');
+        // Static sections have no page of their own on the source site, so they
+        // get a plain name rather than a link to a day that does not list them.
+        const label = url
+          ? `<a class="dining-item-name" href="${escapeAttr(url)}" target="_blank" rel="noreferrer noopener">${escapeHtml(name)}</a>`
+          : `<span class="dining-item-name">${escapeHtml(name)}</span>`;
         return `
           <div class="dining-item">
-            <a class="dining-item-name" href="${escapeAttr(url)}" target="_blank" rel="noreferrer noopener">${escapeHtml(name)}</a>
+            ${label}
             <button type="button" class="dish-rating" data-dish-id="${escapeAttr(id)}" aria-haspopup="dialog" aria-label="Rate ${escapeAttr(name)}">
               <span class="stars" aria-hidden="true">${stars}</span>
               <span class="rating-summary">No ratings yet</span>
@@ -1135,6 +1198,11 @@
           <div class="dining-grid">
             ${renderStation('Global Fare', globalFare, url)}
             ${renderStation('Classic Kitchen', classicKitchen, url)}
+          </div>
+          <div class="dining-divider"><span class="dining-divider-label">Always available</span></div>
+          <p class="dining-note">These foods are static — they don't change day-to-day.</p>
+          <div class="dining-grid">
+            ${STATIC_SECTIONS.map((section) => renderStation(section.key, section.items, null)).join('')}
           </div>
         `;
 
