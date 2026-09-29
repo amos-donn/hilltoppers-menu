@@ -20,6 +20,15 @@ CREATE TABLE IF NOT EXISTS dish_days (
   PRIMARY KEY (dish_id, day)
 );
 
+-- Which stations served a dish on which day. A dish can be on both stations,
+-- and can move between them, so this is a many-to-many over days.
+CREATE TABLE IF NOT EXISTS dish_stations (
+  dish_id TEXT NOT NULL,
+  station TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (dish_id, station, day)
+);
+
 -- One rating per dish per rater. Re-rating replaces the previous value.
 CREATE TABLE IF NOT EXISTS dish_ratings (
   dish_id TEXT NOT NULL,

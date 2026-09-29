@@ -31,8 +31,10 @@ const rate = (dish: string, rating: unknown, raterId: string | null = RATER) =>
 const read = (dishes: string[], raterId: string | null = RATER) =>
   worker.fetch(req(`/api/ratings?dishes=${encodeURIComponent(dishes.join(','))}`, 'GET', undefined, raterId), env);
 
-const catalog = (date: string, dishes: unknown) =>
-  worker.fetch(req('/api/dishes/catalog', 'POST', { date, dishes }), env);
+const bodyOf = async (r: Response) => (await r.json()) as any;
+
+const catalog = (date: string, dishes?: unknown, stations?: unknown) =>
+  worker.fetch(req('/api/dishes/catalog', 'POST', { date, dishes, stations }), env);
 
 beforeAll(async () => {
   mf = new Miniflare({
@@ -53,6 +55,7 @@ beforeEach(async () => {
     env.RATINGS_DB.prepare('DELETE FROM dish_ratings'),
     env.RATINGS_DB.prepare('DELETE FROM rater_writes'),
     env.RATINGS_DB.prepare('DELETE FROM dish_days'),
+    env.RATINGS_DB.prepare('DELETE FROM dish_stations'),
     env.RATINGS_DB.prepare('DELETE FROM dishes')
   ]);
 });
@@ -263,8 +266,70 @@ describe('dashboard stats', () => {
       raters: 0,
       catalogue: 0,
       ratedDishes: 0,
-      ratingsPerRater: 0
+      ratingsPerRater: 0,
+      stations: []
     });
+  });
+
+  test('breaks the numbers down per kitchen station', async () => {
+    const cataloged = await bodyOf(await catalog('2026-09-28', undefined, {
+      'Global Fare': ['Salmon', 'Poutine'],
+      'Classic Kitchen': ['Salmon', 'Meatloaf']
+    }));
+    expect(cataloged.catalogued).toBe(3);
+
+    await rate('Salmon', 5, 'rater-a');   // on both sides
+    await rate('Poutine', 3, 'rater-a');  // Global Fare only
+    await rate('Meatloaf', 1, 'rater-b'); // Classic Kitchen only
+
+    const body = await bodyOf(await stats());
+    const byStation = Object.fromEntries(body.stations.map((s: { station: string }) => [s.station, s]));
+
+    // Salmon sits on both sides, so it counts on both.
+    expect(byStation['Global Fare'].ratings).toBe(2);
+    expect(byStation['Global Fare'].raters).toBe(1);
+    expect(byStation['Global Fare'].average).toBe(4); // (5 + 3) / 2
+
+    expect(byStation['Classic Kitchen'].ratings).toBe(2);
+    expect(byStation['Classic Kitchen'].raters).toBe(2);
+    expect(byStation['Classic Kitchen'].average).toBe(3); // (5 + 1) / 2
+
+    // Per-side numbers are not a partition of the total.
+    expect(body.stations.reduce((n: number, s: { ratings: number }) => n + s.ratings, 0)).toBe(4);
+    expect(body.totalRatings).toBe(3);
+  });
+
+  test('a dish served across several days is not counted once per day', async () => {
+    for (const day of ['2026-09-26', '2026-09-27', '2026-09-28']) {
+      await catalog(day, undefined, { 'Global Fare': ['Salmon'] });
+    }
+    await rate('Salmon', 4, 'rater-a');
+
+    const body = await bodyOf(await stats());
+    expect(body.stations).toEqual([
+      { station: 'Global Fare', ratings: 1, raters: 1, average: 4 }
+    ]);
+  });
+
+  test('folds the two spellings of Classic Kitchen into one side', async () => {
+    await catalog('2026-09-27', undefined, { 'Classic Kitchen': ['Meatloaf'] });
+    await catalog('2026-09-28', undefined, { classicKitchen: ['Poutine'] });
+    await rate('Meatloaf', 5, 'rater-a');
+    await rate('Poutine', 3, 'rater-a');
+
+    const body = await bodyOf(await stats());
+    expect(body.stations).toEqual([
+      { station: 'Classic Kitchen', ratings: 2, raters: 1, average: 4 }
+    ]);
+  });
+
+  test('a dish with no station reported does not appear in any side', async () => {
+    await catalog('2026-09-28', ['Mystery Dish']);
+    await rate('Mystery Dish', 5, 'rater-a');
+
+    const body = await bodyOf(await stats());
+    expect(body.totalRatings).toBe(1);
+    expect(body.stations).toEqual([]);
   });
 
   test('counts ratings, distinct raters and distinct rated dishes', async () => {
@@ -306,5 +371,22 @@ describe('dashboard stats', () => {
     const response = await stats();
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect((await worker.fetch(req('/api/stats', 'POST'), env)).status).toBe(404);
+  });
+
+  test('creates dish_stations on demand for a database that predates it', async () => {
+    // Simulate the live database before this feature existed: the table is gone.
+    await env.RATINGS_DB.prepare('DROP TABLE IF EXISTS dish_stations').run();
+
+    // Stats must still answer rather than 500 while the table is missing.
+    expect((await stats()).status).toBe(200);
+
+    // Cataloguing recreates it, and the station then appears.
+    await catalog('2026-09-28', undefined, { 'Global Fare': ['Salmon'] });
+    await rate('Salmon', 5, 'rater-a');
+
+    const body = await bodyOf(await stats());
+    expect(body.stations).toEqual([
+      { station: 'Global Fare', ratings: 1, raters: 1, average: 5 }
+    ]);
   });
 });

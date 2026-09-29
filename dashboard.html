@@ -126,6 +126,22 @@
         font-weight: 400;
       }
 
+      .side-head {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin: 0 0 6px;
+      }
+
+      .cards.sides {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        margin-bottom: 12px;
+      }
+
+      .cards.sides .card .value {
+        font-size: 20px;
+      }
+
       table {
         width: 100%;
         border-collapse: collapse;
@@ -220,6 +236,7 @@
       </header>
 
       <div class="cards" id="cards"></div>
+      <div id="sides"></div>
 
       <div class="panel">
         <div class="panel-title">Ranked<span id="rankedCount"></span></div>
@@ -266,6 +283,7 @@
 
       const statusEl = document.getElementById('status');
       const cardsEl = document.getElementById('cards');
+      const sidesEl = document.getElementById('sides');
       const rowsEl = document.getElementById('rows');
       const unrankedRowsEl = document.getElementById('unrankedRows');
       const rankedCountEl = document.getElementById('rankedCount');
@@ -290,6 +308,17 @@
 
       function card(value, label) {
         return `<div class="card"><div class="value">${value}</div><div class="label">${label}</div></div>`;
+      }
+
+      // One group of cards per kitchen station ("side").
+      function stationCards(station) {
+        const empty = station.ratings === 0;
+        return `<div class="side-head">${esc(station.station)}</div>
+          <div class="cards sides">
+            ${card(empty ? '—' : station.average, 'Avg. rating')}
+            ${card(fmt(station.ratings), 'Ratings')}
+            ${card(fmt(station.raters), 'Rater IDs')}
+          </div>`;
       }
 
       function fmt(value) {
@@ -328,6 +357,14 @@
             card(stats.ratingsPerRater, 'Ratings per rater')
           ].join('');
 
+          // Per-side breakdown. A dish on both stations counts on both sides,
+          // so these totals can add up to more than the overall numbers above.
+          const stations = Array.isArray(stats.stations) ? stats.stations : [];
+          sidesEl.innerHTML = stations.length
+            ? stations.map(stationCards).join('')
+            : '<div class="side-head">Per side</div><div class="cards sides">' +
+              card('—', 'No station data yet') + '</div>';
+
           // Bar length is the average as a share of five, so it agrees with the
           // order the rows are sorted in.
           const dishRows = (list, emptyMessage) => {
@@ -364,6 +401,7 @@
           statusEl.textContent = `Updated ${now.toLocaleTimeString('en-US')}`;
         } catch (error) {
           cardsEl.innerHTML = '';
+          sidesEl.innerHTML = '';
           rowsEl.innerHTML =
             `<tr><td class="message error" colspan="3">Could not reach the ratings API.<br>${esc(error.message)}</td></tr>`;
           unrankedRowsEl.innerHTML = '';
