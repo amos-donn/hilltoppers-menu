@@ -804,9 +804,13 @@
             return;
           }
           const data = state.histories.get(key);
-          slot.innerHTML = data
-            ? `<h3>Average over time</h3>${chart(data.timeline)}`
-            : '<div class="loading">Loading trend…</div>';
+          if (data && data.error) {
+            slot.innerHTML = `<div class="message error">Could not load the trend.<br>${esc(data.error)}</div>`;
+          } else if (data) {
+            slot.innerHTML = `<h3>Average over time</h3>${chart(data.timeline)}`;
+          } else {
+            slot.innerHTML = '<div class="loading">Loading trend…</div>';
+          }
         });
       }
 
