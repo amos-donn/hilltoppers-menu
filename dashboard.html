@@ -271,7 +271,9 @@
 
           const stats = await statsRes.json();
           const { dishes = [] } = await dishesRes.json();
-          const rated = dishes.filter((d) => d.count > 0).sort((a, b) => b.count - a.count);
+          const rated = dishes
+            .filter((d) => d.count > 0 && d.average !== null)
+            .sort((a, b) => b.average - a.average || b.count - a.count);
 
           cardsEl.innerHTML = [
             card(fmt(stats.totalRatings), 'Ratings cast'),
@@ -283,12 +285,11 @@
           if (!rated.length) {
             rowsEl.innerHTML = '<tr><td class="message" colspan="3">No ratings yet.</td></tr>';
           } else {
-            const most = rated[0].count || 1;
             rowsEl.innerHTML = rated
               .map((d) => {
-                // Length of the bar is share of the top dish, so the shape of
-                // the distribution is visible at a glance.
-                const pct = Math.round((d.count / most) * 100);
+                // Bar length is the average as a share of five, matching the
+                // order the rows are now sorted in.
+                const pct = Math.round((d.average / 5) * 100);
                 return `<tr>
                   <td class="dish">${esc(d.name)}<div class="bar"><span style="width:${pct}%"></span></div></td>
                   <td class="num">${fmt(d.count)}</td>
