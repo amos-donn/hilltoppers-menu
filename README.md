@@ -16,7 +16,7 @@ Standalone menu page for Saint Johnsbury Academy dining — designed for GitHub 
 - **Star ratings:** each dish shows its average rating under its title as read-only stars; the rating row is a button that opens a dialog to rate it
 - **Confirm-before-save:** the dialog previews a value as you hover or focus a star, keeps Save disabled until you pick one, and lets Cancel, Escape, or an outside click discard without saving
 - **Shared ratings:** once the Worker URL is set, ratings are shared between everyone rather than stored per browser
-- **Ratings dashboard:** `dashboard.html` shows overall totals, a per-side breakdown (average rating, number of ratings, and rater IDs for Global Fare and Classic Kitchen), and every rated dish split into "Ranked" (3+ ratings) and "Still gathering ratings"
+- **Ratings dashboard:** `dashboard.html` has a scope toggle (all-time vs. today), per-side stat cards showing both scopes with stars and a trend graph, and clickable dish rows that expand into the individual ratings behind the average plus a rating-over-time chart
 - **Live data:** the menu and the ratings refresh on their own, and again the moment the tab regains focus
 - **Iframe-safe:** all styles inline, no external dependencies
 
@@ -60,8 +60,21 @@ worker/
 | `POST` | `/api/ratings` | Record a rating; body `{ "dish": "...", "rating": 1-5 }` |
 | `DELETE` | `/api/ratings` | Remove the caller's own rating; body `{ "dish": "..." }` |
 | `POST` | `/api/dishes/catalog` | Record the dishes served on a day; body `{ "date": "...", "dishes": [...] }`, optionally grouped by station as `"stations": { "Global Fare": [...], "Classic Kitchen": [...] }` |
-| `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection |
+| `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection. `scope=today` narrows it to dishes served on the request's day |
 | `GET` | `/api/stats` | Totals plus a per-station breakdown, for the dashboard |
+| `GET` | `/api/ratings/history` | Per-day rating history for one dish (`?dish=`) or one station (`?station=`), plus every individual rating for a dish |
+
+### Scopes and timezones
+
+`/api/stats` and `/api/dishes` answer twice: all-time, and restricted to a single day. The day is not the UTC day. Callers pass `date=YYYY-MM-DD&offset=<getTimezoneOffset()>` — the dashboard sends its own calendar date and offset — because the hall is in Vermont, and at 8pm Eastern the UTC date has already rolled over. Without the offset, a rating cast over dinner would land on tomorrow's menu. Ratings are stamped with `Date.now()`, so a day is a half-open window over `updated_at`; the history endpoint buckets days with the same offset.
+
+"Today" filters two different things on purpose: the dish list comes from `dish_days` (what the menu served), while the counts come from the `updated_at` window (what people rated). A dish that is on today's menu but unrated today stays listed at zero rather than disappearing, and a dish rated today but not served today does not appear.
+
+### Dashboard drill-downs
+
+`/api/ratings/history` returns a `timeline` (each day's own average plus the running average up to that day) and, for a dish, the itemised `ratings`. The running average is the one the charts plot: a single day's average swings wildly over two or three ratings, while the running figure is what a reader means by the number having moved.
+
+Rater ids are truncated to an eight-character prefix in that response. A full `X-Rater-ID` is a write credential — the API trusts it without proof, so anyone holding one can post as that browser — and the dashboard only needs to show that two raters were different.
 
 A dish is keyed by its normalised name (`"  Scrambled   Eggs "` → `"scrambled eggs"`), so it keeps one rating history across every day it is served. Ratings are counted from the rows on each read, so a number shown is always current rather than a nightly roll-up. Re-rating replaces your previous rating; `DELETE` clears it and returns the dish to the community aggregate, or to "No ratings yet" if you were the last rater. It only ever removes the caller's own row, and it does not refund the daily write cap. `X-Rater-ID` is a random per-browser id, and writes are capped per rater per day.
 
@@ -80,6 +93,8 @@ Then set `RATINGS_API` in `index.html` to the deployed Worker URL.
 The `dish_stations` table was added after the first deploy. This Worker has no migration step and `wrangler deploy` does not apply `schema.sql`, so the table is created on demand on the first catalogue call (and by `/api/stats`), which heals a database created before the per-side breakdown existed. Applying `schema.sql` by hand is still the cleanest option for a new database.
 
 A dish served on both stations counts toward both, so the per-station figures are a per-side view and can add up to more than the overall totals.
+
+The dashboard and the Worker deploy separately, and Pages usually finishes first. Until the Worker catches up, the dashboard detects the older API (the `scope` marker on the dish listing) and shows "Waiting for the ratings backend to publish today's data" rather than rendering the whole catalogue as if it were today's menu.
 
 ## Embedding
 

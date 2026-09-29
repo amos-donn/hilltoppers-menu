@@ -259,15 +259,21 @@ describe('routing', () => {
 describe('dashboard stats', () => {
   const stats = () => worker.fetch(req('/api/stats'), env);
 
+  // Ratings are stamped with the real clock, so a stats call pinned to a fixed
+  // past date makes "today" deterministically empty.
+  const statsOn = (date: string, offset = '0') =>
+    worker.fetch(req(`/api/stats?date=${date}&offset=${offset}`), env);
+
   test('reports zeroes on an empty database rather than dividing by zero', async () => {
-    const body = await (await stats()).json();
-    expect(body).toEqual({
+    const body = await bodyOf(await stats());
+    expect(body).toMatchObject({
       totalRatings: 0,
       raters: 0,
       catalogue: 0,
       ratedDishes: 0,
       ratingsPerRater: 0,
-      stations: []
+      stations: [],
+      today: { totalRatings: 0, raters: 0, ratedDishes: 0, ratingsPerRater: 0 }
     });
   });
 
@@ -305,9 +311,17 @@ describe('dashboard stats', () => {
     }
     await rate('Salmon', 4, 'rater-a');
 
-    const body = await bodyOf(await stats());
+    // Pinned to a day with no ratings, so `today` is empty and the all-time
+    // station numbers are what is under test.
+    const body = await bodyOf(await statsOn('2020-01-01'));
     expect(body.stations).toEqual([
-      { station: 'Global Fare', ratings: 1, raters: 1, average: 4 }
+      {
+        station: 'Global Fare',
+        ratings: 1,
+        raters: 1,
+        average: 4,
+        today: { ratings: 0, raters: 0, average: 0 }
+      }
     ]);
   });
 
@@ -317,9 +331,15 @@ describe('dashboard stats', () => {
     await rate('Meatloaf', 5, 'rater-a');
     await rate('Poutine', 3, 'rater-a');
 
-    const body = await bodyOf(await stats());
+    const body = await bodyOf(await statsOn('2020-01-01'));
     expect(body.stations).toEqual([
-      { station: 'Classic Kitchen', ratings: 2, raters: 1, average: 4 }
+      {
+        station: 'Classic Kitchen',
+        ratings: 2,
+        raters: 1,
+        average: 4,
+        today: { ratings: 0, raters: 0, average: 0 }
+      }
     ]);
   });
 
@@ -384,9 +404,183 @@ describe('dashboard stats', () => {
     await catalog('2026-09-28', undefined, { 'Global Fare': ['Salmon'] });
     await rate('Salmon', 5, 'rater-a');
 
-    const body = await bodyOf(await stats());
+    const body = await bodyOf(await statsOn('2020-01-01'));
     expect(body.stations).toEqual([
-      { station: 'Global Fare', ratings: 1, raters: 1, average: 5 }
+      {
+        station: 'Global Fare',
+        ratings: 1,
+        raters: 1,
+        average: 5,
+        today: { ratings: 0, raters: 0, average: 0 }
+      }
     ]);
+  });
+
+  test('all-time totals ignore the date, and today counts only today casts', async () => {
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Poutine', 3, 'rater-b');
+
+    // A day with no ratings yet: all-time holds, today is empty.
+    const past = await bodyOf(await statsOn('2020-01-01'));
+    expect(past.totalRatings).toBe(2);
+    expect(past.today).toEqual({
+      totalRatings: 0,
+      raters: 0,
+      ratedDishes: 0,
+      ratingsPerRater: 0
+    });
+
+    // The real local day: both ratings were cast now, so today sees both.
+    const localDate = new Date().toLocaleDateString('en-CA');
+    const offset = new Date().getTimezoneOffset();
+    const now = await bodyOf(await statsOn(localDate, String(offset)));
+    expect(now.today.totalRatings).toBe(2);
+    expect(now.today.raters).toBe(2);
+    expect(now.today.ratedDishes).toBe(2);
+    expect(now.today.ratingsPerRater).toBe(1);
+  });
+
+  test('a timezone offset moves a rating between days', async () => {
+    await rate('Salmon', 5, 'rater-a');
+
+    // A rating cast now is inside today's UTC day, so a UTC-scoped call sees it.
+    const utcDate = new Date().toISOString().slice(0, 10);
+    const todayAtUtc = await bodyOf(await statsOn(utcDate, '0'));
+    expect(todayAtUtc.today.totalRatings).toBe(1);
+
+    // The previous UTC day ended before the rating, so it cannot contain it.
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const emptyYesterday = await bodyOf(await statsOn(yesterday, '0'));
+    expect(emptyYesterday.today.totalRatings).toBe(0);
+  });
+
+  test('today scope lists only dishes served today, with only today ratings', async () => {
+    // Fixed past days, so this never collides with the real local date.
+    await catalog('2020-01-01', undefined, { 'Global Fare': ['Old Dish'] });
+    await catalog('2020-01-02', undefined, { 'Global Fare': ['Older Dish'] });
+    await rate('Old Dish', 5, 'rater-a');
+    await rate('Older Dish', 4, 'rater-b');
+
+    const all = await bodyOf(await worker.fetch(req('/api/dishes?scope=all'), env));
+    expect(all.scope).toBe('all');
+    expect(all.dishes.map((d: { name: string }) => d.name).sort()).toEqual([
+      'Old Dish',
+      'Older Dish'
+    ]);
+
+    // Neither dish was served on the real local date, so the today listing is
+    // empty even though both have ratings.
+    const localDate = new Date().toLocaleDateString('en-CA');
+    const today = await bodyOf(
+      await worker.fetch(req(`/api/dishes?scope=today&date=${localDate}`), env)
+    );
+    expect(today.scope).toBe('today');
+    expect(today.dishes).toEqual([]);
+  });
+
+  test('today scope includes dishes served today, with their today ratings', async () => {
+    const localDate = new Date().toLocaleDateString('en-CA');
+    await catalog(localDate, undefined, { 'Global Fare': ['Fresh Dish', 'Quiet Dish'] });
+    await rate('Fresh Dish', 5, 'rater-a');
+
+    const body = await bodyOf(
+      await worker.fetch(req(`/api/dishes?scope=today&date=${localDate}`), env)
+    );
+    expect(body.dishes.map((d: { name: string }) => d.name).sort()).toEqual([
+      'Fresh Dish',
+      'Quiet Dish'
+    ]);
+    const fresh = body.dishes.find((d: { name: string }) => d.name === 'Fresh Dish');
+    expect(fresh.count).toBe(1);
+    expect(fresh.average).toBe(5);
+    // A dish on today's menu that nobody rated today stays listed at zero,
+    // rather than vanishing from the day's view.
+    const quiet = body.dishes.find((d: { name: string }) => d.name === 'Quiet Dish');
+    expect(quiet.count).toBe(0);
+    expect(quiet.average).toBeNull();
+  });
+});
+
+describe('rating history', () => {
+  const history = (query: string) =>
+    worker.fetch(req(`/api/ratings/history?${query}`), env);
+
+  test('needs a dish or a station', async () => {
+    expect((await history('')).status).toBe(400);
+    expect((await history('station=Nonsense')).status).toBe(400);
+    expect((await history('dish=   ')).status).toBe(400);
+  });
+
+  test('totals a dish history and returns the running average', async () => {
+    await catalog('2026-09-28', undefined, { 'Global Fare': ['Salmon'] });
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Salmon', 3, 'rater-b');
+    await rate('Salmon', 1, 'rater-c');
+
+    const body = await bodyOf(await history('dish=Salmon'));
+    expect(body.scope).toBe('dish');
+    expect(body.label).toBe('Salmon');
+    expect(body.count).toBe(3);
+    expect(body.average).toBe(3); // (5 + 3 + 1) / 3
+    // One calendar day, one point: 3 ratings averaging 3, running to 3.
+    expect(body.timeline).toHaveLength(1);
+    expect(body.timeline[0]).toMatchObject({ count: 3, average: 3, running: 3, runningCount: 3 });
+    // Newest first, and the raw rater id is truncated to a prefix.
+    expect(body.ratings).toHaveLength(3);
+    expect(body.ratings.map((r: { rating: number }) => r.rating).sort()).toEqual([1, 3, 5]);
+    for (const row of body.ratings) {
+      expect(row.rater.length).toBeLessThanOrEqual(8);
+      expect(row.updatedAt).toBeGreaterThan(0);
+    }
+  });
+
+  test('an uncatalogued dish still resolves by its normalised name', async () => {
+    await rate('Mystery Dish', 4, 'rater-a');
+    const body = await bodyOf(await history('dish=Mystery%20Dish'));
+    expect(body.label).toBe('mystery dish');
+    expect(body.count).toBe(1);
+    expect(body.timeline[0].average).toBe(4);
+  });
+
+  test('totals a station history across its dishes', async () => {
+    await catalog('2026-09-28', undefined, {
+      'Global Fare': ['Salmon', 'Poutine'],
+      'Classic Kitchen': ['Meatloaf']
+    });
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Poutine', 3, 'rater-a');
+    await rate('Meatloaf', 1, 'rater-b');
+
+    const body = await bodyOf(await history('station=Global%20Fare'));
+    expect(body.scope).toBe('station');
+    expect(body.label).toBe('Global Fare');
+    expect(body.count).toBe(2);
+    expect(body.average).toBe(4); // (5 + 3) / 2
+    // Station histories are graph-only; they do not list individual ratings.
+    expect(body.ratings).toEqual([]);
+  });
+
+  test('folds a station spelling and rejects an unknown one', async () => {
+    await catalog('2026-09-28', undefined, { classicKitchen: ['Meatloaf'] });
+    await rate('Meatloaf', 4, 'rater-a');
+
+    const folded = await bodyOf(await history('station=Classic%20Kitchen'));
+    expect(folded.label).toBe('Classic Kitchen');
+    expect(folded.count).toBe(1);
+
+    expect((await history('station=Global%20Fare')).status).toBe(200);
+  });
+
+  test('a dish with no ratings reports an empty timeline', async () => {
+    const body = await bodyOf(await history('dish=Nothing%20Rated'));
+    expect(body.count).toBe(0);
+    expect(body.average).toBe(0);
+    expect(body.timeline).toEqual([]);
+    expect(body.ratings).toEqual([]);
+  });
+
+  test('history is readable cross-origin', async () => {
+    const response = await history('dish=Salmon');
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
   });
 });

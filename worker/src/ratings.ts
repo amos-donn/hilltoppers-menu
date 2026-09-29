@@ -43,6 +43,67 @@ function placeholders(count: number): string {
   return Array.from({ length: count }, () => '?').join(',');
 }
 
+/**
+ * The day a request is about, as a half-open epoch-millisecond window.
+ *
+ * Ratings are stamped with `Date.now()`, so "today's ratings" has to be a
+ * window over `updated_at`. The dashboard sends its own calendar date and its
+ * UTC offset rather than the Worker deriving the date, because the hall is in
+ * Vermont: at 8pm Eastern the UTC date has already rolled over, and a rating
+ * cast over dinner would land on tomorrow's menu.
+ *
+ * `getTimezoneOffset()` counts minutes *behind* UTC (240 for EDT), so local
+ * midnight in epoch milliseconds is UTC midnight plus that many minutes.
+ */
+interface Scope {
+  date: string;
+  startMs: number;
+  endMs: number;
+}
+
+function resolveScope(request: Request): Scope {
+  const url = new URL(request.url);
+  const raw = url.searchParams.get('date');
+  const date = raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : todayUtc();
+  const rawOffset = Number(url.searchParams.get('offset'));
+  // Anything beyond a day either way is nonsense; clamp rather than reject so a
+  // bad widget cannot blank the dashboard.
+  const offset = Number.isFinite(rawOffset) ? Math.max(-840, Math.min(840, rawOffset)) : 0;
+  const midnightUtc = Date.parse(`${date}T00:00:00Z`);
+  const startMs = midnightUtc + offset * 60_000;
+  return { date, startMs, endMs: startMs + 86_400_000 };
+}
+
+/**
+ * Rater ids are random per-browser tokens that the API trusts without any
+ * proof, so they double as a write credential: anyone holding one can post as
+ * that browser. The dashboard never needs to tell two raters apart beyond
+ * "these were different raters", so only a short prefix leaves the server.
+ */
+function shortRater(id: string): string {
+  return id.slice(0, 8);
+}
+
+/**
+ * The station labels, folded together in SQL so the two spellings the source
+ * site has used for the same kitchen ("Classic Kitchen" / "Classic") count as
+ * one side everywhere the breakdown is computed.
+ */
+const STATION_LABEL_SQL = `CASE
+             WHEN station LIKE 'classic%' THEN 'Classic Kitchen'
+             WHEN station LIKE 'global%' THEN 'Global Fare'
+             ELSE station
+           END`;
+
+/** Resolves a caller's station name to the folded label, or null if unknown. */
+function stationMatcher(value: string): string | null {
+  const lower = value.trim().toLowerCase();
+  if (!lower) return null;
+  if (lower.startsWith('classic')) return 'Classic Kitchen';
+  if (lower.startsWith('global')) return 'Global Fare';
+  return null;
+}
+
 function parseDishList(value: string | null): string[] {
   if (!value) return [];
   const seen = new Set<string>();
@@ -367,30 +428,48 @@ export async function catalogDishes(
  * Aggregate counts for the dashboard. Rater ids are random per-browser values,
  * not accounts, so `raters` counts browsers rather than people.
  *
- * `stations` breaks the same numbers down per kitchen station. A dish served
- * on both stations counts toward both, so the station totals can exceed the
- * overall totals — they are a per-side view, not a partition.
+ * Every figure is returned twice: all-time, and restricted to the ratings cast
+ * on the request's day (`today`). `stations` breaks the same numbers down per
+ * kitchen station, and each station carries its own `today` block. A dish
+ * served on both stations counts toward both, so the station totals can exceed
+ * the overall totals — they are a per-side view, not a partition.
  */
 export async function ratingStats(
-  _request: Request,
+  request: Request,
   env: RatingsEnv
 ): Promise<Response> {
+  const scope = resolveScope(request);
   const row = await env.RATINGS_DB
     .prepare(
       `SELECT (SELECT COUNT(*) FROM dish_ratings) AS total_ratings,
               (SELECT COUNT(DISTINCT rater_id) FROM dish_ratings) AS raters,
               (SELECT COUNT(*) FROM dishes) AS catalogue,
-              (SELECT COUNT(DISTINCT dish_id) FROM dish_ratings) AS rated_dishes`
+              (SELECT COUNT(DISTINCT dish_id) FROM dish_ratings) AS rated_dishes,
+              (SELECT COUNT(*) FROM dish_ratings
+                 WHERE updated_at >= ?1 AND updated_at < ?2) AS today_ratings,
+              (SELECT COUNT(DISTINCT rater_id) FROM dish_ratings
+                 WHERE updated_at >= ?1 AND updated_at < ?2) AS today_raters,
+              (SELECT COUNT(DISTINCT dish_id) FROM dish_ratings
+                 WHERE updated_at >= ?1 AND updated_at < ?2) AS today_dishes`
     )
+    .bind(scope.startMs, scope.endMs)
     .first<{
       total_ratings: number;
       raters: number;
       catalogue: number;
       rated_dishes: number;
+      today_ratings: number;
+      today_raters: number;
+      today_dishes: number;
     }>();
 
   const totalRatings = Number(row?.total_ratings) || 0;
   const raters = Number(row?.raters) || 0;
+  const todayRatings = Number(row?.today_ratings) || 0;
+  const todayRaters = Number(row?.today_raters) || 0;
+
+  const perRater = (n: number, people: number) =>
+    people === 0 ? 0 : Math.round((n / people) * 10) / 10;
 
   // A dish counts toward a station if it was ever catalogued under it. Sorting
   // the days out first is what keeps the counts right: dish_stations holds one
@@ -403,34 +482,45 @@ export async function ratingStats(
     .prepare(
       `WITH dish_side AS (
          SELECT DISTINCT dish_id,
-           CASE
-             WHEN station LIKE 'classic%' THEN 'Classic Kitchen'
-             WHEN station LIKE 'global%' THEN 'Global Fare'
-             ELSE station
-           END AS station
+           ${STATION_LABEL_SQL} AS station
          FROM dish_stations
        )
        SELECT dish_side.station AS station,
               COUNT(*) AS ratings,
               COUNT(DISTINCT dr.rater_id) AS raters,
-              AVG(dr.rating) AS average
+              AVG(dr.rating) AS average,
+              SUM(CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2 THEN 1 ELSE 0 END) AS today_ratings,
+              COUNT(DISTINCT CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
+                             THEN dr.rater_id END) AS today_raters,
+              AVG(CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
+                       THEN dr.rating END) AS today_average
        FROM dish_side
        JOIN dish_ratings dr ON dr.dish_id = dish_side.dish_id
        GROUP BY 1
        ORDER BY 1`
     )
+    .bind(scope.startMs, scope.endMs)
     .all<{
       station: string;
       ratings: number;
       raters: number;
       average: number;
+      today_ratings: number;
+      today_raters: number;
+      today_average: number | null;
     }>();
 
+  const round1 = (value: unknown) => Math.round((Number(value) || 0) * 10) / 10;
   const stations = (stationRows.results ?? []).map((r) => ({
     station: r.station,
     ratings: Number(r.ratings) || 0,
     raters: Number(r.raters) || 0,
-    average: Math.round((Number(r.average) || 0) * 10) / 10
+    average: round1(r.average),
+    today: {
+      ratings: Number(r.today_ratings) || 0,
+      raters: Number(r.today_raters) || 0,
+      average: r.today_average === null ? 0 : round1(r.today_average)
+    }
   }));
 
   return json(
@@ -440,8 +530,148 @@ export async function ratingStats(
       catalogue: Number(row?.catalogue) || 0,
       ratedDishes: Number(row?.rated_dishes) || 0,
       // Rounded to one decimal so the dashboard does not show 3.666666.
-      ratingsPerRater: raters === 0 ? 0 : Math.round((totalRatings / raters) * 10) / 10,
+      ratingsPerRater: perRater(totalRatings, raters),
+      date: scope.date,
+      today: {
+        totalRatings: todayRatings,
+        raters: todayRaters,
+        ratedDishes: Number(row?.today_dishes) || 0,
+        ratingsPerRater: perRater(todayRatings, todayRaters)
+      },
       stations
+    },
+    200
+  );
+}
+
+/**
+ * Per-day rating history for one dish or one station, for the dashboard's
+ * timeline graphs and per-dish drill-down.
+ *
+ * Each point carries the day's own average and the running average up to and
+ * including that day. The running figure is the one to plot as "the average over
+ * time": a day's own average swings wildly over two or three ratings, while the
+ * running average is what a reader means by the number having moved.
+ *
+ * Days are bucketed in the caller's timezone (same reason as `resolveScope`),
+ * so a rating cast over dinner does not land on tomorrow's bar.
+ */
+export async function ratingHistory(
+  request: Request,
+  env: RatingsEnv
+): Promise<Response> {
+  const url = new URL(request.url);
+  const scope = resolveScope(request);
+  const dishParam = url.searchParams.get('dish');
+  const stationParam = url.searchParams.get('station');
+
+  if (!dishParam && !stationParam) {
+    return json({ error: 'A dish or station is required.' }, 400);
+  }
+
+  const offsetMinutes = Math.round((scope.startMs - Date.parse(`${scope.date}T00:00:00Z`)) / 60_000);
+  // SQLite's modifier is the negation of the browser's getTimezoneOffset.
+  const dayModifier = `${-offsetMinutes} minutes`;
+
+  let filter: string;
+  let params: unknown[];
+  let label: string;
+  let station: boolean;
+
+  if (dishParam) {
+    const id = dishId(dishParam);
+    if (!id || id.length > MAX_DISH_ID_LENGTH) {
+      return json({ error: 'A valid dish is required.' }, 400);
+    }
+    const named = await env.RATINGS_DB
+      .prepare('SELECT name FROM dishes WHERE id = ?')
+      .bind(id)
+      .first<{ name: string }>();
+    filter = 'dish_id = ?';
+    params = [id];
+    // Fall back to the id so an uncatalogued dish still resolves.
+    label = named?.name ?? id;
+    station = false;
+  } else {
+    const match = stationMatcher(String(stationParam));
+    if (!match) {
+      return json({ error: 'Unknown station.' }, 400);
+    }
+    await ensureStationsTable(env);
+    filter = `dish_id IN (SELECT DISTINCT dish_id FROM dish_stations WHERE ${STATION_LABEL_SQL} = ?)`;
+    params = [match];
+    label = match;
+    station = true;
+  }
+
+  // The day modifier is bound first because it sits in the outer SELECT list.
+  const timelineRows = await env.RATINGS_DB
+    .prepare(
+      `WITH per_day AS (
+         SELECT date(updated_at / 1000, 'unixepoch', ?) AS day,
+                COUNT(*) AS count,
+                AVG(rating) AS average
+         FROM dish_ratings
+         WHERE ${filter}
+         GROUP BY 1
+       )
+       SELECT day,
+              count,
+              average,
+              SUM(count) OVER (ORDER BY day) AS running_count,
+              SUM(average * count) OVER (ORDER BY day)
+                / SUM(count) OVER (ORDER BY day) AS running
+       FROM per_day
+       ORDER BY day`
+    )
+    .bind(dayModifier, ...params)
+    .all<{
+      day: string;
+      count: number;
+      average: number;
+      running_count: number;
+      running: number;
+    }>();
+
+  const timeline = (timelineRows.results ?? []).map((r) => ({
+    day: r.day,
+    count: Number(r.count) || 0,
+    average: Math.round((Number(r.average) || 0) * 10) / 10,
+    running: Math.round((Number(r.running) || 0) * 10) / 10,
+    runningCount: Number(r.running_count) || 0
+  }));
+
+  const summary = timeline.length
+    ? { count: timeline[timeline.length - 1].runningCount, average: timeline[timeline.length - 1].running }
+    : { count: 0, average: 0 };
+
+  // The individual rows are only meaningful for a single dish; a station can
+  // hold thousands and the dashboard only graphs those.
+  let ratings: { rater: string; rating: number; updatedAt: number }[] = [];
+  if (!station) {
+    const ratingRows = await env.RATINGS_DB
+      .prepare(
+        `SELECT rater_id, rating, updated_at FROM dish_ratings
+         WHERE ${filter} ORDER BY updated_at DESC LIMIT 500`
+      )
+      .bind(...params)
+      .all<{ rater_id: string; rating: number; updated_at: number }>();
+    ratings = (ratingRows.results ?? []).map((r) => ({
+      rater: shortRater(r.rater_id),
+      rating: Number(r.rating) || 0,
+      updatedAt: Number(r.updated_at) || 0
+    }));
+  }
+
+  return json(
+    {
+      scope: station ? 'station' : 'dish',
+      label,
+      date: scope.date,
+      count: summary.count,
+      average: summary.average,
+      timeline,
+      ratings
     },
     200
   );
@@ -450,21 +680,45 @@ export async function ratingStats(
 /**
  * Every dish in the catalogue with its rating, newest first. Not used by the
  * widget; it makes the catalogue inspectable from a browser.
+ *
+ * `scope=today` narrows the whole listing to the dishes served on the request's
+ * day and to the ratings cast that day. The two are deliberately different
+ * filters: the dish list comes from `dish_days` (what the menu served) while the
+ * ratings come from the `updated_at` window (what people rated), so a dish that
+ * is on today's menu but has not been rated today reports zero rather than
+ * disappearing.
  */
 export async function listDishes(
-  _request: Request,
+  request: Request,
   env: RatingsEnv
 ): Promise<Response> {
+  const url = new URL(request.url);
+  const scope = resolveScope(request);
+  const todayOnly = url.searchParams.get('scope') === 'today';
+  if (todayOnly) await ensureStationsTable(env);
+  const scopeParams = todayOnly ? [scope.startMs, scope.endMs] : [];
+
+  // MAX_CATALOG_DISHES mirrors how many dishes one catalogue call can add, so a
+  // day's browse covers the whole catalogue rather than an arbitrary prefix.
+  const servedClause = todayOnly
+    ? ` WHERE d.id IN (SELECT dish_id FROM dish_days WHERE day = ?)
+        AND d.id IN (SELECT dish_id FROM dish_stations WHERE day = ?)`
+    : '';
+  const servedParams = todayOnly ? [scope.date, scope.date] : [];
+
   const rows = await env.RATINGS_DB
     .prepare(
       `SELECT d.id, d.name, d.first_seen, d.last_seen,
               COUNT(r.rater_id) AS count, AVG(r.rating) AS average
        FROM dishes d
-       LEFT JOIN dish_ratings r ON r.dish_id = d.id
+       LEFT JOIN dish_ratings r
+         ON r.dish_id = d.id${todayOnly ? ' AND r.updated_at >= ? AND r.updated_at < ?' : ''}
+       ${servedClause}
        GROUP BY d.id
        ORDER BY d.last_seen DESC, d.name ASC
-       LIMIT 500`
+       LIMIT ${MAX_CATALOG_DISHES}`
     )
+    .bind(...scopeParams, ...servedParams)
     .all<{
       id: string;
       name: string;
@@ -476,6 +730,8 @@ export async function listDishes(
 
   return json(
     {
+      scope: todayOnly ? 'today' : 'all',
+      date: scope.date,
       dishes: (rows.results ?? []).map((row) => ({
         id: row.id,
         name: row.name,
@@ -509,6 +765,9 @@ export async function handleRatings(
   }
   if (path === '/api/dishes' && method === 'GET') {
     return listDishes(request, env);
+  }
+  if (path === '/api/ratings/history' && method === 'GET') {
+    return ratingHistory(request, env);
   }
   if (path === '/api/stats' && method === 'GET') {
     return ratingStats(request, env);
