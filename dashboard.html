@@ -510,6 +510,24 @@
         return Math.round((average / 5) * 100);
       }
 
+      // A history point's minute, in the reader's own clock. The API buckets in
+      // the caller's timezone, so this only formats what it was handed.
+      function fmtMinute(at) {
+        return new Date(at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      }
+
+      function fmtDay(day) {
+        const [y, m, d] = String(day).split('-').map(Number);
+        if (!y || !m || !d) return String(day);
+        return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+
+      function fmtMoment(at) {
+        return new Date(at).toLocaleString('en-US', {
+          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+        });
+      }
+
       /**
        * A line chart of the running average, drawn as inline SVG so the page
        * keeps its no-dependency, iframe-safe promise.
@@ -517,23 +535,38 @@
        * The y axis is pinned to 0–5 rather than stretched to the data, so two
        * charts can be compared at a glance; a dish that moved 3.0 → 3.2 should
        * not look as dramatic as one that moved 2.0 → 4.5.
+       *
+       * The x axis is the real time each rating landed, not the point's index.
+       * Index spacing would draw an evening's three ratings and three ratings
+       * spread over a month as the same shape; spacing by time means the line
+       * leans where the rating was brisk and stretches where it was quiet. When
+       * the points cross a day boundary the days are marked, because a long gap
+       * and a short one otherwise look alike.
        */
       function chart(points) {
         if (!points.length) {
           return '<div class="chart"><div class="legend">No ratings yet.</div></div>';
         }
         const W = 320;
-        const H = 96;
+        const H = 108;
         const left = 22;
-        const right = 8;
-        const top = 8;
-        const bottom = 20;
+        const right = 10;
+        const top = 10;
+        const bottom = 26;
         const innerW = W - left - right;
         const innerH = H - top - bottom;
-        const x = (i) =>
-          points.length === 1
-            ? left + innerW / 2
-            : left + (i * innerW) / (points.length - 1);
+
+        // An older API buckets by day and sends no instant. Fall back to even
+        // spacing rather than drawing every point at the same x.
+        const timed = points.every((p) => Number.isFinite(p.at) && p.at > 0);
+        const t0 = timed ? points[0].at : 0;
+        const t1 = timed ? points[points.length - 1].at : 0;
+        const span = t1 - t0;
+        const x = (i) => {
+          if (points.length === 1) return left + innerW / 2;
+          if (!timed || span <= 0) return left + (i * innerW) / (points.length - 1);
+          return left + ((points[i].at - t0) / span) * innerW;
+        };
         const y = (v) => top + innerH - (Math.max(0, Math.min(5, v)) / 5) * innerH;
 
         const grid = [1, 3, 5]
@@ -548,30 +581,79 @@
 
         const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.running)}`).join(' ');
         const dots = points
-          .map(
-            (p, i) =>
+          .map((p, i) => {
+            const when = timed ? fmtMoment(p.at) : fmtDay(p.day);
+            return (
               `<circle cx="${x(i)}" cy="${y(p.running)}" r="2.6" fill="#1a7f37">` +
-              `<title>${esc(p.day)}: ${p.running} avg over ${p.runningCount} rating(s), ` +
-              `${p.count} that day</title></circle>`
-          )
+              `<title>${esc(when)}: ${p.running} avg over ${p.runningCount} rating(s), ` +
+              `${p.count} in that minute</title></circle>`
+            );
+          })
           .join('');
 
-        const first = points[0].day.slice(5);
-        const last = points[points.length - 1].day.slice(5);
-        const labels =
-          points.length === 1
-            ? `<text x="${x(0)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="#7d8591">${esc(points[0].day)}</text>`
-            : `<text x="${left}" y="${H - 6}" font-size="9" fill="#7d8591">${esc(first)}</text>` +
-              `<text x="${W - right}" y="${H - 6}" text-anchor="end" font-size="9" fill="#7d8591">${esc(last)}</text>`;
+        // A marker where the date changes, so a gap of days is not read as a
+        // gap of minutes.
+        const days = [...new Set(points.map((p) => p.day))];
+        const dayMarks =
+          days.length > 1
+            ? points
+                .map((p, i) => ({ p, i }))
+                .filter(({ p, i }) => i > 0 && p.day !== points[i - 1].day)
+                .map(
+                  ({ p, i }) =>
+                    `<line x1="${x(i)}" y1="${top}" x2="${x(i)}" y2="${top + innerH}" ` +
+                    `stroke="rgba(17,17,17,0.18)" stroke-width="1" stroke-dasharray="2 2"/>` +
+                    `<text x="${x(i) + 2}" y="${top + 7}" font-size="8" fill="#7d8591">` +
+                    `${esc(fmtDay(p.day))}</text>`
+                )
+                .join('')
+            : '';
+
+        // Label the minutes themselves. Up to five points get their own label;
+        // past that, four spread across the axis, so the text never collides.
+        const tickIdx =
+          points.length <= 5
+            ? points.map((_, i) => i)
+            : [0, Math.round((points.length - 1) / 3), Math.round((2 * (points.length - 1)) / 3), points.length - 1];
+        const labels = tickIdx
+          .map((i, n) => {
+            const first = n === 0;
+            const last = n === tickIdx.length - 1;
+            const anchor = points.length === 1 || (first && last) ? 'middle' : first ? 'start' : last ? 'end' : 'middle';
+            const text = timed ? fmtMinute(points[i].at) : fmtDay(points[i].day);
+            return (
+              `<text x="${x(i)}" y="${H - 12}" text-anchor="${anchor}" font-size="8.5" fill="#7d8591">` +
+              `${esc(text)}</text>`
+            );
+          })
+          .join('');
+
+        // Which day the labels belong to. With clock labels a single day is
+        // enough; across days the range is named as well, since the dividers
+        // only mark where each new day starts.
+        const dayLine =
+          days.length === 1
+            ? `<text x="${left}" y="${H - 2}" font-size="8.5" fill="#7d8591">${esc(fmtDay(days[0]))}</text>`
+            : `<text x="${left}" y="${H - 2}" font-size="8.5" fill="#7d8591">` +
+              `${esc(`${fmtDay(days[0])} – ${fmtDay(days[days.length - 1])}`)}</text>`;
+
+        const total = points[points.length - 1].runningCount;
+        const minutes = points.length;
+        const legend =
+          `Average over time · ${total} rating${total === 1 ? '' : 's'} across ` +
+          `${minutes} minute${minutes === 1 ? '' : 's'}` +
+          (days.length > 1 ? ` over ${days.length} days` : ` on ${fmtDay(days[0])}`);
 
         return `<div class="chart">
           <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Average rating over time">
             ${grid}
+            ${dayMarks}
             <path d="${path}" fill="none" stroke="#1a7f37" stroke-width="2" stroke-linejoin="round"/>
             ${dots}
             ${labels}
+            ${dayLine}
           </svg>
-          <div class="legend">Average over time · ${points.length} day${points.length === 1 ? '' : 's'} with ratings</div>
+          <div class="legend">${esc(legend)}</div>
         </div>`;
       }
 

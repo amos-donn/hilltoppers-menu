@@ -537,9 +537,11 @@ describe('rating history', () => {
     expect(body.label).toBe('Salmon');
     expect(body.count).toBe(3);
     expect(body.average).toBe(3); // (5 + 3 + 1) / 3
-    // One calendar day, one point: 3 ratings averaging 3, running to 3.
-    expect(body.timeline).toHaveLength(1);
-    expect(body.timeline[0]).toMatchObject({ count: 3, average: 3, running: 3, runningCount: 3 });
+    // The three casts land in the same minute (or two, if the clock ticks over
+    // mid-test), so assert on the final point rather than the point count.
+    expect(body.timeline.length).toBeGreaterThan(0);
+    expect(body.timeline.at(-1)).toMatchObject({ count: 3, average: 3, running: 3, runningCount: 3 });
+    expect(body.timeline.at(-1).day).toBe(new Date().toLocaleDateString('en-CA'));
     // Newest first, and the raw rater id is truncated to a prefix.
     expect(body.ratings).toHaveLength(3);
     expect(body.ratings.map((r: { rating: number }) => r.rating).sort()).toEqual([1, 3, 5]);
@@ -592,6 +594,84 @@ describe('rating history', () => {
     expect(body.average).toBe(0);
     expect(body.timeline).toEqual([]);
     expect(body.ratings).toEqual([]);
+  });
+
+  test('buckets points by minute, not by day', async () => {
+    // Three ratings inside one calendar day, each in its own minute. A day
+    // bucket would collapse these to a single point.
+    const at = (minute: number) => Date.parse(`2026-09-28T12:${String(minute).padStart(2, '0')}:00Z`);
+    await env.RATINGS_DB.batch([
+      env.RATINGS_DB
+        .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+        .bind('salmon', 'rater-a', 5, at(1)),
+      env.RATINGS_DB
+        .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+        .bind('salmon', 'rater-b', 3, at(4)),
+      env.RATINGS_DB
+        .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+        .bind('salmon', 'rater-c', 1, at(9))
+    ]);
+
+    const body = await bodyOf(await history('dish=Salmon'));
+    expect(body.timeline).toHaveLength(3);
+    expect(body.timeline.map((p: any) => p.minute)).toEqual([
+      '2026-09-28T12:01',
+      '2026-09-28T12:04',
+      '2026-09-28T12:09'
+    ]);
+    // Every point still knows which day it belongs to.
+    for (const point of body.timeline) expect(point.day).toBe('2026-09-28');
+    // The running average walks 5 -> 4 -> 3 as each rating lands.
+    expect(body.timeline.map((p: any) => p.running)).toEqual([5, 4, 3]);
+    expect(body.timeline.map((p: any) => p.runningCount)).toEqual([1, 2, 3]);
+    // A point sits at the start of its minute, and keeps the real instant it
+    // was bucketed from.
+    expect(body.timeline[0].rawAt).toBe(at(1));
+    expect(body.timeline[0].at).toBe(at(1)); // an exact minute floors to itself
+  });
+
+  test('a bucket sits at the start of its minute', async () => {
+    const ts = Date.parse('2026-09-28T12:01:47Z');
+    await env.RATINGS_DB
+      .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+      .bind('salmon', 'rater-a', 4, ts)
+      .run();
+
+    const body = await bodyOf(await history('dish=Salmon'));
+    expect(body.timeline[0].minute).toBe('2026-09-28T12:01');
+    expect(body.timeline[0].rawAt).toBe(ts);
+    expect(body.timeline[0].at).toBe(Date.parse('2026-09-28T12:01:00Z'));
+  });
+
+  test('ratings in the same minute share a point', async () => {
+    const at = (seconds: number) => Date.parse('2026-09-28T12:03:00Z') + seconds * 1000;
+    await env.RATINGS_DB.batch([
+      env.RATINGS_DB
+        .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+        .bind('salmon', 'rater-a', 5, at(5)),
+      env.RATINGS_DB
+        .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+        .bind('salmon', 'rater-b', 1, at(40))
+    ]);
+
+    const body = await bodyOf(await history('dish=Salmon'));
+    expect(body.timeline).toHaveLength(1);
+    expect(body.timeline[0]).toMatchObject({ count: 2, average: 3, running: 3, runningCount: 2 });
+    expect(body.timeline[0].minute).toBe('2026-09-28T12:03');
+  });
+
+  test('a timezone offset buckets a rating into the caller day', async () => {
+    // 2026-09-29T02:30Z is 22:30 on the 28th at UTC-4. Both the bucket and its
+    // day must follow the caller, not UTC.
+    await env.RATINGS_DB
+      .prepare('INSERT INTO dish_ratings (dish_id, rater_id, rating, updated_at) VALUES (?, ?, ?, ?)')
+      .bind('salmon', 'rater-a', 5, Date.parse('2026-09-29T02:30:00Z'))
+      .run();
+
+    const body = await bodyOf(await history('dish=Salmon&date=2026-09-28&offset=240'));
+    expect(body.timeline).toHaveLength(1);
+    expect(body.timeline[0].minute).toBe('2026-09-28T22:30');
+    expect(body.timeline[0].day).toBe('2026-09-28');
   });
 
   test('history is readable cross-origin', async () => {

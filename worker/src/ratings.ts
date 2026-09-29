@@ -85,6 +85,23 @@ function shortRater(id: string): string {
 }
 
 /**
+ * A rating time floored to the start of its minute.
+ *
+ * History points are bucketed by minute, not by day: on a dish rated a handful
+ * of times the interesting shape is how the average moved over an evening, and
+ * a day bucket collapses all of it into a single dot. The bucket start is the
+ * point's x position, so it sits exactly under the minute that labels it.
+ *
+ * Offsets are whole minutes, so flooring in UTC lands on the same boundary the
+ * caller's clock would.
+ */
+const MINUTE_MS = 60_000;
+
+function minuteStart(ms: number): number {
+  return Math.floor(ms / MINUTE_MS) * MINUTE_MS;
+}
+
+/**
  * The station labels, folded together in SQL so the two spellings the source
  * site has used for the same kitchen ("Classic Kitchen" / "Classic") count as
  * one side everywhere the breakdown is computed.
@@ -545,16 +562,22 @@ export async function ratingStats(
 }
 
 /**
- * Per-day rating history for one dish or one station, for the dashboard's
+ * Per-minute rating history for one dish or one station, for the dashboard's
  * timeline graphs and per-dish drill-down.
  *
- * Each point carries the day's own average and the running average up to and
- * including that day. The running figure is the one to plot as "the average over
- * time": a day's own average swings wildly over two or three ratings, while the
- * running average is what a reader means by the number having moved.
+ * Each point carries the bucket's own average and the running average up to and
+ * including that bucket. The running figure is the one to plot as "the average
+ * over time": a bucket's own average swings wildly over two or three ratings,
+ * while the running average is what a reader means by the number having moved.
  *
- * Days are bucketed in the caller's timezone (same reason as `resolveScope`),
- * so a rating cast over dinner does not land on tomorrow's bar.
+ * Points are bucketed by minute in the caller's timezone (same reason as
+ * `resolveScope`), not by day. A day bucket makes a dish rated three times over
+ * dinner a single dot, which hides the only shape there is to see; a minute is
+ * still coarse enough that a rating spree does not spray the graph with points.
+ *
+ * A point also carries its `day`, so the dashboard can tell a quiet Tuesday from
+ * a quiet month: a gap of minutes and a gap of days look the same on a line
+ * chart drawn by index.
  */
 export async function ratingHistory(
   request: Request,
@@ -605,41 +628,58 @@ export async function ratingHistory(
   }
 
   // The day modifier is bound first because it sits in the outer SELECT list.
+  // Points are per minute, not per day: `date()`/`strftime()` also need the
+  // modifier so the timestamps they render are the caller's wall clock.
   const timelineRows = await env.RATINGS_DB
     .prepare(
-      `WITH per_day AS (
-         SELECT date(updated_at / 1000, 'unixepoch', ?) AS day,
+      `WITH per_minute AS (
+         SELECT strftime('%Y-%m-%dT%H:%M', updated_at / 1000, 'unixepoch', ?) AS minute,
+                date(updated_at / 1000, 'unixepoch', ?) AS day,
                 COUNT(*) AS count,
-                AVG(rating) AS average
+                AVG(rating) AS average,
+                MAX(updated_at) AS last_at
          FROM dish_ratings
          WHERE ${filter}
          GROUP BY 1
        )
-       SELECT day,
+       SELECT minute,
+              day,
               count,
               average,
-              SUM(count) OVER (ORDER BY day) AS running_count,
-              SUM(average * count) OVER (ORDER BY day)
-                / SUM(count) OVER (ORDER BY day) AS running
-       FROM per_day
-       ORDER BY day`
+              last_at,
+              SUM(count) OVER (ORDER BY minute) AS running_count,
+              SUM(average * count) OVER (ORDER BY minute)
+                / SUM(count) OVER (ORDER BY minute) AS running
+       FROM per_minute
+       ORDER BY minute`
     )
-    .bind(dayModifier, ...params)
+    .bind(dayModifier, dayModifier, ...params)
     .all<{
+      minute: string;
       day: string;
       count: number;
       average: number;
+      last_at: number;
       running_count: number;
       running: number;
     }>();
 
-  const timeline = (timelineRows.results ?? []).map((r) => ({
-    day: r.day,
-    count: Number(r.count) || 0,
-    average: Math.round((Number(r.average) || 0) * 10) / 10,
-    running: Math.round((Number(r.running) || 0) * 10) / 10,
-    runningCount: Number(r.running_count) || 0
-  }));
+  const timeline = (timelineRows.results ?? []).map((r) => {
+    // The bucket start is the x position, so the point sits under the minute
+    // that labels it. `rawAt` keeps the real instant: a bucket labelled 12:01
+    // can hold a rating cast at 12:01:47.
+    const rawAt = Number(r.last_at) || 0;
+    return {
+      at: minuteStart(rawAt),
+      minute: r.minute,
+      rawAt,
+      day: r.day,
+      count: Number(r.count) || 0,
+      average: Math.round((Number(r.average) || 0) * 10) / 10,
+      running: Math.round((Number(r.running) || 0) * 10) / 10,
+      runningCount: Number(r.running_count) || 0
+    };
+  });
 
   const summary = timeline.length
     ? { count: timeline[timeline.length - 1].runningCount, average: timeline[timeline.length - 1].running }
