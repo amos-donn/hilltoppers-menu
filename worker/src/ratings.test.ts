@@ -777,3 +777,121 @@ describe('meal periods', () => {
     expect(Number(rows?.n)).toBe(1);
   });
 });
+
+describe('static sections', () => {
+  const catalogSections = (date: string, stations: unknown) =>
+    worker.fetch(req('/api/dishes/catalog', 'POST', { date, dishes: [], stations }), env);
+  const history = (query: string) => worker.fetch(req(`/api/ratings/history?${query}`), env);
+
+  test('break the ratings down per static section like a station', async () => {
+    await catalogSections('2026-09-25', {
+      'Global Fare': ['Salmon'],
+      Soupside: ['Daily Soup'],
+      Greens: ['Salad'],
+      Sandwich: ['Sandwich']
+    });
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Daily Soup', 4, 'rater-b');
+    await rate('Salad', 2, 'rater-c');
+    await rate('Sandwich', 3, 'rater-d');
+
+    const stats = await bodyOf(await worker.fetch(req('/api/stats'), env));
+    const byStation = Object.fromEntries(stats.stations.map((s: any) => [s.station, s]));
+    expect(byStation.Soupside).toMatchObject({ ratings: 1, average: 4 });
+    expect(byStation.Greens).toMatchObject({ ratings: 1, average: 2 });
+    expect(byStation.Sandwich).toMatchObject({ ratings: 1, average: 3 });
+    // The sections are counted alongside the daily stations, not instead of.
+    expect(byStation['Global Fare'].ratings).toBe(1);
+  });
+
+  test('graphs a static section timeline', async () => {
+    await catalogSections('2026-09-25', { Greens: ['Salad', 'Fruit Cup'] });
+    await rate('Salad', 5, 'rater-a');
+    await rate('Fruit Cup', 3, 'rater-b');
+
+    const body = await bodyOf(await history('station=Greens'));
+    expect(body.label).toBe('Greens');
+    expect(body.count).toBe(2);
+    expect(body.average).toBe(4);
+    expect(body.timeline).toHaveLength(1);
+    // A section holds several dishes, so it is graphed, not itemised.
+    expect(body.ratings).toEqual([]);
+  });
+
+  test('accepts each section name and still rejects a stranger', async () => {
+    for (const name of ['Soupside', 'Sauce + Stone', 'Greens', 'Sandwich']) {
+      expect((await worker.fetch(req(`/api/ratings/history?station=${encodeURIComponent(name)}`), env)).status).toBe(200);
+    }
+    expect((await worker.fetch(req('/api/ratings/history?station=Fryolator'), env)).status).toBe(400);
+  });
+});
+
+describe('ratings per day', () => {
+  const daily = (query = '') => worker.fetch(req(`/api/ratings/daily?${query}`), env);
+
+  test('counts the ratings cast on each day and fills the quiet days', async () => {
+    // Rating timestamps come from Date.now(), so catalogue "today" and rate
+    // against it: all three ratings land on the same local day.
+    const today = new Date().toLocaleDateString('en-CA');
+    await catalog(today, ['Salmon', 'Poutine']);
+    const date = new Date().toLocaleDateString('en-CA');
+    await rate('Salmon', 5, 'rater-a');
+    await rate('Salmon', 4, 'rater-b');
+    await rate('Poutine', 3, 'rater-c');
+
+    const body = await bodyOf(await daily(`date=${date}&offset=0`));
+    const day = body.days.find((d: any) => d.day === date);
+    expect(day.count).toBe(3);
+    expect(body.total).toBe(3);
+  });
+
+  test('narrows to a meal', async () => {
+    await catalogPeriodsForDaily();
+    const date = new Date().toLocaleDateString('en-CA');
+    await rate('Poutine', 5, 'rater-a'); // dinner
+    await rate('Tacos', 4, 'rater-b'); // lunch
+
+    const all = await bodyOf(await daily(`date=${date}&offset=0`));
+    expect(all.total).toBe(2);
+    const dinner = await bodyOf(await daily(`date=${date}&offset=0&period=dinner`));
+    expect(dinner.total).toBe(1);
+    expect(dinner.period).toBe('dinner');
+  });
+
+  test('narrows to a static section category', async () => {
+    const date = new Date().toLocaleDateString('en-CA');
+    await worker.fetch(
+      req('/api/dishes/catalog', 'POST', { date, dishes: [], stations: { Greens: ['Salad'] } }),
+      env
+    );
+    await rate('Salad', 5, 'rater-a');
+
+    const body = await bodyOf(await daily(`date=${date}&offset=0&category=Greens`));
+    expect(body.category).toBe('Greens');
+    expect(body.total).toBe(1);
+  });
+
+  test('rejects an unknown meal or category', async () => {
+    expect((await daily('period=brunch')).status).toBe(400);
+    expect((await daily('category=Fryolator')).status).toBe(400);
+  });
+
+  test('returns an empty range rather than failing when nothing is rated', async () => {
+    const body = await bodyOf(await daily('date=2000-01-01&offset=0'));
+    expect(body.days).toEqual([]);
+    expect(body.total).toBe(0);
+  });
+});
+
+// Rates against a catalogue that puts one dish at lunch and one at dinner.
+async function catalogPeriodsForDaily() {
+  const date = new Date().toLocaleDateString('en-CA');
+  await worker.fetch(
+    req('/api/dishes/catalog', 'POST', {
+      date,
+      dishes: [],
+      periods: { lunch: ['Tacos'], dinner: ['Poutine'] }
+    }),
+    env
+  );
+}

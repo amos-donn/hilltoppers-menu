@@ -501,9 +501,574 @@
           padding: 0;
         }
       }
+
+      /* Combined site: the widget on the left, the ratings dashboard on the
+         right. The widget's own rules above are untouched so the embedded
+         iframe renders byte-for-byte the same; only this wrapper is new. */
+      body.combined:not(.embed) {
+        background: var(--bg, #f7f8fb);
+      }
+
+      .page {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(260px, var(--menu-w, 380px)) minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+
+      .menu-pane {
+        position: sticky;
+        top: 16px;
+      }
+
+      @media (max-width: 900px) {
+        .page {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .menu-pane {
+          position: static;
+        }
+        /* One column: there is no boundary left for the handle to sit on. */
+        .splitter {
+          display: none;
+        }
+      }
+
+      /* Embedded in the Hilltoppers extension the page is the widget alone, so
+         the dashboard pane is hidden and the layout collapses to the original
+         single column. The wrapper class is set from the extension's own
+         host/session params, which is the same signal resize.js keys off. */
+      body.embed .page {
+        display: block;
+        max-width: none;
+        padding: 0;
+      }
+
+      body.embed .menu-pane {
+        position: static;
+      }
+
+      body.embed .dash-pane {
+        display: none;
+      }
+
+      .dash-pane {
+        min-width: 0;
+      }
+
+      /* The dashboard's own stylesheet, scoped under .dash. Its :root tokens
+         that the widget does not define are scoped here so the widget's own
+         rules stay untouched. */
+      .dash {
+        --border: rgba(17, 17, 17, 0.14);
+        --line: rgba(17, 17, 17, 0.07);
+      }
+
+
+
+
+
+      .dash .wrap {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+
+      /* On the combined page the dashboard is one grid column, not the whole
+         page, so it fills the column rather than centring a narrow measure. */
+      body.combined:not(.embed) .dash .wrap {
+        max-width: none;
+        margin: 0;
+        padding: 8px 20px 48px;
+      }
+
+      /* A drag handle between the two panes. The widget column is a CSS
+         variable so the handle can rewrite just that one number. */
+      .splitter {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        /* The grid's own 16px padding offsets the first column. */
+        left: calc(var(--menu-w, 380px) + 16px);
+        width: 10px;
+        margin-left: -5px;
+        cursor: col-resize;
+        z-index: 5;
+      }
+
+      body.embed .splitter { display: none; }
+
+      .splitter::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 4px;
+        width: 2px;
+        background: transparent;
+        transition: background 120ms ease;
+      }
+
+      .splitter:hover::before,
+      .splitter:focus-visible::before,
+      body.splitter-active .splitter::before {
+        background: var(--green, #2f7d4f);
+      }
+
+      .dash header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+
+      .dash h1 {
+        font-size: 18px;
+        margin: 0;
+      }
+
+      .dash .subtitle {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .dash .refresh {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--green);
+        color: #ffffff;
+        padding: 7px 16px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.15s ease, opacity 0.15s ease;
+      }
+
+      .dash .refresh:hover:not(:disabled) {
+        background: #15692c;
+      }
+
+      .dash .refresh:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      /* Scope toggle: All-time vs Today drives every panel below it. */
+      .dash .scopes {
+        display: inline-flex;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--panel);
+        padding: 3px;
+        margin-bottom: 16px;
+      }
+
+      .dash .scopes button {
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: 13px;
+        padding: 5px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+        color: var(--text-muted);
+      }
+
+      .dash .scopes button[aria-pressed='true'] {
+        background: var(--green);
+        color: #ffffff;
+      }
+
+      /* Period filter: All / Breakfast / Lunch / Dinner. A second row of the
+         same pill control, so the two filters read as one pair. */
+      .dash .filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .dash .filters .scopes {
+        margin-bottom: 0;
+      }
+
+      .dash .filters .label {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-right: 2px;
+      }
+
+      .dash .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .dash .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+      }
+
+      .dash .card .value {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      .dash .card .label {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .dash .card .stars {
+        display: block;
+        font-size: 14px;
+        margin-top: 2px;
+      }
+
+      .dash .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 14px;
+      }
+
+      .dash .panel-title {
+        padding: 9px 14px;
+        background: var(--panel-alt);
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .dash .panel-title .count {
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      .dash .sides {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .dash .side {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+      }
+
+      .dash .side-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .dash .side table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      .dash .side th,
+      .dash .side td {
+        padding: 5px 0;
+        border: 0;
+        font-size: 13px;
+      }
+
+      .dash .side th {
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: transparent;
+      }
+
+      .dash table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .dash th, .dash td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .dash th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        background: var(--panel-alt);
+      }
+
+      .dash .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .dash .stars {
+        color: var(--star);
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+
+      .dash .stars .empty {
+        color: rgba(17, 17, 17, 0.16);
+      }
+
+      /* A dish row is a button: clicking toggles its drill-down. */
+      .dash tr.item > td {
+        cursor: pointer;
+      }
+
+      .dash tr.item:hover > td {
+        background: var(--panel-alt);
+      }
+
+      .dash tr.item[aria-expanded='true'] > td {
+        border-bottom-color: transparent;
+      }
+
+      .dash .dish {
+        font-weight: 500;
+      }
+
+      .dash .twist {
+        border: 0;
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .dash .twist:hover {
+        background: var(--green-bg);
+        color: var(--green);
+      }
+
+      .dash .bar {
+        height: 4px;
+        border-radius: 999px;
+        background: var(--green-bg);
+        margin-top: 5px;
+      }
+
+      .dash .bar > span {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--green);
+        min-width: 2px;
+      }
+
+      .dash .detail > td {
+        background: var(--panel-alt);
+        padding: 0 14px 16px;
+      }
+
+      .dash .detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .dash .detail h3 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        margin: 14px 0 6px;
+      }
+
+      .dash .rating-list {
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .dash .rating-list table {
+        border-collapse: collapse;
+      }
+
+      .rating-list th,
+      .dash .rating-list td {
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+
+      .dash .rate-value {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .dash .chart {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 6px 2px;
+      }
+
+      .dash .chart svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .dash .chart .legend {
+        color: var(--text-muted);
+        font-size: 11px;
+        padding: 0 6px 6px;
+      }
+
+      /* The hover tooltip: a grey box behind white text, sized to the label by
+         the hover handler. Pointer events are off so it never steals the hover
+         from the band that spawned it. */
+      .dash .chart .chart-tip {
+        pointer-events: none;
+      }
+
+      .dash .chart .point {
+        cursor: default;
+      }
+
+      .dash .chart .point rect {
+        pointer-events: all;
+      }
+
+      /* Ratings-per-day volume: a histogram with a meal and a category filter. */
+      .dash .volume-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 0;
+      }
+
+      .dash .volume-pick {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+
+      .dash .volume-pick select {
+        font: inherit;
+        font-size: 12px;
+        color: var(--text-primary);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 4px 8px;
+      }
+
+      .dash .volume {
+        padding: 10px 14px 14px;
+      }
+
+      .dash .volume svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .dash .bars {
+        cursor: default;
+      }
+
+      .dash .bars rect.bar-fill {
+        fill: var(--green);
+      }
+
+      .dash .bars rect.bar-hit {
+        fill: transparent;
+        pointer-events: all;
+      }
+
+      .dash .muted {
+        color: var(--text-muted);
+      }
+
+      .dash .message {
+        padding: 28px 14px;
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      .dash .message.error {
+        color: #a4232b;
+      }
+
+      .dash .loading {
+        padding: 12px 14px;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .dash footer {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 14px;
+      }
+
+      .dash code {
+        background: var(--panel-alt);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 4px;
+        font-size: 12px;
+      }
+    
     </style>
   </head>
-  <body>
+  <body class="combined">
+    <script>
+      // The Hilltoppers extension loads this page with ?host=&session= (the same
+      // signal resize.js keys off). Inside that iframe the page must be the menu
+      // widget alone, so mark the body and let CSS collapse the combined layout.
+      (function () {
+        var params = new URLSearchParams(location.search);
+        if (params.get('host') && params.get('session')) {
+          document.body.classList.add('embed');
+        }
+      })();
+    </script>
+    <div class="page">
+      <div class="menu-pane">
     <main class="popup" data-topping-content>
       <section class="section">
         <div class="dining-content" id="menuContent">
@@ -531,16 +1096,12 @@
           </div>
           <p class="refresh-info">
             <span id="refreshInfo"></span>
-            <a
-              class="refresh-link"
-              href="./dashboard.html"
-              target="_blank"
-              rel="noopener"
-            >View stats</a>
           </p>
         </div>
       </section>
     </main>
+
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="Resize the menu pane" tabindex="0"></div>
 
     <dialog class="rating-dialog" id="ratingDialog" aria-labelledby="ratingDialogTitle">
       <form method="dialog" class="rating-dialog-form" id="ratingDialogForm">
@@ -555,8 +1116,88 @@
         </div>
       </form>
     </dialog>
+      </div>
+      <div class="dash-pane">
+        <div class="dash wrap">
+        <header>
+          <div>
+            <h1>Ratings</h1>
+            <div class="subtitle" id="status">Loading…</div>
+          </div>
+        <button class="refresh" id="refresh" type="button">Refresh</button>
+      </header>
 
-    <script>
+      <div class="filters">
+        <div class="scopes" role="group" aria-label="Ranking scope">
+          <button id="scopeAll" type="button" aria-pressed="true">All-time</button>
+          <button id="scopeToday" type="button" aria-pressed="false">Today</button>
+        </div>
+        <span class="label" id="periodLabel">Meal</span>
+        <div class="scopes" role="group" aria-label="Meal period">
+          <button id="periodAll" type="button" aria-pressed="true" data-period="">All meals</button>
+          <button id="periodBreakfast" type="button" aria-pressed="false" data-period="breakfast">Breakfast</button>
+          <button id="periodLunch" type="button" aria-pressed="false" data-period="lunch">Lunch</button>
+          <button id="periodDinner" type="button" aria-pressed="false" data-period="dinner">Dinner</button>
+        </div>
+      </div>
+
+      <div class="cards" id="cards"></div>
+      <div class="sides" id="sides"></div>
+
+      <div class="panel">
+        <div class="panel-title"><span id="rankedTitle">Ranked</span><span class="count" id="rankedCount"></span></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Dish</th>
+              <th class="num">Ratings</th>
+              <th class="num">Average</th>
+              <th class="num"></th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td class="message" colspan="4">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span id="unrankedTitle">Still gathering ratings</span><span class="count" id="unrankedCount"></span></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Dish</th>
+              <th class="num">Ratings</th>
+              <th class="num">Average</th>
+              <th class="num"></th>
+            </tr>
+          </thead>
+          <tbody id="unrankedRows">
+            <tr><td class="message" colspan="4">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      <div class="panel">
+        <div class="panel-title"><span>Ratings per day</span><span class="count" id="volumeCount"></span></div>
+        <div class="volume-controls">
+          <div class="scopes" role="group" aria-label="Volume meal">
+            <button id="volAll" type="button" aria-pressed="true" data-vol-meal="">All meals</button>
+            <button id="volBreakfast" type="button" aria-pressed="false" data-vol-meal="breakfast">Breakfast</button>
+            <button id="volLunch" type="button" aria-pressed="false" data-vol-meal="lunch">Lunch</button>
+            <button id="volDinner" type="button" aria-pressed="false" data-vol-meal="dinner">Dinner</button>
+          </div>
+          <label class="volume-pick">Category
+            <select id="volCategory"><option value="">All categories</option></select>
+          </label>
+        </div>
+        <div class="volume" id="volume"></div>
+      </div>
+
+      <footer id="footnote"></footer>
+
+      <script>
       // This repo's own menu.json is refreshed by .github/workflows/update-menu.yml
       // on a short schedule, so it is read first: it is same-origin (no CORS
       // concerns) and usually the freshest. The reference project's published
@@ -1339,6 +1980,921 @@
       scheduleMenuRefresh();
       scheduleRatingsRefresh();
       setInterval(updateRefreshInfo, 60000);
+
+      // Drag the handle between the two panes to give the menu more or less
+      // room. The widget column is driven by --menu-w so this only rewrites one
+      // number; the choice is remembered between visits. The handle is
+      // meaningless in the embed, where the layout is the widget alone.
+      const splitterEl = document.getElementById('splitter');
+      const MENU_W_KEY = 'hilltoppers-menu-width';
+      const MIN_MENU_W = 260;
+      const MIN_DASH_W = 320;
+
+      function setMenuWidth(px) {
+        const page = document.querySelector('.page');
+        if (!page) return;
+        const max = Math.max(MIN_MENU_W, page.clientWidth - MIN_DASH_W - 18);
+        const width = Math.min(Math.max(px, MIN_MENU_W), max);
+        document.documentElement.style.setProperty('--menu-w', `${width}px`);
+        splitterEl.setAttribute('aria-valuenow', String(Math.round(width)));
+        splitterEl.setAttribute('aria-valuemin', String(MIN_MENU_W));
+        splitterEl.setAttribute('aria-valuemax', String(Math.round(max)));
+        return width;
+      }
+
+      if (splitterEl && !document.body.classList.contains('embed')) {
+        try {
+          const saved = Number(localStorage.getItem(MENU_W_KEY));
+          if (saved) setMenuWidth(saved);
+          else setMenuWidth(document.querySelector('.menu-pane').getBoundingClientRect().width);
+        } catch (_) {
+          setMenuWidth(380);
+        }
+
+        splitterEl.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          splitterEl.setPointerCapture(event.pointerId);
+          document.body.classList.add('splitter-active');
+          const page = document.querySelector('.page');
+          const left = page.getBoundingClientRect().left;
+          const move = (e) => setMenuWidth(e.clientX - left);
+          const up = (e) => {
+            splitterEl.removeEventListener('pointermove', move);
+            document.body.classList.remove('splitter-active');
+            const width = e.clientX - left;
+            try { localStorage.setItem(MENU_W_KEY, String(Math.round(width))); } catch (_) {}
+          };
+          splitterEl.addEventListener('pointermove', move);
+          splitterEl.addEventListener('pointerup', up, { once: true });
+        });
+
+        // Keyboard users get the same control: arrows nudge, Home resets.
+        splitterEl.addEventListener('keydown', (event) => {
+          const page = document.querySelector('.page');
+          const current = page.querySelector('.menu-pane').getBoundingClientRect().width;
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            const next = setMenuWidth(current + (event.key === 'ArrowRight' ? 24 : -24));
+            try { localStorage.setItem(MENU_W_KEY, String(Math.round(next))); } catch (_) {}
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            setMenuWidth(380);
+            try { localStorage.removeItem(MENU_W_KEY); } catch (_) {}
+          }
+        });
+      }
+    </script>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // The dashboard runs in its own scope so its helper names cannot collide
+      // with the widget's, which sits above it.
+      (function () {
+
+      // Same backend the menu widget writes to.
+      const RATINGS_API = 'https://hilltoppers-menu-ratings.amos-donn.workers.dev';
+
+      // One rating can put a dish at 5.0, so a ranking needs a few before the
+      // average means anything. A single day rarely has that many, so Today is
+      // ranked on the day's own ratings instead — see `split()`.
+      const MIN_RATINGS = 3;
+
+      const statusEl = document.getElementById('status');
+      const cardsEl = document.getElementById('cards');
+      const sidesEl = document.getElementById('sides');
+      const rowsEl = document.getElementById('rows');
+      const unrankedRowsEl = document.getElementById('unrankedRows');
+      const rankedTitleEl = document.getElementById('rankedTitle');
+      const unrankedTitleEl = document.getElementById('unrankedTitle');
+      const rankedCountEl = document.getElementById('rankedCount');
+      const unrankedCountEl = document.getElementById('unrankedCount');
+      const footnoteEl = document.getElementById('footnote');
+      const refreshBtn = document.getElementById('refresh');
+      const scopeAllBtn = document.getElementById('scopeAll');
+      const scopeTodayBtn = document.getElementById('scopeToday');
+      // The dashboard pane lives under .dash, so scope the query to it: the
+      // widget's own meal tabs also carry data-period and must not be caught.
+      const periodBtns = [...document.querySelectorAll('.dash [data-period]')];
+      const periodLabelEl = document.getElementById('periodLabel');
+      const volumeEl = document.getElementById('volume');
+      const volumeCountEl = document.getElementById('volumeCount');
+      const volumeBtns = [...document.querySelectorAll('[data-vol-meal]')];
+      const volumeCategoryEl = document.getElementById('volCategory');
+
+      // The three meals, in the order the dining hall serves them. Used for
+      // labels and for the per-meal cards; the Worker sends the same set.
+      const PERIODS = ['breakfast', 'lunch', 'dinner'];
+      const periodName = (p) => p.charAt(0).toUpperCase() + p.slice(1);
+
+      const state = {
+        scope: 'all',
+        // '' means every meal; otherwise one of PERIODS.
+        period: '',
+        stats: null,
+        dishes: { all: [], today: [] },
+        expanded: new Set(),
+        // Drill-down and side graphs are fetched once and kept until a refresh,
+        // so reopening a row is instant.
+        histories: new Map(),
+        // The ratings-per-day volume graph keeps its own filters, independent of
+        // the scope/meal pair above.
+        volume: { meal: '', category: '', days: [], loaded: false, error: '' }
+      };
+
+      // The volume graph's category control lists every section a dish can be
+      // catalogued under: the two daily stations and the four static sections.
+      // Meals are a separate set of pins beside it.
+      const CATEGORIES = ['Global Fare', 'Classic Kitchen', 'Soupside', 'Sauce + Stone', 'Greens', 'Sandwich'];
+
+      // The rating window has to be the day the hall is living in, not the UTC
+      // day: at 8pm Eastern the UTC date has rolled over already.
+      const localDate = () => new Date().toLocaleDateString('en-CA');
+      const tzOffset = () => new Date().getTimezoneOffset();
+      const scopeQuery = () => `date=${localDate()}&offset=${tzOffset()}`;
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+
+      function fmt(value) {
+        return Number(value).toLocaleString('en-US');
+      }
+
+      function stars(average) {
+        const filled = Math.round(average);
+        let out = '';
+        for (let i = 1; i <= 5; i += 1) {
+          out += i <= filled ? '★' : '<span class="empty">★</span>';
+        }
+        return `<span class="stars" aria-label="${average} out of 5">${out}</span>`;
+      }
+
+      function card(value, label, extra) {
+        return `<div class="card"><div class="value">${value}</div>${extra || ''}` +
+          `<div class="label">${label}</div></div>`;
+      }
+
+      function pct(average) {
+        return Math.round((average / 5) * 100);
+      }
+
+      // A history point's minute, in the reader's own clock. The API buckets in
+      // the caller's timezone, so this only formats what it was handed.
+      function fmtMinute(at) {
+        return new Date(at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      }
+
+      function fmtDay(day) {
+        const [y, m, d] = String(day).split('-').map(Number);
+        if (!y || !m || !d) return String(day);
+        return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+
+      function fmtMoment(at) {
+        return new Date(at).toLocaleString('en-US', {
+          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+        });
+      }
+
+      /**
+       * A line chart of the running average, drawn as inline SVG so the page
+       * keeps its no-dependency, iframe-safe promise.
+       *
+       * The y axis is pinned to 0–5 rather than stretched to the data, so two
+       * charts can be compared at a glance; a dish that moved 3.0 → 3.2 should
+       * not look as dramatic as one that moved 2.0 → 4.5.
+       *
+       * The x axis is the real time each rating landed, not the point's index.
+       * Index spacing would draw an evening's three ratings and three ratings
+       * spread over a month as the same shape; spacing by time means the line
+       * leans where the rating was brisk and stretches where it was quiet. When
+       * the points cross a day boundary the days are marked, because a long gap
+       * and a short one otherwise look alike.
+       *
+       * The time is deliberately not written under each point. Once the buckets
+       * are minutes, per-point labels overlap into an unreadable smear, so the
+       * axis carries only the day (or the day range) and each point reveals its
+       * exact instant in a grey tooltip on hover.
+       */
+      function chart(points) {
+        if (!points.length) {
+          return '<div class="chart"><div class="legend">No ratings yet.</div></div>';
+        }
+        const W = 320;
+        const H = 108;
+        const left = 22;
+        const right = 10;
+        const top = 10;
+        const bottom = 18;
+        const innerW = W - left - right;
+        const innerH = H - top - bottom;
+
+        // An older API buckets by day and sends no instant. Fall back to even
+        // spacing rather than drawing every point at the same x.
+        const timed = points.every((p) => Number.isFinite(p.at) && p.at > 0);
+        const t0 = timed ? points[0].at : 0;
+        const t1 = timed ? points[points.length - 1].at : 0;
+        const span = t1 - t0;
+        const x = (i) => {
+          if (points.length === 1) return left + innerW / 2;
+          if (!timed || span <= 0) return left + (i * innerW) / (points.length - 1);
+          return left + ((points[i].at - t0) / span) * innerW;
+        };
+        const y = (v) => top + innerH - (Math.max(0, Math.min(5, v)) / 5) * innerH;
+
+        const grid = [1, 3, 5]
+          .map(
+            (tick) =>
+              `<line x1="${left}" y1="${y(tick)}" x2="${W - right}" y2="${y(tick)}" ` +
+              `stroke="rgba(17,17,17,0.08)" stroke-width="1"/>` +
+              `<text x="${left - 4}" y="${y(tick) + 3}" text-anchor="end" ` +
+              `font-size="9" fill="#7d8591">${tick}</text>`
+          )
+          .join('');
+
+        const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.running)}`).join('');
+
+        // The hover target is a full-height invisible band around each point, so
+        // the tooltip is reachable without pixel-hunting the 2.6px dot. The
+        // label is a grey box drawn in the SVG, positioned and filled in by the
+        // hover handler below.
+        const bands = points
+          .map((p, i) => {
+            const when = timed ? fmtMoment(p.at) : fmtDay(p.day);
+            const label = `${when} · ${p.running} avg · ${p.count} rating${p.count === 1 ? '' : 's'}`;
+            return (
+              `<g class="point" data-x="${x(i)}" data-y="${y(p.running)}" ` +
+              `data-label="${esc(label)}">` +
+              `<rect x="${Math.max(0, x(i) - 6)}" y="${top}" width="12" height="${innerH}" fill="transparent"/>` +
+              `<circle cx="${x(i)}" cy="${y(p.running)}" r="2.6" fill="#1a7f37"/>` +
+              `</g>`
+            );
+          })
+          .join('');
+
+        // A marker where the date changes, so a gap of days is not read as a
+        // gap of minutes.
+        const days = [...new Set(points.map((p) => p.day))];
+        const dayMarks =
+          days.length > 1
+            ? points
+                .map((p, i) => ({ p, i }))
+                .filter(({ p, i }) => i > 0 && p.day !== points[i - 1].day)
+                .map(
+                  ({ p, i }) =>
+                    `<line x1="${x(i)}" y1="${top}" x2="${x(i)}" y2="${top + innerH}" ` +
+                    `stroke="rgba(17,17,17,0.18)" stroke-width="1" stroke-dasharray="2 2"/>`
+                )
+                .join('')
+            : '';
+
+        // One quiet line naming the span, rather than a label per point.
+        const dayLine =
+          days.length === 1
+            ? `<text x="${left}" y="${H - 3}" font-size="8.5" fill="#7d8591">${esc(fmtDay(days[0]))}</text>`
+            : `<text x="${left}" y="${H - 3}" font-size="8.5" fill="#7d8591">` +
+              `${esc(`${fmtDay(days[0])} – ${fmtDay(days[days.length - 1])}`)}</text>`;
+
+        const total = points[points.length - 1].runningCount;
+        const minutes = points.length;
+        const legend =
+          `Average over time · ${total} rating${total === 1 ? '' : 's'} across ` +
+          `${minutes} minute${minutes === 1 ? '' : 's'}` +
+          (days.length > 1 ? ` over ${days.length} days` : ` on ${fmtDay(days[0])}`) +
+          ' · hover a point for its time';
+
+        return `<div class="chart">
+          <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Average rating over time">
+            ${grid}
+            ${dayMarks}
+            <path d="${path}" fill="none" stroke="#1a7f37" stroke-width="2" stroke-linejoin="round"/>
+            ${bands}
+            <g class="chart-tip" hidden>
+              <rect x="0" y="0" rx="3" ry="3" width="0" height="0" fill="#4b5563"/>
+              <text x="0" y="0" font-size="8.5" fill="#ffffff" text-anchor="middle"> </text>
+            </g>
+          </svg>
+          <div class="legend">${esc(legend)}</div>
+        </div>`;
+      }
+
+      /**
+       * Ratings per day as a histogram. One bar per day between the first and
+       * last rated day, so the quiet days show as gaps rather than vanishing
+       * and squeezing a weekend's silence out of the shape.
+       *
+       * Each bar reveals its exact date and count in the same grey tooltip the
+       * line charts use.
+       */
+      function volumeChart(days) {
+        if (!days.length) {
+          return '<div class="legend">No ratings in range yet.</div>';
+        }
+        const W = 640;
+        const H = 150;
+        const left = 26;
+        const right = 8;
+        const top = 10;
+        const bottom = 20;
+        const innerW = W - left - right;
+        const innerH = H - top - bottom;
+
+        const max = Math.max(1, ...days.map((d) => d.count));
+        // Four ticks up to the peak, so the axis stays readable at any height.
+        const step = Math.max(1, Math.ceil(max / 4));
+        const ticks = [];
+        for (let v = 0; v <= max; v += step) ticks.push(v);
+        if (ticks[ticks.length - 1] !== max) ticks.push(max);
+
+        const slot = innerW / days.length;
+        const barW = Math.max(1.5, Math.min(14, slot * 0.7));
+        const y = (v) => top + innerH - (v / max) * innerH;
+
+        const grid = ticks
+          .map(
+            (t) =>
+              `<line x1="${left}" y1="${y(t)}" x2="${W - right}" y2="${y(t)}" ` +
+              `stroke="rgba(17,17,17,0.08)" stroke-width="1"/>` +
+              `<text x="${left - 4}" y="${y(t) + 3}" text-anchor="end" ` +
+              `font-size="9" fill="#7d8591">${t}</text>`
+          )
+          .join('');
+
+        const bars = days
+          .map((d, i) => {
+            const cx = left + slot * (i + 0.5);
+            const h = d.count === 0 ? 0 : Math.max(1, innerH - (y(d.count) - top));
+            return (
+              `<g class="point" data-x="${cx}" data-y="${Math.max(top, y(d.count))}" ` +
+              `data-label="${esc(`${fmtDay(d.day)} · ${d.count} rating${d.count === 1 ? '' : 's'}`)}">` +
+              `<rect class="bar-hit" x="${cx - slot / 2}" y="${top}" width="${slot}" height="${innerH}"/>` +
+              `<rect class="bar-fill" x="${cx - barW / 2}" y="${y(d.count)}" width="${barW}" height="${h}"/>` +
+              `</g>`
+            );
+          })
+          .join('');
+
+        // Label only the ends, so a month of days does not smear the axis.
+        const labelDays =
+          days.length <= 6
+            ? days.map((d, i) => ({ d, i }))
+            : [{ d: days[0], i: 0 }, { d: days[days.length - 1], i: days.length - 1 }];
+        const labels = labelDays
+          .map(({ d, i }) => {
+            const cx = left + slot * (i + 0.5);
+            const anchor = i === 0 ? 'start' : i === days.length - 1 ? 'end' : 'middle';
+            return (
+              `<text x="${cx}" y="${H - 6}" text-anchor="${anchor}" font-size="8.5" fill="#7d8591">` +
+              `${esc(fmtDay(d.day))}</text>`
+            );
+          })
+          .join('');
+
+        return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ratings per day">
+          ${grid}
+          <g class="bars">${bars}</g>
+          ${labels}
+          <g class="chart-tip" hidden>
+            <rect x="0" y="0" rx="3" ry="3" width="0" height="0" fill="#4b5563"/>
+            <text x="0" y="0" font-size="8.5" fill="#ffffff" text-anchor="middle"> </text>
+          </g>
+        </svg>`;
+      }
+
+      /**
+       * Places the grey tooltip inside the hovered SVG. Drawn in SVG rather
+       * than as an HTML popover so it cannot be clipped by the panel, and sized
+       * from the label length since SVG text cannot be measured synchronously.
+       */
+      function showTip(target) {
+        const svg = target.closest('svg');
+        const tip = svg && svg.querySelector('.chart-tip');
+        if (!tip) return;
+        const label = target.getAttribute('data-label') || '';
+        const text = tip.querySelector('text');
+        const box = tip.querySelector('rect');
+        text.textContent = label;
+        const w = label.length * 4.7 + 12;
+        const h = 15;
+        const cx = Number(target.getAttribute('data-x')) || 0;
+        const cy = Number(target.getAttribute('data-y')) || 0;
+        // Keep the box inside the viewBox rather than letting it run off an edge.
+        const vb = svg.viewBox.baseVal;
+        const x = Math.max(vb.x + w / 2 + 1, Math.min(vb.x + vb.width - w / 2 - 1, cx));
+        const y = Math.max(vb.y + h + 2, cy - 8);
+        box.setAttribute('x', x - w / 2);
+        box.setAttribute('y', y - h);
+        box.setAttribute('width', w);
+        box.setAttribute('height', h);
+        text.setAttribute('x', x);
+        text.setAttribute('y', y - 4);
+        tip.removeAttribute('hidden');
+      }
+
+      function hideTip(target) {
+        const svg = target.closest('svg');
+        const tip = svg && svg.querySelector('.chart-tip');
+        if (tip) tip.setAttribute('hidden', '');
+      }
+
+      /**
+       * Splits the current scope's dishes into "ranked" and "still gathering".
+       *
+       * All-time ranks on the lifetime average once a dish has MIN_RATINGS.
+       * Today is a different question — one day rarely reaches three ratings —
+       * so it ranks whatever was served today that anyone rated today, and
+       * parks the dishes nobody rated in the waiting table. Both keep the same
+       * two-table shape so the page reads the same in either scope.
+       */
+      function split(scope) {
+        if (scope === 'today') {
+          const served = state.dishes.today;
+          return {
+            ranked: served
+              .filter((d) => d.count > 0 && d.average !== null)
+              .sort((a, b) => b.average - a.average || b.count - a.count),
+            unranked: served
+              .filter((d) => !(d.count > 0 && d.average !== null))
+              .sort((a, b) => a.name.localeCompare(b.name))
+          };
+        }
+        const rated = state.dishes.all.filter((d) => d.count > 0 && d.average !== null);
+        return {
+          ranked: rated
+            .filter((d) => d.count >= MIN_RATINGS)
+            .sort((a, b) => b.average - a.average || b.count - a.count),
+          unranked: rated
+            .filter((d) => d.count < MIN_RATINGS)
+            .sort((a, b) => b.count - a.count || b.average - a.average)
+        };
+      }
+
+      function renderCards() {
+        const stats = state.stats;
+        const today = state.scope === 'today';
+        // A Worker that predates the dual-scope fields answers without `today`;
+        // fall back to zeroes rather than crashing the whole page while the two
+        // deploys catch up with each other.
+        const block = (today && stats.today) || (today ? { totalRatings: 0, ratedDishes: 0, raters: 0, ratingsPerRater: 0 } : stats);
+
+        // When a meal is selected the cards describe that meal, so every figure
+        // on the page belongs to one thing. The Worker sends a per-meal block
+        // with the same fields; a Worker that predates it sends none, in which
+        // case the page falls back to the overall figures rather than blanking.
+        const meal = state.period ? findPeriod(state.period) : null;
+        const mealBlock = meal ? (today && meal.today ? meal.today : meal) : null;
+        const periodSuffix = state.period ? ` at ${periodName(state.period).toLowerCase()}` : '';
+
+        const c = mealBlock
+          ? {
+              ratings: mealBlock.ratings,
+              dishes: mealBlock.dishes,
+              raters: mealBlock.raters,
+              perRater: mealBlock.ratingsPerRater,
+              average: mealBlock.average
+            }
+          : {
+              ratings: block.totalRatings,
+              dishes: block.ratedDishes,
+              raters: block.raters,
+              perRater: block.ratingsPerRater,
+              average: block.average
+            };
+
+        const avg = c.average ? `${stars(c.average)} ${c.average}` : '—';
+        cardsEl.innerHTML = [
+          card(fmt(c.ratings), today ? `Ratings cast today${periodSuffix}` : `Ratings cast${periodSuffix}`),
+          card(fmt(c.dishes), today ? `Dishes rated today${periodSuffix}` : `Dishes rated${periodSuffix}`),
+          card(fmt(c.raters), today ? `Rater IDs today${periodSuffix}` : `Rater IDs${periodSuffix}`),
+          card(fmt(c.perRater), 'Ratings per rater'),
+          card(avg, 'Average rating')
+        ].join('');
+      }
+
+      /** The Worker's per-meal block for one meal, or null on an older Worker. */
+      function findPeriod(period) {
+        const list = Array.isArray(state.stats?.periods) ? state.stats.periods : [];
+        return list.find((p) => p.period === period) || null;
+      }
+
+      /**
+       * One card per kitchen station, carrying both scopes side by side plus a
+       * button that graphs the side's average over time.
+       */
+      function renderSides() {
+        const stations = Array.isArray(state.stats?.stations) ? state.stats.stations : [];
+        const meals = Array.isArray(state.stats?.periods) ? state.stats.periods : [];
+        // The station cards are per-side detail for the daily menu, so they are
+        // hidden when the reader has narrowed to one meal: that view is already
+        // described by the stat cards and the meal cards below.
+        const stationCards = state.period ? [] : stations;
+        if (!stationCards.length && !meals.length) {
+          sidesEl.innerHTML =
+            '<div class="side"><div class="side-head">Per side</div>' +
+            '<div class="muted">No station data yet.</div></div>';
+          return;
+        }
+        sidesEl.innerHTML =
+          stationCards
+            .map((s) => sideCard(`station:${s.station}`, s.station, s, s.today))
+            .join('') +
+          meals.map((m) => sideCard(`period:${m.period}`, periodName(m.period), m, m.today)).join('');
+      }
+
+      /**
+       * One side card: a label, a Trend toggle, and an All-time / Today table.
+       * Shared by the station cards and the meal cards so the two read alike.
+       */
+      function sideCard(key, label, all, todayBlock) {
+        const today = todayBlock || { ratings: 0, raters: 0, average: 0 };
+        const allValue = all.ratings === 0 ? '—' : all.average;
+        const day = today.ratings === 0 ? '—' : today.average;
+        const shown = state.expanded.has(key);
+        return `<div class="side">
+          <div class="side-head">
+            <span>${esc(label)}</span>
+            <button class="twist" type="button" data-graph="${esc(key)}"
+              aria-expanded="${shown}">${shown ? 'Hide trend' : 'Trend'}</button>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Scope</th><th class="num">Avg.</th><th class="num">Ratings</th><th class="num">Raters</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>All-time</td>
+                <td class="num">${allValue === '—' ? '—' : `${stars(all.average)} ${allValue}`}</td>
+                <td class="num">${fmt(all.ratings)}</td>
+                <td class="num">${fmt(all.raters)}</td>
+              </tr>
+              <tr>
+                <td>Today</td>
+                <td class="num">${day === '—' ? '—' : `${stars(today.average)} ${day}`}</td>
+                <td class="num">${fmt(today.ratings)}</td>
+                <td class="num">${fmt(today.raters)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div id="graph-${esc(key)}" data-graphslot="${esc(key)}"></div>
+        </div>`;
+      }
+
+      /**
+       * A dish row plus, when expanded, its drill-down: the rating-over-time
+       * chart and the itemised list of every individual rating behind it.
+       */
+      function dishRow(d) {
+        const expanded = state.expanded.has(d.id);
+        const pctWidth = d.average === null ? 0 : pct(d.average);
+        const value = d.average === null ? '—' : `${stars(d.average)} <span>${d.average}</span>`;
+        const row = `<tr class="item" data-dish="${esc(d.id)}" aria-expanded="${expanded}">
+          <td class="dish">${esc(d.name)}<div class="bar"><span style="width:${pctWidth}%"></span></div></td>
+          <td class="num">${fmt(d.count)}</td>
+          <td class="num">${value}</td>
+          <td class="num"><button class="twist" type="button" data-dish="${esc(d.id)}"
+            aria-label="${expanded ? 'Hide' : 'Show'} ratings for ${esc(d.name)}">${expanded ? 'Hide' : 'Details'}</button></td>
+        </tr>`;
+        if (!expanded) return row;
+        return row + `<tr class="detail"><td colspan="4">
+          <div class="detail-grid" id="detail-${esc(d.id)}" data-details="${esc(d.id)}">
+            <div class="loading">Loading ratings…</div>
+          </div>
+        </td></tr>`;
+      }
+
+      function renderTables() {
+        const { ranked, unranked } = split(state.scope);
+        const today = state.scope === 'today';
+        const periodSuffix = state.period ? ` · ${periodName(state.period)}` : '';
+
+        rankedTitleEl.textContent = (today ? 'Today’s rankings' : 'Ranked') + periodSuffix;
+        unrankedTitleEl.textContent = (today ? 'Served today, no ratings yet' : 'Still gathering ratings') + periodSuffix;
+
+        rankedCountEl.textContent = ranked.length ? ` · ${fmt(ranked.length)}` : '';
+        unrankedCountEl.textContent = unranked.length ? ` · ${fmt(unranked.length)}` : '';
+
+        const emptyRanked = today
+          ? state.todaySupported
+            ? 'Nobody has rated anything served today yet.'
+            : 'Waiting for the ratings backend to publish today’s data.'
+          : `No dish has ${MIN_RATINGS} ratings yet.`;
+        const emptyUnranked = today
+          ? state.todaySupported
+            ? 'Nothing served today.'
+            : 'Waiting for the ratings backend to publish today’s data.'
+          : 'Nothing waiting.';
+
+        rowsEl.innerHTML = ranked.length
+          ? ranked.map(dishRow).join('')
+          : `<tr><td class="message" colspan="4">${emptyRanked}</td></tr>`;
+        unrankedRowsEl.innerHTML = unranked.length
+          ? unranked.map(dishRow).join('')
+          : `<tr><td class="message" colspan="4">${emptyUnranked}</td></tr>`;
+      }
+
+      function render() {
+        scopeAllBtn.setAttribute('aria-pressed', String(state.scope === 'all'));
+        scopeTodayBtn.setAttribute('aria-pressed', String(state.scope === 'today'));
+        periodBtns.forEach((btn) =>
+          btn.setAttribute('aria-pressed', String(btn.getAttribute('data-period') === state.period))
+        );
+        periodLabelEl.textContent = state.period ? `${periodName(state.period)} only` : 'Meal';
+        renderCards();
+        renderSides();
+        renderTables();
+      }
+
+      async function historyFor(key) {
+        if (state.histories.has(key)) return state.histories.get(key);
+        // Station and meal keys are prefixed ("station:Global Fare",
+        // "period:dinner"); a dish key is the bare id. Dish ids are normalised
+        // names, so they can contain spaces and every other character except a
+        // colon — which the prefix owns.
+        const isStation = key.startsWith('station:');
+        const isPeriod = key.startsWith('period:');
+        const value = isStation
+          ? key.slice('station:'.length)
+          : isPeriod
+            ? key.slice('period:'.length)
+            : key;
+        const param = isStation
+          ? `station=${encodeURIComponent(value)}`
+          : isPeriod
+            ? `period=${encodeURIComponent(value)}`
+            : `dish=${encodeURIComponent(value)}`;
+        const response = await fetch(
+          `${RATINGS_API}/api/ratings/history?${param}&${scopeQuery()}`,
+          { cache: 'no-store' }
+        );
+        if (!response.ok) throw new Error(`history returned ${response.status}`);
+        const data = await response.json();
+        state.histories.set(key, data);
+        return data;
+      }
+
+      function detailBody(data) {
+        const rows = data.ratings.length
+          ? data.ratings
+              .map(
+                (r) => `<tr>
+                  <td>${esc(new Date(r.updatedAt).toLocaleString('en-US'))}</td>
+                  <td><code>${esc(r.rater)}</code></td>
+                  <td class="rate-value">${stars(r.rating)} <span>${r.rating}</span></td>
+                </tr>`
+              )
+              .join('')
+          : `<tr><td class="message" colspan="3">No individual ratings.</td></tr>`;
+        return `<div class="detail-grid">
+          <div>
+            <h3>Average over time</h3>
+            ${chart(data.timeline)}
+          </div>
+          <div>
+            <h3>Every rating · ${fmt(data.count)} total</h3>
+            <div class="rating-list">
+              <table>
+                <thead><tr><th>When</th><th>Rater ID</th><th class="num">Rating</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      /** Loads whatever the expanded rows and side graphs need, then paints. */
+      async function hydrate() {
+        const keys = [...state.expanded];
+        for (const key of keys) {
+          if (state.histories.has(key)) continue;
+          try {
+            await historyFor(key);
+          } catch (error) {
+            state.histories.set(key, { timeline: [], ratings: [], count: 0, average: 0, error: error.message });
+          }
+        }
+        document.querySelectorAll('[data-details]').forEach((slot) => {
+          const key = slot.getAttribute('data-details');
+          const data = state.histories.get(key);
+          slot.innerHTML = data && data.error
+            ? `<div class="message error">Could not load ratings.<br>${esc(data.error)}</div>`
+            : data
+              ? detailBody(data)
+              : '<div class="loading">Loading ratings…</div>';
+        });
+        document.querySelectorAll('[data-graphslot]').forEach((slot) => {
+          const key = slot.getAttribute('data-graphslot');
+          if (!state.expanded.has(key)) {
+            slot.innerHTML = '';
+            return;
+          }
+          const data = state.histories.get(key);
+          if (data && data.error) {
+            slot.innerHTML = `<div class="message error">Could not load the trend.<br>${esc(data.error)}</div>`;
+          } else if (data) {
+            slot.innerHTML = `<h3>Average over time</h3>${chart(data.timeline)}`;
+          } else {
+            slot.innerHTML = '<div class="loading">Loading trend…</div>';
+          }
+        });
+      }
+
+      // Row and button clicks both toggle a dish drill-down; the button stops
+      // the row handler from firing twice.
+      function toggleDish(id) {
+        if (state.expanded.has(id)) state.expanded.delete(id);
+        else state.expanded.add(id);
+        renderTables();
+        hydrate();
+      }
+
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-dish]');
+        if (button) {
+          event.stopPropagation();
+          toggleDish(button.getAttribute('data-dish'));
+          return;
+        }
+        const graphButton = event.target.closest('button[data-graph]');
+        if (graphButton) {
+          const key = graphButton.getAttribute('data-graph');
+          if (state.expanded.has(key)) state.expanded.delete(key);
+          else state.expanded.add(key);
+          renderSides();
+          hydrate();
+          return;
+        }
+        const row = event.target.closest('tr.item');
+        if (row) toggleDish(row.getAttribute('data-dish'));
+      });
+
+      /** Fills the category picker once; the set is fixed. */
+      function fillCategories() {
+        volumeCategoryEl.innerHTML =
+          '<option value="">All categories</option>' +
+          CATEGORIES.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        volumeCategoryEl.value = state.volume.category;
+      }
+
+      /**
+       * Loads the ratings-per-day graph for the volume controls' own filters.
+       * Meal and category are mutually exclusive: the API narrows by one, so
+       * picking one clears the other rather than silently ignoring it.
+       */
+      async function loadVolume() {
+        volumeEl.innerHTML = '<div class="loading">Loading…</div>';
+        const query = [scopeQuery()];
+        if (state.volume.meal) query.push(`period=${encodeURIComponent(state.volume.meal)}`);
+        else if (state.volume.category) query.push(`category=${encodeURIComponent(state.volume.category)}`);
+        try {
+          const res = await fetch(`${RATINGS_API}/api/ratings/daily?${query.join('&')}`, { cache: 'no-store' });
+          if (!res.ok) throw new Error(`daily returned ${res.status}`);
+          const data = await res.json();
+          state.volume.days = data.days || [];
+          state.volume.error = '';
+        } catch (error) {
+          state.volume.days = [];
+          state.volume.error = error.message;
+        }
+        renderVolume();
+      }
+
+      function renderVolume() {
+        if (state.volume.error) {
+          volumeEl.innerHTML =
+            `<div class="message error">Could not load the daily graph.<br>${esc(state.volume.error)}</div>`;
+          volumeCountEl.textContent = '';
+          return;
+        }
+        const total = state.volume.days.reduce((sum, d) => sum + d.count, 0);
+        volumeCountEl.textContent = total ? `${total} rating${total === 1 ? '' : 's'}` : '';
+        volumeEl.innerHTML = volumeChart(state.volume.days);
+      }
+
+      function setScope(scope) {
+        state.scope = scope;
+        render();
+        // Re-rendering rebuilds the expanded rows and side graph slots, so
+        // whatever they need has to be painted again — cached history fills
+        // instantly, anything new is fetched.
+        hydrate();
+      }
+
+      /** Switching meal changes which dishes are on the page, so it refetches. */
+      function setPeriod(period) {
+        state.period = period;
+        state.expanded.clear();
+        state.histories.clear();
+        load();
+      }
+
+      scopeAllBtn.addEventListener('click', () => setScope('all'));
+      scopeTodayBtn.addEventListener('click', () => setScope('today'));
+      periodBtns.forEach((btn) =>
+        btn.addEventListener('click', () => setPeriod(btn.getAttribute('data-period')))
+      );
+      refreshBtn.addEventListener('click', async () => {
+        state.histories.clear();
+        await Promise.all([load(), loadVolume()]);
+      });
+
+      // The volume filters are independent of the scope/meal pair. Picking a
+      // meal clears the category and vice versa, because the API narrows by one.
+      volumeBtns.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          state.volume.meal = btn.getAttribute('data-vol-meal') || '';
+          if (state.volume.meal) state.volume.category = '';
+          fillCategories();
+          volumeBtns.forEach((b) =>
+            b.setAttribute('aria-pressed', String((b.getAttribute('data-vol-meal') || '') === state.volume.meal))
+          );
+          loadVolume();
+        })
+      );
+      volumeCategoryEl.addEventListener('change', () => {
+        state.volume.category = volumeCategoryEl.value;
+        if (state.volume.category) {
+          state.volume.meal = '';
+          volumeBtns.forEach((b) =>
+            b.setAttribute('aria-pressed', String((b.getAttribute('data-vol-meal') || '') === ''))
+          );
+        }
+        loadVolume();
+      });
+
+      // Grey tooltip on the line charts and the histogram. Delegated so it
+      // survives every re-render.
+      document.addEventListener('pointerover', (event) => {
+        const target = event.target.closest('.point');
+        if (target) showTip(target);
+      });
+      document.addEventListener('pointerout', (event) => {
+        const target = event.target.closest('.point');
+        // Moving between a point's own children is not leaving the point.
+        if (target && !target.contains(event.relatedTarget)) hideTip(target);
+      });
+
+      async function load() {
+        refreshBtn.disabled = true;
+        statusEl.textContent = 'Loading…';
+        const query = scopeQuery();
+        // The all-time dish list honours the meal filter; the today list also
+        // honours it (and narrows it to that day's meal, not any day's).
+        const periodQuery = state.period ? `&period=${encodeURIComponent(state.period)}` : '';
+
+        try {
+          const [statsRes, allRes, todayRes] = await Promise.all([
+            fetch(`${RATINGS_API}/api/stats?${query}`, { cache: 'no-store' }),
+            fetch(`${RATINGS_API}/api/dishes?scope=all${periodQuery}`, { cache: 'no-store' }),
+            fetch(`${RATINGS_API}/api/dishes?scope=today&${query}${periodQuery}`, { cache: 'no-store' })
+          ]);
+          if (!statsRes.ok) throw new Error(`stats returned ${statsRes.status}`);
+          if (!allRes.ok) throw new Error(`dishes returned ${allRes.status}`);
+          if (!todayRes.ok) throw new Error(`today dishes returned ${todayRes.status}`);
+
+          state.stats = await statsRes.json();
+          state.dishes.all = (await allRes.json()).dishes || [];
+          const todayData = await todayRes.json();
+          // A Worker that predates this feature ignores `scope=today` and
+          // returns the whole catalogue. Rendering that as "served today" would
+          // be actively wrong, so treat a missing marker as "no today data"
+          // until the two deploys catch up.
+          state.todaySupported = todayData.scope === 'today';
+          state.dishes.today = state.todaySupported ? todayData.dishes || [] : [];
+
+          render();
+          await hydrate();
+
+          footnoteEl.innerHTML =
+            `${fmt(state.stats.catalogue)} dishes in the catalogue, including ones nobody has rated. ` +
+            'A "rater ID" is a random value stored per browser, so it counts browsers rather than people — ' +
+            'clearing site data or rating from a second device adds another. ' +
+            'Today is the local day with a ' +
+            `${tzOffset()} minute UTC offset, and only counts ratings cast that day.`;
+          statusEl.textContent = `Updated ${new Date().toLocaleTimeString('en-US')}`;
+        } catch (error) {
+          cardsEl.innerHTML = '';
+          sidesEl.innerHTML = '';
+          rowsEl.innerHTML =
+            `<tr><td class="message error" colspan="4">Could not reach the ratings API.<br>${esc(error.message)}</td></tr>`;
+          unrankedRowsEl.innerHTML = '';
+          rankedCountEl.textContent = '';
+          unrankedCountEl.textContent = '';
+          footnoteEl.textContent = '';
+          statusEl.textContent = 'Failed to load.';
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      }
+
+      fillCategories();
+      load();
+      loadVolume();
+    
+      })();
     </script>
     <script src="./resize.js" defer></script>
   </body>

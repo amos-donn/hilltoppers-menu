@@ -17,7 +17,8 @@ Standalone menu page for Saint Johnsbury Academy dining — designed for GitHub 
 - **Star ratings:** each dish shows its average rating under its title as read-only stars; the rating row is a button that opens a dialog to rate it
 - **Confirm-before-save:** the dialog previews a value as you hover or focus a star, keeps Save disabled until you pick one, and lets Cancel, Escape, or an outside click discard without saving
 - **Shared ratings:** once the Worker URL is set, ratings are shared between everyone rather than stored per browser
-- **Ratings dashboard:** `dashboard.html` has a scope toggle (all-time vs. today) and a meal filter (all meals, breakfast, lunch or dinner), per-side and per-meal stat cards showing both scopes with stars and a trend graph, five stat cards for the selected meal, and clickable dish rows that expand into the individual ratings behind the average plus a rating-over-time chart
+- **Ratings dashboard, on the same page:** `index.html` carries the widget on the left and the dashboard on the right, with a drag handle between them to trade space one way or the other (arrows nudge it, Home resets it; the width is remembered). The dashboard side has a scope toggle (all-time vs. today), a meal filter (all meals, breakfast, lunch or dinner) and a category filter (any station or static section), per-side and per-meal stat cards showing both scopes with stars and a trend graph, five stat cards for the selected meal, a ratings-per-day volume histogram for the chosen meal and category, and clickable dish rows that expand into the individual ratings behind the average plus a rating-over-time chart. The old standalone `dashboard.html` is now a redirect to the site root, kept only so an old bookmark or link still lands somewhere.
+- **One page, two shapes:** embedded in the extension iframe (detected from the `host`/`session` params) the page is the widget alone — the dashboard pane and the drag handle are hidden and the layout collapses to the original single column.
 - **Live data:** the menu and the ratings refresh on their own, and again the moment the tab regains focus
 - **Iframe-safe:** all styles inline, no external dependencies
 
@@ -64,6 +65,7 @@ worker/
 | `GET` | `/api/dishes` | The whole catalogue with ratings, for inspection. `scope=today` narrows it to dishes served on the request's day; `period=breakfast\|lunch\|dinner` narrows it to a meal (that day's meal when combined with `scope=today`, any day's otherwise) |
 | `GET` | `/api/stats` | Totals plus a per-station and per-meal breakdown, for the dashboard |
 | `GET` | `/api/ratings/history` | Per-minute rating history for one dish (`?dish=`), one station (`?station=`) or one meal (`?period=`), plus every individual rating for a dish |
+| `GET` | `/api/ratings/daily` | How many ratings were cast on each day, for the dashboard's volume histogram. Fills the quiet days with zero between the first and last rated day. `period=breakfast\|lunch\|dinner` and `category=<station or static section>` narrow it |
 
 ### Scopes and timezones
 
@@ -115,6 +117,8 @@ The dashboard and the Worker deploy separately, and Pages usually finishes first
 The minute-bucketed history needs a Worker deploy to take effect. Until then the dashboard falls back to even spacing and day labels, so the graphs still render — they just are not yet drawn against real time.
 
 The meal filter has the same catch-up rule: an older Worker ignores `period=` and answers with the whole catalogue, and sends no per-meal blocks in `/api/stats`. The dashboard detects that (a missing `periods` array) and falls back to the overall figures for the cards and to "all meals" for the list, so nothing breaks while Pages is ahead of the Worker.
+
+The volume histogram and the category filter need `/api/ratings/daily`, so they too wait on a Worker deploy. Until then the histogram shows its "No ratings in range yet." placeholder rather than an empty chart, and the category picker still lists the stations and static sections but the counts behind it stay flat.
 
 ## Embedding
 
