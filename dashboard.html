@@ -735,9 +735,14 @@
 
       async function historyFor(key) {
         if (state.histories.has(key)) return state.histories.get(key);
-        const [kind, ...rest] = key.split(':');
-        const value = rest.join(':');
-        const param = kind === 'station' ? `station=${encodeURIComponent(value)}` : `dish=${encodeURIComponent(value)}`;
+        // Station keys are prefixed ("station:Global Fare"); a dish key is the
+        // bare id. Dish ids are normalised names, so they can contain spaces and
+        // every other character except a colon — which the prefix owns.
+        const isStation = key.startsWith('station:');
+        const value = isStation ? key.slice('station:'.length) : key;
+        const param = isStation
+          ? `station=${encodeURIComponent(value)}`
+          : `dish=${encodeURIComponent(value)}`;
         const response = await fetch(
           `${RATINGS_API}/api/ratings/history?${param}&${scopeQuery()}`,
           { cache: 'no-store' }
