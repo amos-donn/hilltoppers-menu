@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hilltoppers Menu — Ratings Dashboard</title>
+    <style>
+      :root {
+        --bg: #f7f8fb;
+        --panel: #ffffff;
+        --panel-alt: #fbfcff;
+        --text-primary: #161b22;
+        --text-muted: #7d8591;
+        --green: #1a7f37;
+        --green-bg: rgba(26, 127, 55, 0.12);
+        --star: #e3a008;
+        --border: rgba(17, 17, 17, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+
+      header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin: 0;
+      }
+
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .refresh {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--green);
+        color: #ffffff;
+        padding: 7px 16px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.15s ease, opacity 0.15s ease;
+      }
+
+      .refresh:hover:not(:disabled) {
+        background: #15692c;
+      }
+
+      .refresh:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+      }
+
+      .card .value {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      .card .label {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(17, 17, 17, 0.07);
+      }
+
+      th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        background: var(--panel-alt);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .stars {
+        color: var(--star);
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+
+      .stars .empty {
+        color: rgba(17, 17, 17, 0.16);
+      }
+
+      .dish {
+        font-weight: 500;
+      }
+
+      .bar {
+        height: 4px;
+        border-radius: 999px;
+        background: var(--green-bg);
+        margin-top: 5px;
+      }
+
+      .bar > span {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--green);
+        min-width: 2px;
+      }
+
+      .message {
+        padding: 28px 14px;
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      .message.error {
+        color: #a4232b;
+      }
+
+      footer {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin-top: 14px;
+      }
+
+      code {
+        background: var(--panel-alt);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 4px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <h1>Ratings Dashboard</h1>
+          <div class="subtitle" id="status">Loading…</div>
+        </div>
+        <button class="refresh" id="refresh" type="button">Refresh</button>
+      </header>
+
+      <div class="cards" id="cards"></div>
+
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Dish</th>
+              <th class="num">Ratings</th>
+              <th class="num">Average</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td class="message" colspan="3">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <footer id="footnote"></footer>
+    </div>
+
+    <script>
+      // Same backend the menu widget writes to.
+      const RATINGS_API = 'https://hilltoppers-menu-ratings.amos-donn.workers.dev';
+
+      const statusEl = document.getElementById('status');
+      const cardsEl = document.getElementById('cards');
+      const rowsEl = document.getElementById('rows');
+      const footnoteEl = document.getElementById('footnote');
+      const refreshBtn = document.getElementById('refresh');
+
+      function esc(value) {
+        return String(value).replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+
+      function stars(average) {
+        const filled = Math.round(average);
+        let out = '';
+        for (let i = 1; i <= 5; i += 1) {
+          out += i <= filled ? '★' : '<span class="empty">★</span>';
+        }
+        return `<span class="stars" aria-label="${average} out of 5">${out}</span>`;
+      }
+
+      function card(value, label) {
+        return `<div class="card"><div class="value">${value}</div><div class="label">${label}</div></div>`;
+      }
+
+      function fmt(value) {
+        return Number(value).toLocaleString('en-US');
+      }
+
+      async function load() {
+        refreshBtn.disabled = true;
+        statusEl.textContent = 'Loading…';
+
+        try {
+          const [statsRes, dishesRes] = await Promise.all([
+            fetch(`${RATINGS_API}/api/stats`, { cache: 'no-store' }),
+            fetch(`${RATINGS_API}/api/dishes`, { cache: 'no-store' })
+          ]);
+          if (!statsRes.ok) throw new Error(`stats returned ${statsRes.status}`);
+          if (!dishesRes.ok) throw new Error(`dishes returned ${dishesRes.status}`);
+
+          const stats = await statsRes.json();
+          const { dishes = [] } = await dishesRes.json();
+          const rated = dishes.filter((d) => d.count > 0).sort((a, b) => b.count - a.count);
+
+          cardsEl.innerHTML = [
+            card(fmt(stats.totalRatings), 'Ratings cast'),
+            card(fmt(stats.ratedDishes), 'Dishes rated'),
+            card(fmt(stats.raters), 'Rater IDs'),
+            card(stats.ratingsPerRater, 'Ratings per rater')
+          ].join('');
+
+          if (!rated.length) {
+            rowsEl.innerHTML = '<tr><td class="message" colspan="3">No ratings yet.</td></tr>';
+          } else {
+            const most = rated[0].count || 1;
+            rowsEl.innerHTML = rated
+              .map((d) => {
+                // Length of the bar is share of the top dish, so the shape of
+                // the distribution is visible at a glance.
+                const pct = Math.round((d.count / most) * 100);
+                return `<tr>
+                  <td class="dish">${esc(d.name)}<div class="bar"><span style="width:${pct}%"></span></div></td>
+                  <td class="num">${fmt(d.count)}</td>
+                  <td class="num">${d.average === null ? '—' : stars(d.average)} <span>${d.average === null ? '' : d.average}</span></td>
+                </tr>`;
+              })
+              .join('');
+          }
+
+          footnoteEl.innerHTML =
+            `${fmt(stats.catalogue)} dishes in the catalogue, including ones nobody has rated. ` +
+            'A "rater ID" is a random value stored per browser, so it counts browsers rather than people — ' +
+            'clearing site data or rating from a second device adds another.';
+
+          const now = new Date();
+          statusEl.textContent = `Updated ${now.toLocaleTimeString('en-US')}`;
+        } catch (error) {
+          cardsEl.innerHTML = '';
+          rowsEl.innerHTML =
+            `<tr><td class="message error" colspan="3">Could not reach the ratings API.<br>${esc(error.message)}</td></tr>`;
+          footnoteEl.textContent = '';
+          statusEl.textContent = 'Failed to load.';
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      }
+
+      refreshBtn.addEventListener('click', load);
+      load();
+    </script>
+  </body>
+</html>
