@@ -850,10 +850,10 @@
         font-weight: 400;
       }
 
-      /* The two daily kitchens sit on one row with the popular card beside
+      /* The two daily kitchens sit on one row with the featured section beside
          them. Fixed columns rather than auto-fit: auto-fit packs all three
          onto a single row on a wide screen, and the row would then read as
-         one flat run instead of "the two kitchens, plus a summary". */
+         one flat run instead of "the two kitchens, plus a section". */
       .dash .sides {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -872,19 +872,6 @@
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 12px 14px;
-      }
-
-      /* The popular card summarises the two kitchens, so it is tinted to read
-         as a different kind of card rather than a third kitchen. */
-      .dash .side.popular {
-        background: var(--green-bg);
-        border-color: var(--green-ring);
-      }
-
-      .dash .side-note {
-        color: var(--text-muted);
-        font-size: 11px;
-        margin-bottom: 8px;
       }
 
       .dash .side-head {
@@ -2283,9 +2270,13 @@
       const CATEGORIES = ['Global Fare', 'Classic Kitchen', 'Soupside', 'Sauce + Stone', 'Greens', 'Sandwich'];
 
       // The two kitchens that change day to day, and so get a card of their own
-      // on the dashboard. The static sections below them are the same every day
-      // and are reached through the volume graph's category filter instead.
+      // on the dashboard.
       const DAILY_STATIONS = ['Classic Kitchen', 'Global Fare'];
+
+      // The static section summarised in the left-hand card of that row. It is
+      // a fixed section rather than a station, so it is catalogued and rated
+      // under this exact name.
+      const FEATURED_SECTION = 'Sauce + Stone';
 
       // The rating window has to be the day the hall is living in, not the UTC
       // day: at 8pm Eastern the UTC date has rolled over already.
@@ -2661,15 +2652,15 @@
       }
 
       /**
-       * The row of cards under the stat cards: the popular card on the left,
-       * then one card per daily kitchen.
+       * The row of cards under the stat cards: a card for one static section
+       * on the left, then one card per daily kitchen.
        *
-       * Only the two daily kitchens get a card. The four static sections and
-       * the meal periods are not shown here: the meal periods are already the
-       * selector above, and the static sections are the same every day, so a
-       * card each turned the row into a wall of five. The kitchens are always
-       * rendered, even at zero, so the row keeps its shape instead of shifting
-       * as ratings arrive.
+       * Only the two daily kitchens and the featured section get a card. The
+       * other static sections and the meal periods are not shown here: the
+       * meal periods are already the selector above, and the remaining static
+       * sections are the same every day. The kitchens are always rendered,
+       * even at zero, so the row keeps its shape instead of shifting as
+       * ratings arrive.
        */
       function renderSides() {
         const stations = state.stats?.stations;
@@ -2684,7 +2675,7 @@
         }
         const byName = new Map(stations.map((s) => [s.station, s]));
         sidesEl.innerHTML =
-          popularCard(DAILY_STATIONS.map((name) => byName.get(name))) +
+          sectionCard(FEATURED_SECTION, byName.get(FEATURED_SECTION) || emptyStation(FEATURED_SECTION)) +
           DAILY_STATIONS.map((name) =>
             sideCard(`station:${name}`, name, byName.get(name) || emptyStation(name))
           ).join('');
@@ -2703,74 +2694,16 @@
       }
 
       /**
-       * The popular card: which of the two daily kitchens drew the most
-       * ratings, with the two kitchens' figures combined underneath. It is a
-       * summary of the row rather than a third kitchen, so it carries no trend
-       * graph and is tinted to read differently.
+       * The left-hand card: one static section's ratings, all-time and today.
        *
-       * A dish served on both kitchens counts toward both, so the combined
-       * totals can exceed the site-wide ones — they answer "across the two
-       * kitchens", not "across the menu".
+       * It reads exactly like a kitchen card — same table, same "—" for a
+       * scope with no ratings, same trend toggle — because it answers the same
+       * question for a fixed section that the kitchen cards answer for the two
+       * daily ones. The only difference is the label: the section is not a
+       * station, so it is titled "Sauce + Stone" rather than a kitchen name.
        */
-      function popularCard(list) {
-        const known = list.filter(Boolean);
-        const pick = (fn) => known.reduce((n, s) => n + (fn(s) || 0), 0);
-        const at = (scope) => (scope ? (s) => s.today || {} : (s) => s);
-
-        const leader = [...known].sort((a, b) => b.ratings - a.ratings)[0];
-        const popular = leader && leader.ratings > 0 ? leader.station : 'No ratings yet';
-
-        const weighted = (scope) => {
-          const rows = known.map(at(scope));
-          const total = rows.reduce((n, r) => n + (r.ratings || 0), 0);
-          if (!total) return 0;
-          return rows.reduce((n, r) => n + (r.average || 0) * (r.ratings || 0), 0) / total;
-        };
-        const avgCell = (value, ratings) =>
-          ratings > 0 ? `${stars(value)} ${value}` : '—';
-        const totals = (scope) => {
-          const p = at(scope);
-          return {
-            ratings: pick((s) => p(s).ratings),
-            raters: pick((s) => p(s).raters),
-            dishes: pick((s) => p(s).dishes),
-            average: Math.round(weighted(scope) * 10) / 10
-          };
-        };
-
-        const all = totals(false);
-        const today = totals(true);
-        // A Worker that predates the per-station dish count sends no `dishes`,
-        // so show "—" rather than a misleading zero until it is redeployed.
-        const hasDishes = known.some(
-          (s) => typeof s.dishes === 'number' || typeof s.today?.dishes === 'number'
-        );
-        const dishesCell = (n) => (hasDishes ? fmt(n) : '—');
-        return `<div class="side popular">
-          <div class="side-head"><span>Most popular</span></div>
-          <div class="side-note">${esc(popular)}, by number of ratings</div>
-          <table>
-            <thead>
-              <tr><th>Scope</th><th class="num">Avg.</th><th class="num">Ratings</th><th class="num">Raters</th><th class="num">Dishes</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>All-time</td>
-                <td class="num">${avgCell(all.average, all.ratings)}</td>
-                <td class="num">${fmt(all.ratings)}</td>
-                <td class="num">${fmt(all.raters)}</td>
-                <td class="num">${dishesCell(all.dishes)}</td>
-              </tr>
-              <tr>
-                <td>Today</td>
-                <td class="num">${avgCell(today.average, today.ratings)}</td>
-                <td class="num">${fmt(today.ratings)}</td>
-                <td class="num">${fmt(today.raters)}</td>
-                <td class="num">${dishesCell(today.dishes)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>`;
+      function sectionCard(name, block) {
+        return sideCard(`station:${name}`, name, block || emptyStation(name));
       }
 
       /**
