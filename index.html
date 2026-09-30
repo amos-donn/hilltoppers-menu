@@ -2022,16 +2022,22 @@
         }
 
         const url = sourceDayUrl(selectedDate);
-        menuDisplay.innerHTML = `
-          <div class="dining-grid">
-            ${renderStation('Global Fare', globalFare, url)}
-            ${renderStation('Classic Kitchen', classicKitchen, url)}
-          </div>
+        // The static sections are a lunch and dinner fixture — the counter is
+        // not open at breakfast — so the morning menu shows only the two daily
+        // kitchens. The divider and its note go with them.
+        const staticBlock = selectedPeriod === 'Breakfast'
+          ? ''
+          : `
           <div class="dining-divider"><span class="dining-divider-label">Always available</span></div>
           <p class="dining-note">These foods are static — they don't change day-to-day.</p>
           <div class="dining-grid dining-grid-static">
             ${STATIC_SECTIONS.map((section) => renderStation(section.key, section.items, null)).join('')}
-          </div>
+          </div>`;
+        menuDisplay.innerHTML = `
+          <div class="dining-grid">
+            ${renderStation('Global Fare', globalFare, url)}
+            ${renderStation('Classic Kitchen', classicKitchen, url)}
+          </div>${staticBlock}
         `;
 
         sourceLinkEl.href = url;
