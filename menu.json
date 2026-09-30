@@ -1,51 +1,47 @@
 {
-  "updatedAt": "2026-09-30T03:27:37.753Z",
+  "updatedAt": "2026-09-30T09:38:29.401Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-29",
+  "menuDate": "2026-09-30",
   "menus": {
     "breakfast": {
       "globalFare": [
         "Scrambled Eggs",
-        "Kielbasa",
-        "French Toast Sticks",
-        "Tater Tots"
+        "Buttermilk Pancakes",
+        "Turkey Sausage Link",
+        "Lyonnaise Potatoes"
       ],
       "classicKitchen": [
-        "Banana Muffin",
-        "Apple Cinnamon Oatmeal"
+        "Cinnamon Coffee Cake",
+        "Cranberry Orange Oatmeal"
       ]
     },
     "lunch": {
       "globalFare": [
-        "General Tso's Chicken",
-        "Braised Gochujang Tofu",
-        "Brown Rice",
-        "Stir Fry Vegetables"
+        "Black Bean Patty",
+        "Hamburger on a Bun",
+        "French Fries"
       ],
       "classicKitchen": [
-        "Nacho Bar",
-        "Spicy Refried Beans",
-        "Brown Rice",
-        "Roasted Confetti Corn",
-        "Nacho Cheese Sauce",
-        "Chili con Carne"
+        "Grilled Pesto-Marinated Chicken Breast",
+        "Baked Tofu Steak",
+        "Parmesan Orzo",
+        "California Blend Vegetables"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Garlic Thai Chicken",
-        "Capellini",
-        "Asian Style Snap Peas"
+        "Peppered Flank Steak",
+        "Beef Stew"
       ],
       "classicKitchen": [
-        "Loaded Bacon Ranch Fries",
-        "Kansas City BBQ Pulled Pork",
-        "Baked Beans",
-        "Seasoned Corn on the Cob"
+        "Grilled Chicken Breast",
+        "Tofu Vegetable Scramble",
+        "Red Skin Mashed Potatoes",
+        "Roasted Carrots"
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-30T03:27:37.753Z",
+  "daysUpdatedAt": "2026-09-30T09:38:29.401Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -525,6 +521,64 @@
           "Garlic Roasted Root Vegetables",
           "Dinner Roll",
           "Homemade Vegetable Beef Soup"
+        ]
+      }
+    },
+    "2026-10-07": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Chicken Sausage Patty",
+          "Pancakes",
+          "Tater Tots",
+          "Banana",
+          "Toasted Pecans"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Taco Meat",
+          "Vegan Chorizo",
+          "Cumin Black Beans",
+          "Corn with Peppers and Onions",
+          "Nacho Cheese Sauce",
+          "Chips Doritos Cool Ranch RF WG 1 Oz",
+          "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
+        ],
+        "classicKitchen": [
+          "Grilled Cheese",
+          "Grilled Ham and Cheese",
+          "French Fries",
+          "Peas & Carrots"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Plant-Based Chik'n Tenders",
+          "BLT Crispy Chicken Sandwich",
+          "Curly Fries",
+          "Buttered Corn"
+        ],
+        "classicKitchen": [
+          "Seasoned Ground Beef",
+          "Cheese Lasagna Casserole",
+          "Garlic Breadstick",
+          "California Blend Vegetables",
+          "Marinara Sauce",
+          "Cornbread",
+          "Two Bean Turkey Chili",
+          "Potato Corn Chowder"
         ]
       }
     }
