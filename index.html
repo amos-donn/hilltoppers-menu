@@ -611,12 +611,82 @@
          embed keeps the widget's own 360px measure, so the iframe is byte-for-
          byte the same as before. */
       body.combined:not(.embed) .menu-pane {
-        max-width: var(--menu-w, 440px);
+        max-width: var(--menu-w, 600px);
         margin: 0 auto;
       }
 
       body.combined:not(.embed) .popup {
         max-width: none;
+      }
+
+      /* The site's menu tab fits the whole menu on one screen: the wider
+         measure puts the four static sections on a single line, and the chrome
+         around them is trimmed to the minimum. Every rule is scoped to the
+         site so the embedded widget keeps its own spacing and stays byte-for-
+         byte the same. */
+      body.combined:not(.embed) {
+        padding: 4px 12px;
+      }
+
+      body.combined:not(.embed) .page {
+        padding: 4px 12px 6px;
+      }
+
+      body.combined:not(.embed) .topbar {
+        margin-bottom: 5px;
+      }
+
+      body.combined:not(.embed) .topbar-logo {
+        width: 24px;
+        height: 24px;
+      }
+
+      body.combined:not(.embed) .dining-content {
+        padding: 6px;
+      }
+
+      body.combined:not(.embed) .dining-tabs {
+        margin-bottom: 5px;
+      }
+
+      body.combined:not(.embed) .dining-tab {
+        padding: 4px 6px;
+      }
+
+      body.combined:not(.embed) .dining-grid {
+        gap: 6px;
+        margin-bottom: 5px;
+      }
+
+      /* Four sections across rather than two, so the static half of the menu
+         costs one row instead of two. */
+      body.combined:not(.embed) .dining-grid-static {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      body.combined:not(.embed) .dining-column {
+        padding: 5px 8px;
+      }
+
+      body.combined:not(.embed) .dining-item {
+        padding: 2px 0;
+      }
+
+      body.combined:not(.embed) .dish-rating {
+        margin-top: 0;
+        padding: 0 6px 0 3px;
+      }
+
+      body.combined:not(.embed) .dining-divider {
+        margin: 5px 0 2px;
+      }
+
+      body.combined:not(.embed) .dining-note {
+        margin-bottom: 2px;
+      }
+
+      body.combined:not(.embed) .refresh-info {
+        margin-top: 3px;
       }
 
       .menu-pane[hidden],
@@ -1959,7 +2029,7 @@
           </div>
           <div class="dining-divider"><span class="dining-divider-label">Always available</span></div>
           <p class="dining-note">These foods are static — they don't change day-to-day.</p>
-          <div class="dining-grid">
+          <div class="dining-grid dining-grid-static">
             ${STATIC_SECTIONS.map((section) => renderStation(section.key, section.items, null)).join('')}
           </div>
         `;
@@ -2171,7 +2241,7 @@
           if (saved) setMenuWidth(saved);
           else setMenuWidth(document.querySelector('.menu-pane').getBoundingClientRect().width);
         } catch (_) {
-          setMenuWidth(440);
+          setMenuWidth(600);
         }
 
         splitterEl.addEventListener('pointerdown', (event) => {
@@ -2201,7 +2271,7 @@
             try { localStorage.setItem(MENU_W_KEY, String(Math.round(next))); } catch (_) {}
           } else if (event.key === 'Home') {
             event.preventDefault();
-            setMenuWidth(440);
+            setMenuWidth(600);
             try { localStorage.removeItem(MENU_W_KEY); } catch (_) {}
           }
         });
