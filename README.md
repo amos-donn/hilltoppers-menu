@@ -10,7 +10,7 @@ Standalone menu page for Saint Johnsbury Academy dining — designed for GitHub 
 
 - **Three dining periods:** Breakfast, Lunch, Dinner
 - **Two kitchen stations:** Global Fare, Classic Kitchen — always side by side, including in a narrow iframe
-- **Four static sections below them:** Soupside, Sauce + Stone, Greens, Sandwich — the same every day, in two rows (Soupside and Sauce + Stone on top, Greens and Sandwich below), behind a divider and the note "These foods are static — they don't change day-to-day." They are listed in `STATIC_SECTIONS` in `index.html` rather than read from the daily feed, and are rateable like any other dish. They are shown without a source link, since the dining site does not list them.
+- **Four static sections below them:** Soupside, Sauce + Stone, Greens, Sandwich — the same every day, in one row, behind a divider and the note "These foods are static — they don't change day-to-day." They are listed in `STATIC_SECTIONS` in `index.html` rather than read from the daily feed, and are rateable like any other dish. They are shown without a source link, since the dining site does not list them. They are a lunch and dinner fixture, so the breakfast menu leaves them (and the divider and note) out entirely; switching to Lunch or Dinner brings them back. This holds in the embedded widget and on the site, since both render from the same code.
 - **Always visible:** no dropdown or collapse control; the widget renders its content directly
 - **Day navigation:** step through published menu dates with the arrows next to the Menu Website link
 - **Source links:** every dish links to the day it is served on, on the original dining site
