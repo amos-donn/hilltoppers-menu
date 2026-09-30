@@ -606,10 +606,17 @@
         padding: 16px;
       }
 
-      /* The widget keeps the exact width it had as the left column, so its
-         own sizing is unchanged; the pane just no longer sits beside anything. */
+      /* On the site the menu tab is the widget alone, so it is centred in the
+         page and given a little more room than the narrow embed card. The
+         embed keeps the widget's own 360px measure, so the iframe is byte-for-
+         byte the same as before. */
       body.combined:not(.embed) .menu-pane {
-        max-width: var(--menu-w, 380px);
+        max-width: var(--menu-w, 440px);
+        margin: 0 auto;
+      }
+
+      body.combined:not(.embed) .popup {
+        max-width: none;
       }
 
       .menu-pane[hidden],
@@ -672,7 +679,7 @@
         position: absolute;
         top: 0;
         bottom: 0;
-        left: calc(var(--menu-w, 380px) + 16px);
+        left: calc(var(--menu-w, 440px) + 16px);
         width: 10px;
         margin-left: -5px;
         cursor: col-resize;
@@ -843,11 +850,21 @@
         font-weight: 400;
       }
 
+      /* The two daily kitchens sit on one row with the popular card beside
+         them. Fixed columns rather than auto-fit: auto-fit packs all three
+         onto a single row on a wide screen, and the row would then read as
+         one flat run instead of "the two kitchens, plus a summary". */
       .dash .sides {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 16px;
+      }
+
+      @media (max-width: 720px) {
+        .dash .sides {
+          grid-template-columns: 1fr;
+        }
       }
 
       .dash .side {
@@ -855,6 +872,19 @@
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 12px 14px;
+      }
+
+      /* The popular card summarises the two kitchens, so it is tinted to read
+         as a different kind of card rather than a third kitchen. */
+      .dash .side.popular {
+        background: var(--green-bg);
+        border-color: var(--green-ring);
+      }
+
+      .dash .side-note {
+        color: var(--text-muted);
+        font-size: 11px;
+        margin-bottom: 8px;
       }
 
       .dash .side-head {
@@ -2138,13 +2168,21 @@
         return width;
       }
 
-      if (splitterEl && !document.body.classList.contains('embed') && !menuPaneEl.hidden) {
+      // The splitter is hidden on the site now that the panes are tabs, so its
+      // saved width is stale: skip the restore while it is not displayed, and
+      // the menu keeps the new default width instead of an old drag value.
+      if (
+        splitterEl &&
+        !document.body.classList.contains('embed') &&
+        !menuPaneEl.hidden &&
+        getComputedStyle(splitterEl).display !== 'none'
+      ) {
         try {
           const saved = Number(localStorage.getItem(MENU_W_KEY));
           if (saved) setMenuWidth(saved);
           else setMenuWidth(document.querySelector('.menu-pane').getBoundingClientRect().width);
         } catch (_) {
-          setMenuWidth(380);
+          setMenuWidth(440);
         }
 
         splitterEl.addEventListener('pointerdown', (event) => {
@@ -2174,7 +2212,7 @@
             try { localStorage.setItem(MENU_W_KEY, String(Math.round(next))); } catch (_) {}
           } else if (event.key === 'Home') {
             event.preventDefault();
-            setMenuWidth(380);
+            setMenuWidth(440);
             try { localStorage.removeItem(MENU_W_KEY); } catch (_) {}
           }
         });
@@ -2243,6 +2281,11 @@
       // catalogued under: the two daily stations and the four static sections.
       // Meals are a separate set of pins beside it.
       const CATEGORIES = ['Global Fare', 'Classic Kitchen', 'Soupside', 'Sauce + Stone', 'Greens', 'Sandwich'];
+
+      // The two kitchens that change day to day, and so get a card of their own
+      // on the dashboard. The static sections below them are the same every day
+      // and are reached through the volume graph's category filter instead.
+      const DAILY_STATIONS = ['Classic Kitchen', 'Global Fare'];
 
       // The rating window has to be the day the hall is living in, not the UTC
       // day: at 8pm Eastern the UTC date has rolled over already.
@@ -2618,32 +2661,121 @@
       }
 
       /**
-       * One card per kitchen station, carrying both scopes side by side plus a
-       * button that graphs the side's average over time.
+       * The row of cards under the stat cards: the popular card on the left,
+       * then one card per daily kitchen.
+       *
+       * Only the two daily kitchens get a card. The four static sections and
+       * the meal periods are not shown here: the meal periods are already the
+       * selector above, and the static sections are the same every day, so a
+       * card each turned the row into a wall of five. The kitchens are always
+       * rendered, even at zero, so the row keeps its shape instead of shifting
+       * as ratings arrive.
        */
       function renderSides() {
-        const stations = Array.isArray(state.stats?.stations) ? state.stats.stations : [];
-        const meals = Array.isArray(state.stats?.periods) ? state.stats.periods : [];
-        // The station cards are per-side detail for the daily menu, so they are
-        // hidden when the reader has narrowed to one meal: that view is already
-        // described by the stat cards and the meal cards below.
-        const stationCards = state.period ? [] : stations;
-        if (!stationCards.length && !meals.length) {
+        const stations = state.stats?.stations;
+        // An older Worker sends no per-station breakdown at all. Fall back to
+        // the empty message rather than drawing two zeroed kitchens, which
+        // would read as "nobody has rated anything" rather than "no data".
+        if (!Array.isArray(stations)) {
           sidesEl.innerHTML =
             '<div class="side"><div class="side-head">Per side</div>' +
             '<div class="muted">No station data yet.</div></div>';
           return;
         }
+        const byName = new Map(stations.map((s) => [s.station, s]));
         sidesEl.innerHTML =
-          stationCards
-            .map((s) => sideCard(`station:${s.station}`, s.station, s, s.today))
-            .join('') +
-          meals.map((m) => sideCard(`period:${m.period}`, periodName(m.period), m, m.today)).join('');
+          popularCard(DAILY_STATIONS.map((name) => byName.get(name))) +
+          DAILY_STATIONS.map((name) =>
+            sideCard(`station:${name}`, name, byName.get(name) || emptyStation(name))
+          ).join('');
+      }
+
+      /** The zero shape for a kitchen the Worker has not reported yet. */
+      function emptyStation(name) {
+        return {
+          station: name,
+          ratings: 0,
+          raters: 0,
+          average: 0,
+          dishes: 0,
+          today: { ratings: 0, raters: 0, average: 0, dishes: 0 }
+        };
+      }
+
+      /**
+       * The popular card: which of the two daily kitchens drew the most
+       * ratings, with the two kitchens' figures combined underneath. It is a
+       * summary of the row rather than a third kitchen, so it carries no trend
+       * graph and is tinted to read differently.
+       *
+       * A dish served on both kitchens counts toward both, so the combined
+       * totals can exceed the site-wide ones — they answer "across the two
+       * kitchens", not "across the menu".
+       */
+      function popularCard(list) {
+        const known = list.filter(Boolean);
+        const pick = (fn) => known.reduce((n, s) => n + (fn(s) || 0), 0);
+        const at = (scope) => (scope ? (s) => s.today || {} : (s) => s);
+
+        const leader = [...known].sort((a, b) => b.ratings - a.ratings)[0];
+        const popular = leader && leader.ratings > 0 ? leader.station : 'No ratings yet';
+
+        const weighted = (scope) => {
+          const rows = known.map(at(scope));
+          const total = rows.reduce((n, r) => n + (r.ratings || 0), 0);
+          if (!total) return 0;
+          return rows.reduce((n, r) => n + (r.average || 0) * (r.ratings || 0), 0) / total;
+        };
+        const avgCell = (value, ratings) =>
+          ratings > 0 ? `${stars(value)} ${value}` : '—';
+        const totals = (scope) => {
+          const p = at(scope);
+          return {
+            ratings: pick((s) => p(s).ratings),
+            raters: pick((s) => p(s).raters),
+            dishes: pick((s) => p(s).dishes),
+            average: Math.round(weighted(scope) * 10) / 10
+          };
+        };
+
+        const all = totals(false);
+        const today = totals(true);
+        // A Worker that predates the per-station dish count sends no `dishes`,
+        // so show "—" rather than a misleading zero until it is redeployed.
+        const hasDishes = known.some(
+          (s) => typeof s.dishes === 'number' || typeof s.today?.dishes === 'number'
+        );
+        const dishesCell = (n) => (hasDishes ? fmt(n) : '—');
+        return `<div class="side popular">
+          <div class="side-head"><span>Most popular</span></div>
+          <div class="side-note">${esc(popular)}, by number of ratings</div>
+          <table>
+            <thead>
+              <tr><th>Scope</th><th class="num">Avg.</th><th class="num">Ratings</th><th class="num">Raters</th><th class="num">Dishes</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>All-time</td>
+                <td class="num">${avgCell(all.average, all.ratings)}</td>
+                <td class="num">${fmt(all.ratings)}</td>
+                <td class="num">${fmt(all.raters)}</td>
+                <td class="num">${dishesCell(all.dishes)}</td>
+              </tr>
+              <tr>
+                <td>Today</td>
+                <td class="num">${avgCell(today.average, today.ratings)}</td>
+                <td class="num">${fmt(today.ratings)}</td>
+                <td class="num">${fmt(today.raters)}</td>
+                <td class="num">${dishesCell(today.dishes)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>`;
       }
 
       /**
        * One side card: a label, a Trend toggle, and an All-time / Today table.
-       * Shared by the station cards and the meal cards so the two read alike.
+       * The two daily kitchens each get one, so they read alike.
        */
       function sideCard(key, label, all, todayBlock) {
         const today = todayBlock || { ratings: 0, raters: 0, average: 0 };

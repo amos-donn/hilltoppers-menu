@@ -316,6 +316,12 @@ describe('dashboard stats', () => {
     expect(byStation['Classic Kitchen'].raters).toBe(2);
     expect(byStation['Classic Kitchen'].average).toBe(3); // (5 + 1) / 2
 
+    // `dishes` counts the distinct rated dishes on each side, so the dashboard
+    // can show "how many dishes were rated here" rather than only how many
+    // ratings landed. Salmon is on both sides, so it counts on both.
+    expect(byStation['Global Fare'].dishes).toBe(2); // Salmon, Poutine
+    expect(byStation['Classic Kitchen'].dishes).toBe(2); // Salmon, Meatloaf
+
     // Per-side numbers are not a partition of the total.
     expect(body.stations.reduce((n: number, s: { ratings: number }) => n + s.ratings, 0)).toBe(4);
     expect(body.totalRatings).toBe(3);
@@ -335,8 +341,9 @@ describe('dashboard stats', () => {
         station: 'Global Fare',
         ratings: 1,
         raters: 1,
+        dishes: 1,
         average: 4,
-        today: { ratings: 0, raters: 0, average: 0 }
+        today: { ratings: 0, raters: 0, dishes: 0, average: 0 }
       }
     ]);
   });
@@ -353,8 +360,9 @@ describe('dashboard stats', () => {
         station: 'Classic Kitchen',
         ratings: 2,
         raters: 1,
+        dishes: 2,
         average: 4,
-        today: { ratings: 0, raters: 0, average: 0 }
+        today: { ratings: 0, raters: 0, dishes: 0, average: 0 }
       }
     ]);
   });
@@ -426,8 +434,9 @@ describe('dashboard stats', () => {
         station: 'Global Fare',
         ratings: 1,
         raters: 1,
+        dishes: 1,
         average: 5,
-        today: { ratings: 0, raters: 0, average: 0 }
+        today: { ratings: 0, raters: 0, dishes: 0, average: 0 }
       }
     ]);
   });

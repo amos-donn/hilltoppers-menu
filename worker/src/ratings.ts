@@ -580,10 +580,13 @@ export async function ratingStats(
        SELECT dish_side.station AS station,
               COUNT(*) AS ratings,
               COUNT(DISTINCT dr.rater_id) AS raters,
+              COUNT(DISTINCT dr.dish_id) AS dishes,
               AVG(dr.rating) AS average,
               SUM(CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2 THEN 1 ELSE 0 END) AS today_ratings,
               COUNT(DISTINCT CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
                              THEN dr.rater_id END) AS today_raters,
+              COUNT(DISTINCT CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
+                             THEN dr.dish_id END) AS today_dishes,
               AVG(CASE WHEN dr.updated_at >= ?1 AND dr.updated_at < ?2
                        THEN dr.rating END) AS today_average
        FROM dish_side
@@ -596,9 +599,11 @@ export async function ratingStats(
       station: string;
       ratings: number;
       raters: number;
+      dishes: number;
       average: number;
       today_ratings: number;
       today_raters: number;
+      today_dishes: number;
       today_average: number | null;
     }>();
 
@@ -607,10 +612,12 @@ export async function ratingStats(
     station: r.station,
     ratings: Number(r.ratings) || 0,
     raters: Number(r.raters) || 0,
+    dishes: Number(r.dishes) || 0,
     average: round1(r.average),
     today: {
       ratings: Number(r.today_ratings) || 0,
       raters: Number(r.today_raters) || 0,
+      dishes: Number(r.today_dishes) || 0,
       average: r.today_average === null ? 0 : round1(r.today_average)
     }
   }));
