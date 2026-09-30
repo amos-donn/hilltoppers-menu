@@ -850,10 +850,12 @@
         font-weight: 400;
       }
 
-      /* The two daily kitchens sit on one row with the featured section beside
-         them. Fixed columns rather than auto-fit: auto-fit packs all three
-         onto a single row on a wide screen, and the row would then read as
-         one flat run instead of "the two kitchens, plus a section". */
+      /* Three cards per row: the two daily kitchens with a static section, and
+         then the remaining sections. Fixed columns rather than auto-fit:
+         auto-fit packs as many as fit onto one row on a wide screen, and the
+         row would then read as one flat run instead of "the two kitchens, plus
+         a section". The second row is left-aligned rather than stretched, so
+         its shorter run of cards keeps the same width as the first. */
       .dash .sides {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2278,6 +2280,12 @@
       // under this exact name.
       const FEATURED_SECTION = 'Sauce + Stone';
 
+      // The remaining static sections, which fill the second row of cards.
+      // Derived from the menu's own section list so the two stay in step.
+      const OTHER_SECTIONS = STATIC_SECTIONS
+        .map((section) => section.key)
+        .filter((key) => key !== FEATURED_SECTION);
+
       // The rating window has to be the day the hall is living in, not the UTC
       // day: at 8pm Eastern the UTC date has rolled over already.
       const localDate = () => new Date().toLocaleDateString('en-CA');
@@ -2652,21 +2660,22 @@
       }
 
       /**
-       * The row of cards under the stat cards: a card for one static section
-       * on the left, then one card per daily kitchen.
+       * The cards under the stat cards, in two rows: the daily kitchens and
+       * one featured section on the first, then the remaining static sections
+       * on the second.
        *
-       * Only the two daily kitchens and the featured section get a card. The
-       * other static sections and the meal periods are not shown here: the
-       * meal periods are already the selector above, and the remaining static
-       * sections are the same every day. The kitchens are always rendered,
-       * even at zero, so the row keeps its shape instead of shifting as
-       * ratings arrive.
+       * Every card reads alike — the same all-time / Today table, the same "—"
+       * for a scope with no ratings, the same trend toggle — because they all
+       * answer the same question. The kitchens and the featured section are
+       * always rendered, even at zero, so the row keeps its shape instead of
+       * shifting as ratings arrive; the second row follows the menu's own
+       * section list.
        */
       function renderSides() {
         const stations = state.stats?.stations;
         // An older Worker sends no per-station breakdown at all. Fall back to
-        // the empty message rather than drawing two zeroed kitchens, which
-        // would read as "nobody has rated anything" rather than "no data".
+        // the empty message rather than drawing zeroed cards, which would read
+        // as "nobody has rated anything" rather than "no data".
         if (!Array.isArray(stations)) {
           sidesEl.innerHTML =
             '<div class="side"><div class="side-head">Per side</div>' +
@@ -2674,11 +2683,13 @@
           return;
         }
         const byName = new Map(stations.map((s) => [s.station, s]));
+        const card = (name) => sectionCard(name, byName.get(name) || emptyStation(name));
         sidesEl.innerHTML =
-          sectionCard(FEATURED_SECTION, byName.get(FEATURED_SECTION) || emptyStation(FEATURED_SECTION)) +
+          card(FEATURED_SECTION) +
           DAILY_STATIONS.map((name) =>
             sideCard(`station:${name}`, name, byName.get(name) || emptyStation(name))
-          ).join('');
+          ).join('') +
+          OTHER_SECTIONS.map(card).join('');
       }
 
       /** The zero shape for a kitchen the Worker has not reported yet. */
