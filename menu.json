@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-30T09:38:29.401Z",
+  "updatedAt": "2026-10-01T03:40:33.600Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-09-30",
   "menus": {
@@ -41,7 +41,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-09-30T09:38:29.401Z",
+  "daysUpdatedAt": "2026-10-01T03:40:33.600Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -375,7 +375,11 @@
         "globalFare": [],
         "classicKitchen": [
           "Plant-Based Chik'n Tenders",
-          "Grilled Chicago Chicken Sandwich",
+          "Vegan Chorizo",
+          "BBQ Chicken Sandwich",
+          "Low Sodium Seasoned Beans Black",
+          "Seasoned White Rice",
+          "Corn with Peppers and Onions",
           "Seasoned Tater Tots",
           "Zucchini & Tomatoes"
         ]
@@ -501,7 +505,7 @@
           "Fresh Bell Peppers"
         ],
         "classicKitchen": [
-          "Fried Chicken Drumsticks",
+          "Hawaiian Ham Steak",
           "Augratin Potatoes",
           "Green Beans with Red Peppers",
           "Pacific Vegetable Blend"
@@ -559,8 +563,8 @@
         "classicKitchen": [
           "Grilled Cheese",
           "Grilled Ham and Cheese",
-          "French Fries",
-          "Peas & Carrots"
+          "Peas & Carrots",
+          "Tomato Soup"
         ]
       },
       "dinner": {
