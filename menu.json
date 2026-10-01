@@ -1,47 +1,50 @@
 {
-  "updatedAt": "2026-10-01T03:40:33.600Z",
+  "updatedAt": "2026-10-01T09:53:02.297Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-09-30",
+  "menuDate": "2026-10-01",
   "menus": {
     "breakfast": {
       "globalFare": [
         "Scrambled Eggs",
-        "Buttermilk Pancakes",
-        "Turkey Sausage Link",
-        "Lyonnaise Potatoes"
+        "Grilled Ham",
+        "French Toast",
+        "Hashbrown"
       ],
       "classicKitchen": [
-        "Cinnamon Coffee Cake",
-        "Cranberry Orange Oatmeal"
+        "Orange Muffin",
+        "Strawberry Shortcake Oatmeal"
       ]
     },
     "lunch": {
       "globalFare": [
-        "Black Bean Patty",
-        "Hamburger on a Bun",
-        "French Fries"
+        "Diced Ham",
+        "Roasted Carrots",
+        "Bacon Bits",
+        "Fire Roasted Corn Chowder"
       ],
       "classicKitchen": [
-        "Grilled Pesto-Marinated Chicken Breast",
-        "Baked Tofu Steak",
-        "Parmesan Orzo",
-        "California Blend Vegetables"
+        "Chicken Fajita Meat",
+        "Seasoned Black Beans",
+        "Brown Rice",
+        "Sauteed Peppers & Onions"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Peppered Flank Steak",
-        "Beef Stew"
+        "Teriyaki Glazed Chicken Breast",
+        "Adobo Marinated Egg",
+        "Asian Fried Rice",
+        "Seasoned Asian Vegetables"
       ],
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Tofu Vegetable Scramble",
-        "Red Skin Mashed Potatoes",
-        "Roasted Carrots"
+        "Gnocchi with Roasted Cauliflower",
+        "Honey Glazed Pork Loin",
+        "Fresh Roasted Broccoli",
+        "White Cheese Sauce"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-01T03:40:33.600Z",
+  "daysUpdatedAt": "2026-10-01T09:53:02.297Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -583,6 +586,61 @@
           "Cornbread",
           "Two Bean Turkey Chili",
           "Potato Corn Chowder"
+        ]
+      }
+    },
+    "2026-10-08": {
+      "breakfast": {
+        "globalFare": [
+          "Pork Bacon",
+          "Scrambled Eggs",
+          "Black Forest Ham",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes",
+          "Bacon Bits"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Buffalo Cauliflower Bites",
+          "Boneless Breaded Chicken Wings",
+          "Seasoned White Rice",
+          "Cranberry Broccoli Salad"
+        ],
+        "classicKitchen": [
+          "Meatball",
+          "Baked Spaghetti Casserole",
+          "Garlic Breadstick",
+          "Spaghetti Noodles",
+          "Steamed Broccoli",
+          "Parmesan Broiled Tomato"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Grilled Chipotle Chicken",
+          "Seasoned White Rice",
+          "Green Beans with Sauteed Mushrooms"
+        ],
+        "classicKitchen": [
+          "Gnocchi with Summer Squash and Basil",
+          "Honey Glazed Pork Loin",
+          "Roasted Cauliflower",
+          "Lemon Pepper Peas with Dill",
+          "Dinner Roll",
+          "Italian Wedding Soup",
+          "French Onion Soup"
         ]
       }
     }
