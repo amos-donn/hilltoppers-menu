@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-01T09:53:02.297Z",
+  "updatedAt": "2026-10-02T03:37:29.373Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-01",
   "menus": {
@@ -44,7 +44,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-01T09:53:02.297Z",
+  "daysUpdatedAt": "2026-10-02T03:37:29.373Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -519,6 +519,7 @@
           "Grilled Pork Chop",
           "Baked Beans",
           "Rice Pilaf Chicken with Orzo from Mix",
+          "Risotto Rice",
           "Maple-Caramelized Brussels Sprouts"
         ],
         "classicKitchen": [
@@ -572,17 +573,11 @@
       },
       "dinner": {
         "globalFare": [
-          "Plant-Based Chik'n Tenders",
-          "BLT Crispy Chicken Sandwich",
-          "Curly Fries",
-          "Buttered Corn"
+          "Grilled Chipotle Chicken",
+          "Seasoned White Rice",
+          "Green Beans with Sauteed Mushrooms"
         ],
         "classicKitchen": [
-          "Seasoned Ground Beef",
-          "Cheese Lasagna Casserole",
-          "Garlic Breadstick",
-          "California Blend Vegetables",
-          "Marinara Sauce",
           "Cornbread",
           "Two Bean Turkey Chili",
           "Potato Corn Chowder"
@@ -629,15 +624,17 @@
       },
       "dinner": {
         "globalFare": [
-          "Grilled Chipotle Chicken",
-          "Seasoned White Rice",
-          "Green Beans with Sauteed Mushrooms"
+          "Plant-Based Chik'n Tenders",
+          "BLT Crispy Chicken Sandwich",
+          "Curly Fries",
+          "Buttered Corn"
         ],
         "classicKitchen": [
-          "Gnocchi with Summer Squash and Basil",
-          "Honey Glazed Pork Loin",
-          "Roasted Cauliflower",
-          "Lemon Pepper Peas with Dill",
+          "Seasoned Ground Beef",
+          "Cheese Lasagna Casserole",
+          "Garlic Breadstick",
+          "Italian Vegetables",
+          "Marinara Sauce",
           "Dinner Roll",
           "Italian Wedding Soup",
           "French Onion Soup"
