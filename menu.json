@@ -1,50 +1,52 @@
 {
-  "updatedAt": "2026-10-02T03:37:29.373Z",
+  "updatedAt": "2026-10-02T09:51:25.969Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-01",
+  "menuDate": "2026-10-02",
   "menus": {
     "breakfast": {
       "globalFare": [
+        "Pork Bacon",
+        "Biscuit with Sausage Gravy",
         "Scrambled Eggs",
-        "Grilled Ham",
-        "French Toast",
-        "Hashbrown"
+        "French Waffles",
+        "Hashbrowns"
       ],
       "classicKitchen": [
-        "Orange Muffin",
-        "Strawberry Shortcake Oatmeal"
+        "Blueberry Muffin",
+        "Oatmeal with Berries"
       ]
     },
     "lunch": {
       "globalFare": [
-        "Diced Ham",
-        "Roasted Carrots",
-        "Bacon Bits",
-        "Fire Roasted Corn Chowder"
+        "Whole Grain Corn Dog",
+        "Waffle Fries",
+        "Peas & Carrots"
       ],
       "classicKitchen": [
-        "Chicken Fajita Meat",
-        "Seasoned Black Beans",
-        "Brown Rice",
-        "Sauteed Peppers & Onions"
+        "TVP Vegan Meatballs",
+        "Spaghetti & Meatballs",
+        "Roasted Broccoli",
+        "Grilled Balsamic Yellow Squash",
+        "Marinara Sauce"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Teriyaki Glazed Chicken Breast",
-        "Adobo Marinated Egg",
-        "Asian Fried Rice",
-        "Seasoned Asian Vegetables"
+        "Seasoned Ground Beef",
+        "Baked Ziti",
+        "Italian Sausage",
+        "Italian Vegetables",
+        "Marinara Sauce"
       ],
       "classicKitchen": [
-        "Gnocchi with Roasted Cauliflower",
-        "Honey Glazed Pork Loin",
-        "Fresh Roasted Broccoli",
-        "White Cheese Sauce"
+        "Western Turkey Burger",
+        "Vegan Veggie Patty",
+        "Potato Cheddar Bites",
+        "Roasted Green Beans"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-02T03:37:29.373Z",
+  "daysUpdatedAt": "2026-10-02T09:51:25.969Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -638,6 +640,60 @@
           "Dinner Roll",
           "Italian Wedding Soup",
           "French Onion Soup"
+        ]
+      }
+    },
+    "2026-10-09": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Mild Pork Sausage Link",
+          "Chocolate Chip Pancakes",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Sweet & Sour Chicken",
+          "Vegetable Egg Roll",
+          "Fried Brown Rice",
+          "Sweet-n- Sour Tofu & Vegetables"
+        ],
+        "classicKitchen": [
+          "Breaded Fish Sandwich",
+          "Baked Beans",
+          "French Fries",
+          "Coleslaw",
+          "Oven Roasted Succotash"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Taco Meat",
+          "Vegan Chorizo",
+          "Tortilla",
+          "Spicy Refried Beans",
+          "Mexican Street Corn Salad",
+          "Jasmine Rice"
+        ],
+        "classicKitchen": [
+          "Pork Ribs Baby Back BBQ",
+          "Baked Beans",
+          "Beer Battered French Fries",
+          "Dinner Roll",
+          "Ham & Navy Bean Soup",
+          "Vegetable Lentil Soup"
         ]
       }
     }
