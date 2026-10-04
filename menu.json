@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-10-03T04:01:44.816Z",
+  "updatedAt": "2026-10-04T05:28:19.404Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-03",
+  "menuDate": "2026-10-04",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -11,32 +11,27 @@
       "globalFare": [],
       "classicKitchen": [
         "Plant-Based Chik'n Tenders",
-        "Vegan Chorizo",
-        "BBQ Chicken Sandwich",
-        "Low Sodium Seasoned Beans Black",
-        "Seasoned White Rice",
-        "Corn with Peppers and Onions",
-        "Seasoned Tater Tots",
-        "Zucchini & Tomatoes"
+        "Chicken Parmesan Sandwich",
+        "Italian Vegetables",
+        "Vegetable Tortellini Soup"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Oriental Chicken",
-        "Asian Marinated Tofu",
-        "Vegetable Rice",
-        "Sauteed Mushrooms",
-        "Sauteed Peppers & Onions"
+        "Dhaba Chicken Curry",
+        "Vegetable Lo Mein",
+        "Steamed Green Beans and Carrots",
+        "Roasted Curried Cauliflower"
       ],
       "classicKitchen": [
-        "London Broil",
-        "Risotto Stuffed Portobello",
-        "Baked Sweet Potatoes & Apples",
-        "Brussel Sprouts"
+        "Confetti Lentils",
+        "Roasted Garlic Chicken",
+        "Fresh Roasted Broccoli",
+        "Garlic & Herb Tofu Spread"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-03T04:01:44.816Z",
+  "daysUpdatedAt": "2026-10-04T05:28:19.404Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -722,6 +717,41 @@
           "Dinner Roll",
           "Tomato Soup",
           "Boston Clam Chowder"
+        ]
+      }
+    },
+    "2026-10-11": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Home Fried Potatoes",
+          "Bacon"
+        ],
+        "classicKitchen": [
+          "Meatballs TVP Vegan GF",
+          "All-Beef Meatball Sub",
+          "Garlic Breadstick"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Classic Swiss Steak",
+          "Stewed Chickpea",
+          "Red Skin Mashed Garlic Potatoes",
+          "Sautéed Garden Fresh Green Beans"
+        ],
+        "classicKitchen": [
+          "Pasta with Chicken & Wild Mushroom Sauce",
+          "Turkey Tetrazzini",
+          "Spaghetti Noodles",
+          "Peas & Mushrooms",
+          "Dinner Roll",
+          "Baked Potato Soup"
         ]
       }
     }
