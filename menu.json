@@ -1,37 +1,57 @@
 {
-  "updatedAt": "2026-10-04T05:28:19.404Z",
+  "updatedAt": "2026-10-05T04:05:56.608Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-04",
+  "menuDate": "2026-10-05",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "globalFare": [
+        "Fresh Blueberries",
+        "Potato Hashbrown Patty",
+        "Scrambled Eggs",
+        "Pork Sausage Patty",
+        "Blueberry Pancakes"
+      ],
+      "classicKitchen": [
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Sliced Mushrooms",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
+      ]
     },
     "lunch": {
-      "globalFare": [],
+      "globalFare": [
+        "Brown Rice and Pepper Casserole",
+        "Creamy Chicken Basil Curry",
+        "Indian Potatoes with Peas & Cauliflower",
+        "Baked Eggplant"
+      ],
       "classicKitchen": [
-        "Plant-Based Chik'n Tenders",
-        "Chicken Parmesan Sandwich",
-        "Italian Vegetables",
-        "Vegetable Tortellini Soup"
+        "Sliced Italian Sausage",
+        "Broccoli & Carrots",
+        "Broccoli & Cheese Casserole",
+        "Sauce White"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Dhaba Chicken Curry",
-        "Vegetable Lo Mein",
-        "Steamed Green Beans and Carrots",
-        "Roasted Curried Cauliflower"
+        "Beef Bibimbap Bowl",
+        "Adobo Marinated Egg",
+        "Seasoned Asian Vegetables"
       ],
       "classicKitchen": [
-        "Confetti Lentils",
-        "Roasted Garlic Chicken",
-        "Fresh Roasted Broccoli",
-        "Garlic & Herb Tofu Spread"
+        "Chicken with Red Pepper Sauce",
+        "Pasta Shells",
+        "Sauteed Spinach",
+        "Creamy Roasted Red Pepper Sauce"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-04T05:28:19.404Z",
+  "daysUpdatedAt": "2026-10-05T04:05:56.608Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -752,6 +772,50 @@
           "Peas & Mushrooms",
           "Dinner Roll",
           "Baked Potato Soup"
+        ]
+      }
+    },
+    "2026-10-12": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Sausage Patty",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Bacon Egg Cheese Biscuit Sandwich",
+          "Egg and Cheese Biscuit",
+          "Sausage & Cheese Biscuit"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Chicago Dog",
+          "Four Cheese Macaroni & Cheese",
+          "Coleslaw"
+        ],
+        "classicKitchen": [
+          "Crispy Chicken Bowl WG",
+          "Popcorn Chicken",
+          "Plant-Based Chik'n Tenders",
+          "Country Gravy",
+          "Mashed Potatoes",
+          "Buttered Corn"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Asian Garlic Beef Strips",
+          "Jasmine Rice",
+          "Asian Style Snap Peas",
+          "Cambodian Style Tofu Salad"
+        ],
+        "classicKitchen": [
+          "BBQ Chicken Thigh",
+          "Baked Beans",
+          "Roasted Potato Wedges",
+          "Roasted Baby Carrots with Dill"
         ]
       }
     }
