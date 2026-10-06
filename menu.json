@@ -1,15 +1,14 @@
 {
-  "updatedAt": "2026-10-05T04:05:56.608Z",
+  "updatedAt": "2026-10-06T04:02:24.400Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-05",
+  "menuDate": "2026-10-06",
   "menus": {
     "breakfast": {
       "globalFare": [
-        "Fresh Blueberries",
-        "Potato Hashbrown Patty",
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Pork Sausage Patty",
-        "Blueberry Pancakes"
+        "Oven Roasted Red Bliss Potatoes"
       ],
       "classicKitchen": [
         "Mild Shredded Cheddar Cheese",
@@ -25,33 +24,36 @@
     },
     "lunch": {
       "globalFare": [
-        "Brown Rice and Pepper Casserole",
-        "Creamy Chicken Basil Curry",
-        "Indian Potatoes with Peas & Cauliflower",
-        "Baked Eggplant"
+        "Adobo Chicken",
+        "Spanish Brown Rice",
+        "Fresh Bell Peppers"
       ],
       "classicKitchen": [
-        "Sliced Italian Sausage",
-        "Broccoli & Carrots",
-        "Broccoli & Cheese Casserole",
-        "Sauce White"
+        "Hawaiian Ham Steak",
+        "Augratin Potatoes",
+        "Green Beans with Red Peppers",
+        "Pacific Vegetable Blend"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Beef Bibimbap Bowl",
-        "Adobo Marinated Egg",
-        "Seasoned Asian Vegetables"
+        "Grilled Pork Chop",
+        "Baked Beans",
+        "Rice Pilaf Chicken with Orzo from Mix",
+        "Risotto Rice",
+        "Maple-Caramelized Brussels Sprouts"
       ],
       "classicKitchen": [
-        "Chicken with Red Pepper Sauce",
-        "Pasta Shells",
-        "Sauteed Spinach",
-        "Creamy Roasted Red Pepper Sauce"
+        "Pot Roast",
+        "Lentils with Vegetables",
+        "Red Skin Mashed Garlic Potatoes",
+        "Garlic Roasted Root Vegetables",
+        "Dinner Roll",
+        "Homemade Vegetable Beef Soup"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-05T04:05:56.608Z",
+  "daysUpdatedAt": "2026-10-06T04:02:24.400Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -816,6 +818,50 @@
           "Baked Beans",
           "Roasted Potato Wedges",
           "Roasted Baby Carrots with Dill"
+        ]
+      }
+    },
+    "2026-10-13": {
+      "breakfast": {
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Home Fried Potatoes"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Greek Style Chicken Thighs",
+          "Chips Pita Baked",
+          "Brown Rice",
+          "Broccoli and Cauliflower",
+          "Roasted Chickpeas"
+        ],
+        "classicKitchen": [
+          "Brunch Burger"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Tofu Cacciatore",
+          "Chicken Cacciatore",
+          "Jasmine Rice",
+          "Fresh Roasted Broccoli"
+        ],
+        "classicKitchen": [
+          "MM5 Garlic Herb Crusted Pork Loin",
+          "Red Skin Mashed Potatoes",
+          "Italian Corn"
         ]
       }
     }
