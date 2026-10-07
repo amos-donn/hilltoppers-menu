@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-06T04:02:24.400Z",
+  "updatedAt": "2026-10-07T03:35:49.481Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-06",
   "menus": {
@@ -53,7 +53,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-06T04:02:24.400Z",
+  "daysUpdatedAt": "2026-10-07T03:35:49.481Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -726,7 +726,6 @@
       "dinner": {
         "globalFare": [
           "Fried Chicken Tenders",
-          "Teriyaki Chicken Nuggets",
           "Plant-Based Chik'n Tenders",
           "Seasoned White Rice",
           "Stir Fry Vegetables"
@@ -841,11 +840,9 @@
       },
       "lunch": {
         "globalFare": [
-          "Greek Style Chicken Thighs",
-          "Chips Pita Baked",
-          "Brown Rice",
-          "Broccoli and Cauliflower",
-          "Roasted Chickpeas"
+          "Vegetable Potsticker",
+          "Fried Chicken Potsticker",
+          "Brown Rice"
         ],
         "classicKitchen": [
           "Brunch Burger"
