@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-08T04:02:39.511Z",
+  "updatedAt": "2026-10-08T16:50:14.394Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-08",
   "menus": {
@@ -32,12 +32,11 @@
         "Cranberry Broccoli Salad"
       ],
       "classicKitchen": [
-        "Meatball",
         "Baked Spaghetti Casserole",
+        "Meat Sauce",
+        "Garlic Knots",
         "Garlic Breadstick",
-        "Spaghetti Noodles",
-        "Steamed Broccoli",
-        "Parmesan Broiled Tomato"
+        "Steamed Broccoli"
       ]
     },
     "dinner": {
@@ -59,7 +58,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-08T04:02:39.511Z",
+  "daysUpdatedAt": "2026-10-08T16:50:14.394Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -629,12 +628,11 @@
           "Cranberry Broccoli Salad"
         ],
         "classicKitchen": [
-          "Meatball",
           "Baked Spaghetti Casserole",
+          "Meat Sauce",
+          "Garlic Knots",
           "Garlic Breadstick",
-          "Spaghetti Noodles",
-          "Steamed Broccoli",
-          "Parmesan Broiled Tomato"
+          "Steamed Broccoli"
         ]
       },
       "dinner": {
