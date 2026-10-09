@@ -42,12 +42,27 @@ jobs:
 
       - name: Commit when the menu changed
         run: |
-          if git diff --quiet -- menu.json; then
-            echo "No menu change to commit."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add menu.json
-          git commit -m "Update menu data"
-          git push
+          for attempt in 1 2 3; do
+            if git diff --quiet -- menu.json; then
+              echo "No menu change to commit."
+              exit 0
+            fi
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add menu.json
+            git commit -m "Update menu data"
+            if git push; then
+              echo "Pushed on attempt ${attempt}."
+              exit 0
+            fi
+            # Another run committed while this one was working. Because menu.json
+            # is generated, the right resolution is to rebuild it on the new main
+            # rather than merge two generated copies.
+            echo "Push rejected. Rebuilding on the latest main."
+            git fetch origin main
+            git reset --hard origin/main
+            node scripts/fetch-menu.mjs
+          done
+
+          echo "Could not push after three attempts." >&2
+          exit 1
