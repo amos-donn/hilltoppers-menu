@@ -1,16 +1,14 @@
 {
-  "updatedAt": "2026-10-08T16:50:14.394Z",
+  "updatedAt": "2026-10-09T04:06:10.149Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-08",
+  "menuDate": "2026-10-09",
   "menus": {
     "breakfast": {
       "globalFare": [
-        "Pork Bacon",
         "Scrambled Eggs",
-        "Black Forest Ham",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes",
-        "Bacon Bits"
+        "Mild Pork Sausage Link",
+        "Chocolate Chip Pancakes",
+        "Hashbrown Patty"
       ],
       "classicKitchen": [
         "Mild Shredded Cheddar Cheese",
@@ -26,39 +24,39 @@
     },
     "lunch": {
       "globalFare": [
-        "Buffalo Cauliflower Bites",
-        "Boneless Breaded Chicken Wings",
-        "Seasoned White Rice",
-        "Cranberry Broccoli Salad"
+        "Sweet & Sour Chicken",
+        "Vegetable Egg Roll",
+        "Fried Brown Rice",
+        "Sweet-n- Sour Tofu & Vegetables"
       ],
       "classicKitchen": [
-        "Baked Spaghetti Casserole",
-        "Meat Sauce",
-        "Garlic Knots",
-        "Garlic Breadstick",
-        "Steamed Broccoli"
+        "Breaded Fish Sandwich",
+        "Baked Beans",
+        "French Fries",
+        "Coleslaw",
+        "Oven Roasted Succotash"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Plant-Based Chik'n Tenders",
-        "BLT Crispy Chicken Sandwich",
-        "Curly Fries",
-        "Buttered Corn"
+        "Taco Meat",
+        "Vegan Chorizo",
+        "Tortilla",
+        "Spicy Refried Beans",
+        "Mexican Street Corn Salad",
+        "Jasmine Rice"
       ],
       "classicKitchen": [
-        "Seasoned Ground Beef",
-        "Cheese Lasagna Casserole",
-        "Garlic Breadstick",
-        "Italian Vegetables",
-        "Marinara Sauce",
+        "Pork Ribs Baby Back BBQ",
+        "Baked Beans",
+        "Beer Battered French Fries",
         "Dinner Roll",
-        "Italian Wedding Soup",
-        "French Onion Soup"
+        "Ham & Navy Bean Soup",
+        "Vegetable Lentil Soup"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-08T16:50:14.394Z",
+  "daysUpdatedAt": "2026-10-09T04:06:10.149Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -957,6 +955,48 @@
           "Beef and Mac Casserole",
           "Garlic Breadstick",
           "Sauce Tomato Cream"
+        ]
+      }
+    },
+    "2026-10-16": {
+      "breakfast": {
+        "globalFare": [
+          "Potato Hashbrown Patty",
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Mild Pork Sausage Link"
+        ],
+        "classicKitchen": [
+          "Egg and Cheese Bagel",
+          "Sandwich Bagel Egg Cheese & Sausage",
+          "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Turkey Day Panini",
+          "Grilled Vegetable Panini"
+        ],
+        "classicKitchen": [
+          "Meatballs",
+          "Cheese Ravioli",
+          "Steamed Broccoli & Carrots",
+          "Pesto Cream Sauce",
+          "Marinara Sauce"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Paprika Chicken",
+          "Rice Pilaf Chicken with Orzo from Mix",
+          "Seasoned White Rice",
+          "Roasted Root Vegetable Medley"
+        ],
+        "classicKitchen": [
+          "Meatless Stuffed Bell Peppers",
+          "Honey Mustard Pork Chop",
+          "Scalloped Potatoes",
+          "Cauliflower with Peas and Carrots"
         ]
       }
     }
