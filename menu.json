@@ -1,62 +1,45 @@
 {
-  "updatedAt": "2026-10-09T04:06:10.149Z",
+  "updatedAt": "2026-10-10T04:00:57.939Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-09",
+  "menuDate": "2026-10-10",
   "menus": {
     "breakfast": {
-      "globalFare": [
-        "Scrambled Eggs",
-        "Mild Pork Sausage Link",
-        "Chocolate Chip Pancakes",
-        "Hashbrown Patty"
-      ],
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Sliced Mushrooms",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "globalFare": [
-        "Sweet & Sour Chicken",
-        "Vegetable Egg Roll",
-        "Fried Brown Rice",
-        "Sweet-n- Sour Tofu & Vegetables"
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty 2 Oz",
+        "Hashbrown Patty"
       ],
       "classicKitchen": [
-        "Breaded Fish Sandwich",
-        "Baked Beans",
-        "French Fries",
-        "Coleslaw",
-        "Oven Roasted Succotash"
+        "Classic Reuben",
+        "Mixed Vegetables",
+        "Seasoned French Fries",
+        "French Fry Seasoning"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Tortilla",
-        "Spicy Refried Beans",
-        "Mexican Street Corn Salad",
-        "Jasmine Rice"
+        "Fried Chicken Tenders",
+        "Plant-Based Chik'n Tenders",
+        "Seasoned White Rice",
+        "Stir Fry Vegetables"
       ],
       "classicKitchen": [
-        "Pork Ribs Baby Back BBQ",
+        "Fried Pork Chop",
         "Baked Beans",
-        "Beer Battered French Fries",
+        "Red Skin Mashed Garlic Potatoes",
+        "Brussel Sprouts",
         "Dinner Roll",
-        "Ham & Navy Bean Soup",
-        "Vegetable Lentil Soup"
+        "Tomato Soup",
+        "Boston Clam Chowder"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-09T04:06:10.149Z",
+  "daysUpdatedAt": "2026-10-10T04:00:57.939Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -997,6 +980,35 @@
           "Honey Mustard Pork Chop",
           "Scalloped Potatoes",
           "Cauliflower with Peas and Carrots"
+        ]
+      }
+    },
+    "2026-10-17": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [],
+        "classicKitchen": [
+          "Plant-Based Chik'n Tenders",
+          "Nashville Hot Chicken Sandwich",
+          "Southern Style Biscuit",
+          "French Fry Seasoning"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Bacon Jam Burger",
+          "Vegan Veggie Patty",
+          "Seasoned Fries",
+          "Corn On The Cob"
+        ],
+        "classicKitchen": [
+          "Smoked Gouda Cheese Sauce",
+          "Balsamic Glazed Chicken",
+          "Macaroni & Cheese",
+          "Brussel Sprouts"
         ]
       }
     }
