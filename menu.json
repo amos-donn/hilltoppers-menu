@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-10-10T04:00:57.939Z",
+  "updatedAt": "2026-10-11T10:08:02.588Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-10",
+  "menuDate": "2026-10-11",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,37 +9,35 @@
     },
     "lunch": {
       "globalFare": [
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty 2 Oz",
-        "Hashbrown Patty"
+        "Home Fried Potatoes",
+        "Bacon"
       ],
       "classicKitchen": [
-        "Classic Reuben",
-        "Mixed Vegetables",
-        "Seasoned French Fries",
-        "French Fry Seasoning"
+        "Meatballs TVP Vegan GF",
+        "All-Beef Meatball Sub",
+        "Garlic Breadstick"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Fried Chicken Tenders",
-        "Plant-Based Chik'n Tenders",
-        "Seasoned White Rice",
-        "Stir Fry Vegetables"
+        "Classic Swiss Steak",
+        "Stewed Chickpea",
+        "Red Skin Mashed Garlic Potatoes",
+        "Sautéed Garden Fresh Green Beans"
       ],
       "classicKitchen": [
-        "Fried Pork Chop",
-        "Baked Beans",
-        "Red Skin Mashed Garlic Potatoes",
-        "Brussel Sprouts",
+        "Pasta with Chicken & Wild Mushroom Sauce",
+        "Turkey Tetrazzini",
+        "Spaghetti Noodles",
+        "Peas & Mushrooms",
         "Dinner Roll",
-        "Tomato Soup",
-        "Boston Clam Chowder"
+        "Baked Potato Soup"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-10T04:00:57.939Z",
+  "daysUpdatedAt": "2026-10-11T10:08:02.588Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1009,6 +1007,30 @@
           "Balsamic Glazed Chicken",
           "Macaroni & Cheese",
           "Brussel Sprouts"
+        ]
+      }
+    },
+    "2026-10-18": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [],
+        "classicKitchen": [
+          "Smoked Baja Turkey Melt",
+          "Tomato & Garden Vegetable Soup"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Beef Bourguignon w/Fettuccine"
+        ],
+        "classicKitchen": [
+          "Apricot & Ginger Glazed Salmon",
+          "Tofu BBQ with Rice",
+          "Fresh Roasted Broccoli",
+          "Maple Orange Sweet Potatoes"
         ]
       }
     }
