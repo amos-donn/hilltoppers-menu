@@ -1,43 +1,52 @@
 {
-  "updatedAt": "2026-10-11T10:08:02.588Z",
+  "updatedAt": "2026-10-12T09:44:17.219Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-11",
+  "menuDate": "2026-10-12",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "globalFare": [
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
+      ],
+      "classicKitchen": [
+        "Bacon Egg Cheese Biscuit Sandwich",
+        "Egg and Cheese Biscuit",
+        "Sausage & Cheese Biscuit"
+      ]
     },
     "lunch": {
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Scrambled Eggs",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Chicago Dog",
+        "Four Cheese Macaroni & Cheese",
+        "Coleslaw"
       ],
       "classicKitchen": [
-        "Meatballs TVP Vegan GF",
-        "All-Beef Meatball Sub",
-        "Garlic Breadstick"
+        "Crispy Chicken Bowl WG",
+        "Popcorn Chicken",
+        "Plant-Based Chik'n Tenders",
+        "Country Gravy",
+        "Mashed Potatoes",
+        "Buttered Corn"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Classic Swiss Steak",
-        "Stewed Chickpea",
-        "Red Skin Mashed Garlic Potatoes",
-        "Sautéed Garden Fresh Green Beans"
+        "Asian Garlic Beef Strips",
+        "Jasmine Rice",
+        "Asian Style Snap Peas",
+        "Cambodian Style Tofu Salad"
       ],
       "classicKitchen": [
-        "Pasta with Chicken & Wild Mushroom Sauce",
-        "Turkey Tetrazzini",
-        "Spaghetti Noodles",
-        "Peas & Mushrooms",
-        "Dinner Roll",
-        "Baked Potato Soup"
+        "BBQ Chicken Thigh",
+        "Baked Beans",
+        "Roasted Potato Wedges",
+        "Roasted Baby Carrots with Dill"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-11T10:08:02.588Z",
+  "daysUpdatedAt": "2026-10-12T09:44:17.219Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1031,6 +1040,57 @@
           "Tofu BBQ with Rice",
           "Fresh Roasted Broccoli",
           "Maple Orange Sweet Potatoes"
+        ]
+      }
+    },
+    "2026-10-19": {
+      "breakfast": {
+        "globalFare": [
+          "Fresh Blueberries",
+          "Potato Hashbrown Patty",
+          "Scrambled Eggs",
+          "Pork Sausage Patty",
+          "Blueberry Pancakes"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Brown Rice Royale",
+          "Chicken & Broccoli Asian",
+          "Broccoli & Mushroom Vegetarian Stir Fry",
+          "Asian Marinated Tofu"
+        ],
+        "classicKitchen": [
+          "Loaded Mac & Cheese Bowl",
+          "Ham Diced",
+          "Macaroni & Cheese",
+          "Broccoli",
+          "Bacon Bits",
+          "Cheese Sauce"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Vegan Chorizo",
+          "Mac N Cheese Pork Belly Slider",
+          "Seasoned White Rice",
+          "Asian Style Snap Peas"
+        ],
+        "classicKitchen": [
+          "Chicken Parmesan",
+          "Capellini",
+          "Carrot Baby Cut"
         ]
       }
     }
