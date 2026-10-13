@@ -1,52 +1,50 @@
 {
-  "updatedAt": "2026-10-12T09:44:17.219Z",
+  "updatedAt": "2026-10-13T07:51:59.719Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-12",
+  "menuDate": "2026-10-13",
   "menus": {
     "breakfast": {
       "globalFare": [
+        "Cinnamon French Toast Homemade",
+        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ],
       "classicKitchen": [
-        "Bacon Egg Cheese Biscuit Sandwich",
-        "Egg and Cheese Biscuit",
-        "Sausage & Cheese Biscuit"
+        "Mild Shredded Cheddar Cheese",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
       ]
     },
     "lunch": {
       "globalFare": [
-        "Chicago Dog",
-        "Four Cheese Macaroni & Cheese",
-        "Coleslaw"
+        "Vegetable Potsticker",
+        "Fried Chicken Potsticker",
+        "Brown Rice"
       ],
       "classicKitchen": [
-        "Crispy Chicken Bowl WG",
-        "Popcorn Chicken",
-        "Plant-Based Chik'n Tenders",
-        "Country Gravy",
-        "Mashed Potatoes",
-        "Buttered Corn"
+        "Brunch Burger"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Asian Garlic Beef Strips",
+        "Tofu Cacciatore",
+        "Chicken Cacciatore",
         "Jasmine Rice",
-        "Asian Style Snap Peas",
-        "Cambodian Style Tofu Salad"
+        "Fresh Roasted Broccoli"
       ],
       "classicKitchen": [
-        "BBQ Chicken Thigh",
-        "Baked Beans",
-        "Roasted Potato Wedges",
-        "Roasted Baby Carrots with Dill"
+        "MM5 Garlic Herb Crusted Pork Loin",
+        "Red Skin Mashed Potatoes",
+        "Italian Corn"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-12T09:44:17.219Z",
+  "daysUpdatedAt": "2026-10-13T07:51:59.719Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1091,6 +1089,60 @@
           "Chicken Parmesan",
           "Capellini",
           "Carrot Baby Cut"
+        ]
+      }
+    },
+    "2026-10-20": {
+      "breakfast": {
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Corned Beef Hash",
+          "Scrambled Eggs",
+          "Oven Roasted Red Bliss Potatoes"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Buffalo Chicken Bites",
+          "Buffalo Chicken",
+          "Brown Rice",
+          "Fresh Steamed Baby Carrots",
+          "Roasted Buffalo Cauliflower"
+        ],
+        "classicKitchen": [
+          "Ramen Noodles Spicy Veg",
+          "Beef Meatball Teriyaki",
+          "Teriyaki Tofu",
+          "Sesame Snap Peas"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Vegetarian Chili",
+          "Nacho Bar",
+          "Refried Beans",
+          "Tortilla Chips",
+          "Seasoned White Rice",
+          "Corn with Peppers and Onions",
+          "Nacho Cheese Sauce"
+        ],
+        "classicKitchen": [
+          "Crabcakes with Lemon Cream Sauce",
+          "Sundried Tomato Fettuccine",
+          "Garlic Shrimp",
+          "Fresh Roasted Broccoli & Cauliflower",
+          "Caesar Salad"
         ]
       }
     }
