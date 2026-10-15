@@ -1,13 +1,14 @@
 {
-  "updatedAt": "2026-10-15T06:35:00.247Z",
+  "updatedAt": "2026-10-15T16:25:32.121Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-10-15",
   "menus": {
     "breakfast": {
       "globalFare": [
         "Pork Bacon",
-        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
+        "Black Forest Ham",
+        "Breakfast Quesadilla",
         "Home Fried Potatoes"
       ],
       "classicKitchen": [
@@ -31,7 +32,6 @@
         "Chicken Stew",
         "Mediterranean Vegetable Stew",
         "White Rice",
-        "Roasted Cauliflower",
         "Grilled Zucchini"
       ]
     },
@@ -51,7 +51,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-15T06:35:00.247Z",
+  "daysUpdatedAt": "2026-10-15T16:25:32.121Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -908,8 +908,9 @@
       "breakfast": {
         "globalFare": [
           "Pork Bacon",
-          "Cinnamon French Toast Homemade",
           "Scrambled Eggs",
+          "Black Forest Ham",
+          "Breakfast Quesadilla",
           "Home Fried Potatoes"
         ],
         "classicKitchen": [
@@ -933,7 +934,6 @@
           "Chicken Stew",
           "Mediterranean Vegetable Stew",
           "White Rice",
-          "Roasted Cauliflower",
           "Grilled Zucchini"
         ]
       },
