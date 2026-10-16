@@ -1,57 +1,50 @@
 {
-  "updatedAt": "2026-10-15T16:25:32.121Z",
+  "updatedAt": "2026-10-16T05:09:00.663Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-15",
+  "menuDate": "2026-10-16",
   "menus": {
     "breakfast": {
       "globalFare": [
-        "Pork Bacon",
+        "Potato Hashbrown Patty",
         "Scrambled Eggs",
-        "Black Forest Ham",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Mild Pork Sausage Link"
       ],
       "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
+        "Egg and Cheese Bagel",
+        "Sandwich Bagel Egg Cheese & Sausage",
+        "Sandwich Egg Cheese & Bacon Bagel 3.7 Oz"
       ]
     },
     "lunch": {
       "globalFare": [
-        "Beef Tex Mex Casserole",
-        "Vegetarian Picadillo",
-        "Black Beans & Rice",
-        "Corn with Peppers and Onions"
+        "Turkey Day Panini",
+        "Grilled Vegetable Panini"
       ],
       "classicKitchen": [
-        "Chicken Stew",
-        "Mediterranean Vegetable Stew",
-        "White Rice",
-        "Grilled Zucchini"
+        "Meatballs",
+        "Cheese Ravioli",
+        "Steamed Broccoli & Carrots",
+        "Pesto Cream Sauce",
+        "Marinara Sauce"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Beef Bulgogi",
-        "Vegan Chorizo",
-        "Korean Baked Cheese Corn",
-        "Edamame Steamed",
-        "Waffle Fries",
-        "Gochujang Sauce"
+        "Paprika Chicken",
+        "Rice Pilaf Chicken with Orzo from Mix",
+        "Seasoned White Rice",
+        "Roasted Root Vegetable Medley"
       ],
       "classicKitchen": [
-        "Beef and Mac Casserole",
-        "Garlic Breadstick",
-        "Sauce Tomato Cream"
+        "Meatless Stuffed Bell Peppers",
+        "Honey Mustard Pork Chop",
+        "Scalloped Potatoes",
+        "Cauliflower with Peas and Carrots"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-15T16:25:32.121Z",
+  "daysUpdatedAt": "2026-10-16T05:09:00.663Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1258,6 +1251,57 @@
           "Roasted Potato Wedges",
           "Roasted Cauliflower",
           "Carrot Charred"
+        ]
+      }
+    },
+    "2026-10-23": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Mild Pork Sausage Link",
+          "Chocolate Chip Pancakes",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Sliced Smoked Ham",
+          "Cheese Omelet",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Taco Meat",
+          "Soft Shell Beef Taco",
+          "Rice Brown Spanish",
+          "Black Refried Beans",
+          "Roasted Confetti Corn"
+        ],
+        "classicKitchen": [
+          "Crispy Chicken Sandwich",
+          "Peas and Carrots"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Saute Breaded Pork Chops",
+          "Crispy Roasted Tofu",
+          "Red Skin Mashed Potatoes",
+          "Sauteed Green Cabbage & Shallots"
+        ],
+        "classicKitchen": [
+          "Grilled Chicken Breast",
+          "Buttered Pasta",
+          "Fresh Roasted Broccoli",
+          "Fresh Steamed Baby Carrots",
+          "Roasted Cauliflower",
+          "Sauteed Mushrooms",
+          "Sauteed Zucchini and Squash"
         ]
       }
     }
