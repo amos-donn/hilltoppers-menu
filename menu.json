@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-10-17T05:38:00.502Z",
+  "updatedAt": "2026-10-18T04:45:12.123Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-17",
+  "menuDate": "2026-10-18",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -10,27 +10,23 @@
     "lunch": {
       "globalFare": [],
       "classicKitchen": [
-        "Plant-Based Chik'n Tenders",
-        "Nashville Hot Chicken Sandwich",
-        "Southern Style Biscuit",
-        "Tater Tots"
+        "Smoked Baja Turkey Melt",
+        "Tomato & Garden Vegetable Soup"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Bacon Jam Burger",
-        "Vegan Veggie Patty",
-        "Seasoned Fries",
-        "Corn On The Cob"
+        "Beef Bourguignon w/Fettuccine"
       ],
       "classicKitchen": [
-        "Balsamic Glazed Chicken",
-        "Cranberry Almond Rice Pilaf",
-        "Brussel Sprouts"
+        "Apricot & Ginger Glazed Salmon",
+        "Tofu BBQ with Rice",
+        "Fresh Roasted Broccoli",
+        "Maple Orange Sweet Potatoes"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-17T05:38:00.502Z",
+  "daysUpdatedAt": "2026-10-18T04:45:12.124Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1324,6 +1320,42 @@
           "Stuffed Pepper",
           "Red Beans & Rice",
           "Butternut Squash"
+        ]
+      }
+    },
+    "2026-10-25": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Sandwich Egg & Cheese English Muffin",
+          "Egg Bacon and Cheese English Muffin",
+          "Ham Egg & Cheese English Muffin Sandwich",
+          "Home Fried Potatoes",
+          "Bacon"
+        ],
+        "classicKitchen": [
+          "Chipotle Chicken Breast",
+          "Flour Tortilla",
+          "Cilantro Lime Rice",
+          "Cumin Black Beans",
+          "Corn with Peppers and Onions"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Fried Chicken Tenders",
+          "Seasoned White Rice"
+        ],
+        "classicKitchen": [
+          "Bbq Flank Steak",
+          "BBQ Cauliflower",
+          "Brabant Potatoes",
+          "Roasted Baby Carrots with Dill"
         ]
       }
     }
