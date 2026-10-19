@@ -1,32 +1,60 @@
 {
-  "updatedAt": "2026-10-18T04:45:12.123Z",
+  "updatedAt": "2026-10-19T05:25:16.498Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-18",
+  "menuDate": "2026-10-19",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "globalFare": [
+        "Fresh Blueberries",
+        "Potato Hashbrown Patty",
+        "Scrambled Eggs",
+        "Pork Sausage Patty",
+        "Blueberry Pancakes"
+      ],
+      "classicKitchen": [
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Clipped Spinach",
+        "Sliced Smoked Ham",
+        "Cheese Omelet",
+        "Sliced Mushrooms",
+        "Fresh Red Onion",
+        "Bell Peppers",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese"
+      ]
     },
     "lunch": {
-      "globalFare": [],
+      "globalFare": [
+        "Brown Rice Royale",
+        "Chicken & Broccoli Asian",
+        "Broccoli & Mushroom Vegetarian Stir Fry",
+        "Asian Marinated Tofu"
+      ],
       "classicKitchen": [
-        "Smoked Baja Turkey Melt",
-        "Tomato & Garden Vegetable Soup"
+        "Ham Diced",
+        "Macaroni & Cheese",
+        "Broccoli",
+        "Bacon Bits",
+        "Cheese Sauce"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Beef Bourguignon w/Fettuccine"
+        "Pork Belly",
+        "Asian Marinated Tofu",
+        "Seasoned White Rice",
+        "Steamed Broccoli",
+        "Shredded Carrots",
+        "Sauteed Mushrooms"
       ],
       "classicKitchen": [
-        "Apricot & Ginger Glazed Salmon",
-        "Tofu BBQ with Rice",
-        "Fresh Roasted Broccoli",
-        "Maple Orange Sweet Potatoes"
+        "Chicken Parmesan",
+        "Capellini",
+        "Carrot Baby Cut"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-18T04:45:12.124Z",
+  "daysUpdatedAt": "2026-10-19T05:25:16.498Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1356,6 +1384,60 @@
           "BBQ Cauliflower",
           "Brabant Potatoes",
           "Roasted Baby Carrots with Dill"
+        ]
+      }
+    },
+    "2026-10-26": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Sausage Patty",
+          "Blueberry Pancake",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Green Bell Pepper",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Fresh Red Onion",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese",
+          "Fresh Red Bell Pepper(s)"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Chili Dog",
+          "Sauteed Peppers & Onions",
+          "Seasoned Tater Tots",
+          "Chili con Carne",
+          "Full O'Beans Chili"
+        ],
+        "classicKitchen": [
+          "Meatball",
+          "Meatballs TVP Vegan GF",
+          "Tricolor Cheese Tortellini",
+          "Broccoli & Carrots",
+          "Marinara Sauce"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Cajun Shrimp Etouffee",
+          "Parmesan Polenta",
+          "Pinto Beans w/Pizzazz",
+          "Peas and Carrots"
+        ],
+        "classicKitchen": [
+          "Tradition Wht Brd Stuffing Mix",
+          "Herb Baked Chicken Breast",
+          "Mashed Potatoes",
+          "Seasoned Corn on the Cob",
+          "Broccoli Salad",
+          "Chicken Gravy"
         ]
       }
     }
