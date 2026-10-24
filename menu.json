@@ -1,59 +1,44 @@
 {
-  "updatedAt": "2026-10-23T05:23:04.860Z",
+  "updatedAt": "2026-10-24T04:46:39.472Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-23",
+  "menuDate": "2026-10-24",
   "menus": {
     "breakfast": {
-      "globalFare": [
-        "Scrambled Eggs",
-        "Mild Pork Sausage Link",
-        "Chocolate Chip Pancakes",
-        "Hashbrown Patty"
-      ],
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Sliced Smoked Ham",
-        "Cheese Omelet",
-        "Sliced Mushrooms",
-        "Fresh Red Onion",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "globalFare": [
-        "Taco Meat",
-        "Soft Shell Beef Taco",
-        "Rice Brown Spanish",
-        "Black Refried Beans",
-        "Roasted Confetti Corn"
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sandwich Egg & Cheese English Muffin",
+        "Egg Bacon and Cheese English Muffin",
+        "Ham Egg & Cheese English Muffin Sandwich",
+        "Sausage Patty 2 Oz",
+        "Hashbrown Patty"
       ],
       "classicKitchen": [
-        "Crispy Chicken Sandwich",
-        "Peas and Carrots"
+        "Ham Club Baguette Sandwich",
+        "Loaded Bacon Ranch Fries",
+        "Mixed Vegetables"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Saute Breaded Pork Chops",
-        "Crispy Roasted Tofu",
-        "Red Skin Mashed Potatoes",
-        "Sauteed Green Cabbage & Shallots"
+        "Chicken Marsala",
+        "Creamy Basil & Sun Dried Tomatoes Pasta",
+        "Sauteed Mushrooms",
+        "Sauteed Zucchini"
       ],
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Buttered Pasta",
-        "Fresh Roasted Broccoli",
-        "Fresh Steamed Baby Carrots",
-        "Roasted Cauliflower",
-        "Sauteed Mushrooms",
-        "Sauteed Zucchini and Squash"
+        "Cajun Honey Roast Pork Loin",
+        "Stuffed Pepper",
+        "Red Beans & Rice",
+        "Butternut Squash"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-23T05:23:04.860Z",
+  "daysUpdatedAt": "2026-10-24T04:46:39.472Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1471,7 +1456,7 @@
           "Noodles Ramen Vegetarian Miso",
           "Pork Ramen Noodle Bowl",
           "Ramen Noodles",
-          "Broccoli",
+          "Broccoli  Florets Mini Fresh",
           "Sauteed Button Mushrooms",
           "Shredded Carrots"
         ]
@@ -1645,6 +1630,36 @@
           "Roasted Pork Loin",
           "Baked Sweet Potato",
           "Green Beans with Oregano"
+        ]
+      }
+    },
+    "2026-10-31": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [],
+        "classicKitchen": [
+          "Bacon Grilled Cheese",
+          "Texas Grilled Cheese Sandwich",
+          "Grilled Ham & Cheese",
+          "Seasoned Vegetable",
+          "Cream of Tomato Basil Soup"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Garlic Butter Baked Cod",
+          "Curried Rice w/Potato and Chickpeas",
+          "Rice Pilaf",
+          "Sauteed Broccolini"
+        ],
+        "classicKitchen": [
+          "Salisbury Steak With Espanol Sauce",
+          "Stewed Chickpea",
+          "Red Skin Mashed Potatoes",
+          "Honey-Glazed Roasted Root Vegetables"
         ]
       }
     }
