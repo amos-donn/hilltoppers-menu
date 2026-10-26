@@ -1,44 +1,60 @@
 {
-  "updatedAt": "2026-10-25T15:01:36.163Z",
+  "updatedAt": "2026-10-26T05:22:18.753Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-25",
+  "menuDate": "2026-10-26",
   "menus": {
     "breakfast": {
-      "classicKitchen": [],
-      "globalFare": []
+      "globalFare": [
+        "Scrambled Eggs",
+        "Sausage Patty",
+        "Blueberry Pancake",
+        "Hashbrown Patty"
+      ],
+      "classicKitchen": [
+        "Mild Shredded Cheddar Cheese",
+        "Fresh Green Bell Pepper",
+        "Fresh Clipped Spinach",
+        "Cheese Omelet",
+        "Sliced Smoked Ham",
+        "Sliced Mushrooms",
+        "Fresh Red Onion",
+        "Bacon Bits",
+        "Shredded Mozzarella Cheese",
+        "Fresh Red Bell Pepper(s)"
+      ]
     },
     "lunch": {
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Scrambled Eggs",
-        "Sandwich Egg & Cheese English Muffin",
-        "Egg Bacon and Cheese English Muffin",
-        "Ham Egg & Cheese English Muffin Sandwich",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Chili Dog",
+        "Sauteed Peppers & Onions",
+        "Seasoned Tater Tots",
+        "Chili con Carne",
+        "Full O'Beans Chili"
       ],
       "classicKitchen": [
-        "Chipotle Chicken Breast",
-        "Flour Tortilla",
-        "Cilantro Lime Rice",
-        "Cumin Black Beans",
-        "Corn with Peppers and Onions"
+        "Meatball",
+        "Meatballs TVP Vegan GF",
+        "Tricolor Cheese Tortellini",
+        "Broccoli & Carrots",
+        "Marinara Sauce"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Fried Chicken Tenders",
-        "Seasoned White Rice"
+        "Cajun Shrimp Etouffee",
+        "Parmesan Polenta",
+        "Pinto Beans w/Pizzazz",
+        "Peas and Carrots"
       ],
       "classicKitchen": [
-        "Bbq Flank Steak",
-        "BBQ Cauliflower",
-        "Brabant Potatoes",
-        "Sautéed Garden Fresh Green Beans"
+        "Herb Baked Chicken Breast",
+        "Mashed Potatoes",
+        "Seasoned Corn on the Cob",
+        "Broccoli Salad"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-25T15:01:36.163Z",
+  "daysUpdatedAt": "2026-10-26T05:22:18.753Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1511,7 +1527,7 @@
           "Stir Fry Vegetables"
         ],
         "classicKitchen": [
-          "Traditional Stuffing",
+          "Tradition Wht Brd Stuffing Mix",
           "Oven Roasted Turkey Breast",
           "Garlic Mashed Potatoes",
           "Peas and Carrots",
@@ -1689,6 +1705,57 @@
           "Manicotti W/ Florentine Sauce",
           "Green Peas",
           "Grilled Balsamic Yellow Squash"
+        ]
+      }
+    },
+    "2026-11-02": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Sausage Patty",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Sandwich Biscuit Bacon/Egg/Cheese IW 5.8",
+          "Egg and Cheese Biscuit",
+          "Sausage & Cheese Biscuit"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Furikake",
+          "Huli Huli Chicken",
+          "Broccoli & Mushroom Vegetarian Stir Fry",
+          "Black Beans",
+          "Sauteed Peppers & Onions",
+          "Seasoned French Fries"
+        ],
+        "classicKitchen": [
+          "Lo Mein Noodles Wide",
+          "Potsticker Vegetable 1 Oz Fzn App",
+          "Pork With Orange & Ginger",
+          "Broccoli & Mushroom Vegetarian Stir Fry",
+          "Mushroom Miso Broth"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Vegetable & Pork Potsticker",
+          "Potsticker Vegetable 1 Oz Fzn App",
+          "Chicken Potstickers",
+          "Vegetable Egg Roll",
+          "Sugar Snap Peas with Red Peppers",
+          "Fortune Cookie"
+        ],
+        "classicKitchen": [
+          "Seasoned Ground Beef",
+          "Roll Dinner Hawaiian",
+          "Red Skin Mashed Potatoes",
+          "Sautéed Corn and Onions",
+          "Peas & Carrots",
+          "Brown Gravy",
+          "Green Salad"
         ]
       }
     }
