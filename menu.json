@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-10-29T06:49:33.836Z",
+  "updatedAt": "2026-10-30T08:58:22.801Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-29",
+  "menuDate": "2026-10-30",
   "menus": {
     "breakfast": {
       "globalFare": [
         "Scrambled Eggs",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes",
-        "Bacon"
+        "Mild Pork Sausage Link",
+        "Chocolate Chip Pancakes",
+        "Hashbrown Patty"
       ],
       "classicKitchen": [
         "Mild Shredded Cheddar Cheese",
@@ -25,34 +25,34 @@
     },
     "lunch": {
       "globalFare": [
-        "Whole Grain Breaded Fish Stick",
-        "Crispy Roasted Tofu",
-        "Spicy Butter Peas",
-        "Rice Pilaf Chicken with Orzo from Mix"
+        "Crispy Chicken Bacon Ranch Wrap",
+        "Seasoned Fries",
+        "Sauteed Broccolini"
       ],
       "classicKitchen": [
-        "Smothered Chicken",
-        "Baked Beans",
-        "Oven Roasted Red Potatoes",
-        "Steamed Green Beans and Carrots"
+        "Bean Burrito",
+        "Beef and Bean Burrito",
+        "Aztec Corn",
+        "Fajita Vegetables"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Potato Cheddar Onion Pierogies",
-        "Kielbasa",
-        "Harvard Beets",
-        "Sauerkraut"
+        "Tofu Extra Firm 4 Oz Square",
+        "Mongolian Beef Stir Fry",
+        "Jasmine Rice",
+        "Shredded Carrots",
+        "Mushroom Medium White Fresh",
+        "Snow Peas"
       ],
       "classicKitchen": [
-        "Grilled Chicken Breast",
-        "Herb Infused Couscous",
-        "Oven Roasted Cauliflower with Turmeric",
-        "Roasted Chickpeas"
+        "Roasted Pork Loin",
+        "Baked Sweet Potato",
+        "Green Beans with Oregano"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-29T06:49:33.836Z",
+  "daysUpdatedAt": "2026-10-30T08:58:22.801Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1911,6 +1911,55 @@
           "Red Skin Mashed Potatoes",
           "Sauteed Carrots & Parsnips",
           "Greek Salad"
+        ]
+      }
+    },
+    "2026-11-06": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Mild Pork Sausage Link",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Red Onions",
+          "Bell Peppers",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "BBQ Chicken Wings",
+          "Honey Garlic Chicken Wings",
+          "Brown Rice",
+          "BBQ Lime Cauliflower Bites"
+        ],
+        "classicKitchen": [
+          "Meatball Sub",
+          "Beer Battered Onion Ring",
+          "Green Beans & Peppers"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Grilled Pesto-Marinated Chicken Breast",
+          "Garlic Breadstick",
+          "Cavatappi Pasta",
+          "Fresh Roasted Broccoli",
+          "Pesto Cream Sauce"
+        ],
+        "classicKitchen": [
+          "Poutine",
+          "Bacon Cheeseburger",
+          "Black Bean Patty",
+          "Seasoned Corn on the Cob"
         ]
       }
     }
