@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-10-31T08:49:48.066Z",
+  "updatedAt": "2026-11-01T06:39:44.480Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-10-31",
+  "menuDate": "2026-11-01",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -10,27 +10,30 @@
     "lunch": {
       "globalFare": [],
       "classicKitchen": [
-        "Bacon Grilled Cheese",
-        "Texas Grilled Cheese Sandwich",
-        "Grilled Ham & Cheese",
-        "Seasoned Vegetable",
-        "Cream of Tomato Basil Soup"
+        "Seasoned Tater Tots",
+        "Plant-Based Chik'n Tenders",
+        "Buttered Corn",
+        "Chicken Waffle Sandwich"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Fish and Chips",
-        "Sauteed Broccolini"
+        "BBQ Chicken Wings",
+        "Sweet & Sour Chicken Wings",
+        "Beer Battered French Fries",
+        "Baked Beans",
+        "Seasoned Corn on the Cob",
+        "Cheese Queso Hatch",
+        "Jalapeno Poppers"
       ],
       "classicKitchen": [
-        "Chopped Steak",
-        "Stewed Chickpea",
-        "Red Skin Mashed Potatoes",
-        "Honey-Glazed Roasted Root Vegetables"
+        "Chicken Breast Florentine",
+        "Manicotti W/ Florentine Sauce",
+        "Green Peas"
       ]
     }
   },
-  "daysUpdatedAt": "2026-10-31T08:49:48.066Z",
+  "daysUpdatedAt": "2026-11-01T06:39:44.480Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -1972,6 +1975,40 @@
           "Baked Italian Tofu",
           "Fresh Garlic Mashed Potatoes",
           "Carrot Baby Peeled Tri-Color"
+        ]
+      }
+    },
+    "2026-11-08": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [
+          "Pork Bacon",
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes"
+        ],
+        "classicKitchen": [
+          "Battered Cod Sandwich",
+          "Potato Wedges",
+          "Sauteed Spinach"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Roasted Red Pepper Hummus",
+          "Naan Bread",
+          "Indian Baked Rice",
+          "Oven Roasted Cauliflower with Turmeric"
+        ],
+        "classicKitchen": [
+          "Meatless Stuffed Bell Peppers",
+          "Chimichurri Flank Steak",
+          "Roasted Fingerling Potatoes",
+          "Roasted Garlic Butter Mushrooms"
         ]
       }
     }
