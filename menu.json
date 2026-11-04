@@ -1,14 +1,16 @@
 {
-  "updatedAt": "2026-11-03T07:34:33.929Z",
+  "updatedAt": "2026-11-04T07:32:26.232Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-03",
+  "menuDate": "2026-11-04",
   "menus": {
     "breakfast": {
       "globalFare": [
-        "Cinnamon French Toast Homemade",
-        "Corned Beef Hash",
         "Scrambled Eggs",
-        "Home Fried Potatoes"
+        "Chicken Sausage Patty",
+        "Pancakes",
+        "Hashbrown Patty",
+        "Fresh Banana",
+        "Pecan Pieces Med Roasted Salted"
       ],
       "classicKitchen": [
         "Mild Shredded Cheddar Cheese",
@@ -24,33 +26,34 @@
     },
     "lunch": {
       "globalFare": [
-        "Glazed Baked Ham",
-        "Sweet Potato Casserole",
-        "Fresh Roasted Green Beans",
-        "Sautéed Garlic Kale"
+        "Sloppy Joe Beef",
+        "Curly Fries",
+        "Buttered Corn"
       ],
       "classicKitchen": [
-        "Fried Chicken Drumsticks",
-        "Red Quinoa & Garbanzo Beans",
-        "Rice Pilaf",
-        "Honey Buttered Baby Carrots"
+        "Grilled Chicken Breast",
+        "Penne Pasta with Alfredo Sauce",
+        "Garlic Bread",
+        "Fresh Roasted Broccoli"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Roasted Tomatoes & Zucchini",
-        "Chicken, Shrimp, and Sausage Jambalaya",
+        "Grilled Swordfish",
+        "Crispy Roasted Tofu",
         "French Bread",
-        "Jasmine Rice"
+        "Roasted Fingerling Potatoes",
+        "Sauteed Broccolini"
       ],
       "classicKitchen": [
-        "Quinoa Stuffed Peppers",
-        "Country Fried Steak",
-        "Scalloped Potatoes"
+        "Corned Beef",
+        "Steamed Potatoes",
+        "Beets n' Sweets Roasted",
+        "Sauteed Green Cabbage & Shallots"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-03T07:34:33.929Z",
+  "daysUpdatedAt": "2026-11-04T07:32:26.232Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2114,6 +2117,47 @@
           "Kansas City BBQ Pulled Pork",
           "Baked Beans",
           "Seasoned Corn on the Cob"
+        ]
+      }
+    },
+    "2026-11-11": {
+      "breakfast": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancakes",
+          "Turkey Sausage Link",
+          "Lyonnaise Potatoes"
+        ],
+        "classicKitchen": [
+          "Cinnamon Coffee Cake",
+          "Cranberry Orange Oatmeal"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Black Bean Patty",
+          "Hamburger on a Bun",
+          "French Fries"
+        ],
+        "classicKitchen": [
+          "Grilled Pesto-Marinated Chicken Breast",
+          "Baked Tofu Steak",
+          "Parmesan Orzo",
+          "California Blend Vegetables"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Beef Stew",
+          "Loaded Baked Potato",
+          "Pumpkin Quinoa Stew",
+          "Honey Roasted Root Vegetables"
+        ],
+        "classicKitchen": [
+          "BBQ Chicken Breast",
+          "Tofu Vegetable Scramble",
+          "Red Skin Mashed Potatoes",
+          "Roasted Carrots"
         ]
       }
     }
