@@ -897,23 +897,54 @@
 
       /* Five fixed columns rather than auto-fit: auto-fit packs what fits and
          then grows each card into the leftover width, so a three-character
-         number ended up in a 280px box on a wide screen. */
+         number ended up in a 280px box on a wide screen.
+
+         The row is drawn as one bounded strip — one border around the row and
+         hairlines between the figures — so five numbers take about half the
+         height five separate cards did. */
       .dash .cards {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 18px;
+        gap: 0;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 10px;
       }
 
+      /* A wrapped strip keeps the divider off the row's outside edge, and
+         gains one between the rows. */
       @media (max-width: 1000px) {
         .dash .cards {
           grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .dash .card:nth-child(3n),
+        .dash .card:last-child {
+          border-right: 0;
+        }
+
+        .dash .card:nth-child(n + 4) {
+          border-top: 1px solid var(--line);
         }
       }
 
       @media (max-width: 620px) {
         .dash .cards {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dash .card:nth-child(3n) {
+          border-right: 1px solid var(--line);
+        }
+
+        .dash .card:nth-child(2n) {
+          border-right: 0;
+        }
+
+        .dash .card:nth-child(n + 3) {
+          border-top: 1px solid var(--line);
         }
       }
 
@@ -922,37 +953,103 @@
         grid-column: 1 / -1;
       }
 
+      /* The cards are cells of the strip, so they carry no border of their own
+         and sit flush against it. */
       .dash .card {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px;
+        background: transparent;
+        border: 0;
+        border-right: 1px solid var(--line);
+        padding: 9px 13px;
+        min-width: 0;
+      }
+
+      .dash .card:last-child {
+        border-right: 0;
       }
 
       .dash .card .value {
-        font-size: 24px;
+        font-size: 19px;
         font-weight: 600;
         line-height: 1.2;
       }
 
       .dash .card .label {
         color: var(--text-muted);
-        font-size: 12px;
-        margin-top: 2px;
+        font-size: 11px;
+        margin-top: 1px;
       }
 
       .dash .card .stars {
         display: block;
-        font-size: 15px;
-        margin-top: 3px;
+        font-size: 12px;
+        margin-top: 2px;
       }
 
-      /* A dish name is too long for the 24px figure slot. */
+      /* A dish name is too long for the 19px figure slot, so it gets two lines
+         and an ellipsis rather than growing the strip. */
       .dash .card .value.name {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
         line-height: 1.3;
         overflow-wrap: anywhere;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+
+      /* Sections, trends and the donuts are the deeper read, so they sit behind
+         a disclosure instead of pushing the tables off the screen. The open
+         state rides in the hash with the filters, so it survives a reload. */
+      .dash .more-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--text-muted);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 14px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .dash .more-toggle:hover {
+        background: var(--panel-alt);
+        color: var(--text-primary);
+      }
+
+      .dash .more-toggle .chev {
+        flex: none;
+        width: 15px;
+        height: 15px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.18s ease;
+      }
+
+      .dash .more-toggle[aria-expanded='true'] .chev {
+        transform: rotate(180deg);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .dash .more-toggle .chev {
+          transition: none;
+        }
+      }
+
+      .dash .more-panels[hidden] {
+        display: none;
       }
 
       .dash .panel {
@@ -1618,8 +1715,14 @@
       </div>
 
       <div class="cards" id="cards"></div>
-      <div class="sides" id="sides"></div>
-      <div class="pies" id="pies"></div>
+      <button class="more-toggle" id="moreToggle" type="button" aria-expanded="false" aria-controls="morePanels">
+        <span>Sections, trends &amp; share</span>
+        <svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" /></svg>
+      </button>
+      <div class="more-panels" id="morePanels" hidden>
+        <div class="sides" id="sides"></div>
+        <div class="pies" id="pies"></div>
+      </div>
 
       <div class="panel">
         <div class="panel-title"><span id="rankedTitle">Ranked</span><span class="count" id="rankedCount"></span></div>
@@ -2664,6 +2767,8 @@
       const searchEl = document.getElementById('dishSearch');
       const sortEl = document.getElementById('dishSort');
       const dashPaneEl = document.getElementById('dashPane');
+      const moreToggleEl = document.getElementById('moreToggle');
+      const morePanelsEl = document.getElementById('morePanels');
 
       // The three meals, in the order the dining hall serves them. Used for
       // labels and for the per-meal cards; the Worker sends the same set.
@@ -2686,6 +2791,9 @@
         dishes: { all: [], today: [] },
         todaySupported: false,
         expanded: new Set(),
+        // Whether the sections/trends/donuts disclosure is open. Closed by
+        // default: the strip and the ranked table are what the page is for.
+        panelsOpen: false,
         // Drill-down and side graphs are fetched once and kept until a refresh,
         // so reopening a row is instant.
         histories: new Map(),
@@ -3467,6 +3575,7 @@
         if (state.query) params.set('q', state.query);
         if (state.volume.meal) params.set('vmeal', state.volume.meal);
         if (state.volume.category) params.set('vcat', state.volume.category);
+        if (state.panelsOpen) params.set('more', '1');
         const query = params.toString();
         const next = `#dashboard${query ? `?${query}` : ''}`;
         if (location.hash !== next) history.replaceState(null, '', next);
@@ -3488,6 +3597,7 @@
         state.volume.meal = PERIODS.includes(volMeal) ? volMeal : '';
         const volCategory = params.get('vcat');
         state.volume.category = CATEGORIES.includes(volCategory) ? volCategory : '';
+        setPanelsOpen(params.get('more') === '1', { remember: false });
         searchEl.value = state.query;
         sortEl.value = state.sort;
         state.histories.clear();
@@ -3711,6 +3821,18 @@
         load();
         loadVolume();
       });
+
+      // The disclosure is a plain button rather than a <details>: the panels are
+      // rebuilt by the renderers, and the open state has to round-trip through
+      // the hash like the filters do.
+      function setPanelsOpen(open, { remember = true } = {}) {
+        state.panelsOpen = open;
+        morePanelsEl.hidden = !open;
+        moreToggleEl.setAttribute('aria-expanded', String(open));
+        if (remember) writeHash();
+      }
+
+      moreToggleEl.addEventListener('click', () => setPanelsOpen(morePanelsEl.hidden));
 
       sortEl.addEventListener('change', () => {
         state.sort = sortEl.value;
