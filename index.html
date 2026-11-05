@@ -724,6 +724,11 @@
       .dash {
         --border: rgba(17, 17, 17, 0.14);
         --line: rgba(17, 17, 17, 0.07);
+        /* The widget's own muted grey is 3.7:1 on white — under AA for the 11–12px
+           supporting text the dashboard is mostly made of. Scoped to the
+           dashboard so the embedded widget keeps its palette untouched. */
+        --text-muted: #5b6470;
+        font-size: 14px;
       }
 
       /* The wrapper carries both classes on one element, so this is a
@@ -734,11 +739,14 @@
         padding: 24px 16px 48px;
       }
 
-      /* On the site the dashboard owns the page, so it fills the measure
-         instead of centring a narrow column. */
+      /* On the site the dashboard owns the page, so it gets a wide measure
+         rather than the old narrow column — but a capped one. Full bleed put
+         11px labels in acres of white and stretched the charts, which are drawn
+         on a 320-unit viewBox, to about 4.5×: blurred strokes, ballooning axis
+         text and dots the size of a thumb. */
       body.combined:not(.embed) .dash.wrap {
-        max-width: none;
-        margin: 0;
+        max-width: 1180px;
+        margin: 0 auto;
         padding: 0 4px 48px;
       }
 
@@ -856,17 +864,62 @@
         margin-bottom: 0;
       }
 
-      .dash .filters .label {
+      .dash .filters .label,
+      .dash .volume-controls .label {
         font-size: 12px;
         color: var(--text-muted);
         margin-right: 2px;
       }
 
+      /* The day the Today scope is showing. Hidden while the scope is All-time;
+         `[hidden]` has to be restated because the display below would win. */
+      .dash .filters .date-pick-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .dash .filters .date-pick-wrap[hidden] {
+        display: none;
+      }
+
+      .dash .filters .date-pick {
+        font: inherit;
+        font-size: 13px;
+        color: var(--text-primary);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 8px;
+      }
+
+      /* Five fixed columns rather than auto-fit: auto-fit packs what fits and
+         then grows each card into the leftover width, so a three-character
+         number ended up in a 280px box on a wide screen. */
       .dash .cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 18px;
+      }
+
+      @media (max-width: 1000px) {
+        .dash .cards {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 620px) {
+        .dash .cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      /* The empty-state card spans the row instead of sitting in one cell. */
+      .dash .card.wide {
+        grid-column: 1 / -1;
       }
 
       .dash .card {
@@ -890,8 +943,16 @@
 
       .dash .card .stars {
         display: block;
-        font-size: 14px;
-        margin-top: 2px;
+        font-size: 15px;
+        margin-top: 3px;
+      }
+
+      /* A dish name is too long for the 24px figure slot. */
+      .dash .card .value.name {
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
       }
 
       .dash .panel {
@@ -931,6 +992,12 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 16px;
+      }
+
+      /* An open trend is a 320-unit chart; inside a third of the row it was
+         squashed to a squiggle. An open card takes the whole row instead. */
+      .dash .side.expanded {
+        grid-column: 1 / -1;
       }
 
       @media (max-width: 720px) {
@@ -996,10 +1063,75 @@
         background: var(--panel-alt);
       }
 
+      /* A long table scrolls inside its panel rather than running the page to
+         two screens, and the header stays put while it does. */
+      .dash .table-wrap {
+        max-height: 460px;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .dash .table-wrap thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* Search and sort live above the ranked table, the one list long enough
+         to need them. */
+      .dash .tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .dash .tools input,
+      .dash .tools select {
+        font: inherit;
+        font-size: 13px;
+        color: var(--text-primary);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 5px 9px;
+        min-width: 0;
+      }
+
+      .dash .tools input[type='search'] {
+        flex: 1 1 180px;
+      }
+
+      .dash .tools label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
       .dash .num {
         text-align: right;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
+      }
+
+      /* Narrow screens: the table keeps its columns and scrolls, and the cells
+         stop eating the width in padding. */
+      @media (max-width: 620px) {
+        .dash th,
+        .dash td {
+          padding: 8px 8px;
+        }
+
+        .dash .panel-title,
+        .dash .tools {
+          padding: 8px 10px;
+        }
       }
 
       .dash .stars {
@@ -1009,7 +1141,7 @@
       }
 
       .dash .stars .empty {
-        color: rgba(17, 17, 17, 0.16);
+        color: rgba(17, 17, 17, 0.26);
       }
 
       /* A dish row is a button: clicking toggles its drill-down. */
@@ -1036,28 +1168,20 @@
         font-size: 12px;
         color: var(--text-muted);
         cursor: pointer;
-        padding: 2px 6px;
+        padding: 5px 8px;
         border-radius: 6px;
+        white-space: nowrap;
+      }
+
+      /* The row actions: the way from a rating back to the dish that earned it. */
+      .dash .twist.rate {
+        color: var(--green);
+        font-weight: 600;
       }
 
       .dash .twist:hover {
         background: var(--green-bg);
         color: var(--green);
-      }
-
-      .dash .bar {
-        height: 4px;
-        border-radius: 999px;
-        background: var(--green-bg);
-        margin-top: 5px;
-      }
-
-      .dash .bar > span {
-        display: block;
-        height: 100%;
-        border-radius: 999px;
-        background: var(--green);
-        min-width: 2px;
       }
 
       .dash .detail > td {
@@ -1109,9 +1233,13 @@
         padding: 8px 6px 2px;
       }
 
+      /* Capped so the 320-unit viewBox is never blown up several times its
+         drawing size; it centres in the wider panel instead. */
       .dash .chart svg {
         display: block;
         width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
         height: auto;
       }
 
@@ -1171,6 +1299,8 @@
       .dash .volume svg {
         display: block;
         width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
         height: auto;
       }
 
@@ -1207,10 +1337,170 @@
         font-size: 13px;
       }
 
+      /* Present to a screen reader, out of the way of the layout. */
+      .dash .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Chart points are focusable so the tooltip is reachable by keyboard. */
+      .dash .chart .point:focus {
+        outline: none;
+      }
+
+      .dash .chart .point:focus-visible circle,
+      .dash .chart .point:focus-visible rect {
+        stroke: var(--green);
+        stroke-width: 2.5;
+      }
+
+      /* The empty state: what the page says before anyone has rated anything. */
+      .dash .empty-cta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+      }
+
+      .dash .empty-cta h2 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .dash .empty-cta p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 13px;
+        max-width: 60ch;
+      }
+
+      .dash .empty-cta a {
+        color: var(--green);
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .dash .empty-cta a:hover {
+        text-decoration: underline;
+      }
+
+      /* Two donuts: where the ratings came from, and at which meal. */
+      .dash .pies {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .dash .pies.single {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      @media (max-width: 820px) {
+        .dash .pies {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .dash .pie-body {
+        display: grid;
+        grid-template-columns: 170px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        padding: 12px 14px 14px;
+      }
+
+      @media (max-width: 480px) {
+        .dash .pie-body {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .dash .pie-body svg {
+        display: block;
+        width: 100%;
+        max-width: 190px;
+        margin: 0 auto;
+        height: auto;
+      }
+
+      .dash .pie-total {
+        font-size: 21px;
+        font-weight: 600;
+        fill: var(--text-primary);
+      }
+
+      .dash .pie-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .dash .pie-legend li {
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+      }
+
+      .dash .pie-legend .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+      }
+
+      .dash .pie-legend .pct,
+      .dash .pie-legend .n {
+        color: var(--text-muted);
+        font-variant-numeric: tabular-nums;
+        font-size: 12px;
+        text-align: right;
+      }
+
+      .dash .pie-legend .pct {
+        min-width: 38px;
+      }
+
+      .dash .pie-legend .n {
+        min-width: 34px;
+      }
+
+      .dash .pie-note {
+        margin: 0;
+        padding: 0 14px 12px;
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
       .dash footer {
         color: var(--text-muted);
         font-size: 12px;
+        line-height: 1.6;
         margin-top: 14px;
+      }
+
+      .dash footer summary {
+        cursor: pointer;
+        color: var(--green);
+        font-weight: 600;
+        margin-top: 4px;
+      }
+
+      .dash footer .fine {
+        margin: 6px 0 0;
+        max-width: 80ch;
       }
 
       .dash code {
@@ -1304,18 +1594,22 @@
         <header>
           <div>
             <h1>Ratings</h1>
-            <div class="subtitle" id="status">Loading…</div>
+            <div class="subtitle" id="status" role="status" aria-live="polite">Loading…</div>
           </div>
         <button class="refresh" id="refresh" type="button">Refresh</button>
       </header>
 
       <div class="filters">
-        <div class="scopes" role="group" aria-label="Ranking scope">
+        <span class="label" id="scopeLabel">Scope</span>
+        <div class="scopes" role="group" aria-labelledby="scopeLabel">
           <button id="scopeAll" type="button" aria-pressed="true">All-time</button>
           <button id="scopeToday" type="button" aria-pressed="false">Today</button>
         </div>
+        <label class="date-pick-wrap" id="scopeDateWrap" hidden>Day
+          <input type="date" id="scopeDate" class="date-pick" />
+        </label>
         <span class="label" id="periodLabel">Meal</span>
-        <div class="scopes" role="group" aria-label="Meal period">
+        <div class="scopes" role="group" aria-labelledby="periodLabel">
           <button id="periodAll" type="button" aria-pressed="true" data-period="">All meals</button>
           <button id="periodBreakfast" type="button" aria-pressed="false" data-period="breakfast">Breakfast</button>
           <button id="periodLunch" type="button" aria-pressed="false" data-period="lunch">Lunch</button>
@@ -1325,46 +1619,63 @@
 
       <div class="cards" id="cards"></div>
       <div class="sides" id="sides"></div>
+      <div class="pies" id="pies"></div>
 
       <div class="panel">
         <div class="panel-title"><span id="rankedTitle">Ranked</span><span class="count" id="rankedCount"></span></div>
-        <table>
-          <thead>
-            <tr>
-              <th>Dish</th>
-              <th class="num">Ratings</th>
-              <th class="num">Average</th>
-              <th class="num"></th>
-            </tr>
-          </thead>
-          <tbody id="rows">
-            <tr><td class="message" colspan="4">Loading…</td></tr>
-          </tbody>
-        </table>
+        <div class="tools">
+          <input type="search" id="dishSearch" placeholder="Find a dish…" aria-label="Find a dish by name" autocomplete="off" />
+          <label>Sort by
+            <select id="dishSort" aria-label="Sort the ranked table">
+              <option value="average">Average</option>
+              <option value="lowest">Average, lowest first</option>
+              <option value="ratings">Number of ratings</option>
+              <option value="name">Name</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dish</th>
+                <th class="num">Ratings</th>
+                <th class="num">Average</th>
+                <th class="num"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td class="message" colspan="4">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="panel">
         <div class="panel-title"><span id="unrankedTitle">Still gathering ratings</span><span class="count" id="unrankedCount"></span></div>
-        <table>
-          <thead>
-            <tr>
-              <th>Dish</th>
-              <th class="num">Ratings</th>
-              <th class="num">Average</th>
-              <th class="num"></th>
-            </tr>
-          </thead>
-          <tbody id="unrankedRows">
-            <tr><td class="message" colspan="4">Loading…</td></tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dish</th>
+                <th class="num">Ratings</th>
+                <th class="num">Average</th>
+                <th class="num"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="unrankedRows">
+              <tr><td class="message" colspan="4">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
 
       <div class="panel">
         <div class="panel-title"><span>Ratings per day</span><span class="count" id="volumeCount"></span></div>
         <div class="volume-controls">
-          <div class="scopes" role="group" aria-label="Volume meal">
+          <span class="label" id="volLabel">Show</span>
+          <div class="scopes" role="group" aria-labelledby="volLabel">
             <button id="volAll" type="button" aria-pressed="true" data-vol-meal="">All meals</button>
             <button id="volBreakfast" type="button" aria-pressed="false" data-vol-meal="breakfast">Breakfast</button>
             <button id="volLunch" type="button" aria-pressed="false" data-vol-meal="lunch">Lunch</button>
@@ -1374,6 +1685,7 @@
             <select id="volCategory"><option value="">All categories</option></select>
           </label>
         </div>
+        <p class="pie-note">These two shape this graph only — the figures above keep the page’s own filters. Picking a category clears the meal and the other way round, because the API narrows by one at a time.</p>
         <div class="volume" id="volume"></div>
       </div>
 
@@ -2188,15 +2500,36 @@
           tab.classList.toggle('active', active);
           tab.setAttribute('aria-selected', active ? 'true' : 'false');
         });
+        document.title = isMenu ? 'Hilltoppers Menu' : 'Ratings · Hilltoppers Menu';
       }
+
+      // The dashboard runs in its own script scope, so this is the one place its
+      // "Rate" buttons can reach the widget's dialog. It brings the menu to the
+      // front first, so the reader sees the dish they asked to rate.
+      window.hilltoppersOpenRating = function (id, name) {
+        showView('menu');
+        if (location.hash.replace(/^#/, '').split('?')[0] !== 'menu') {
+          history.pushState(null, '', '#menu');
+        }
+        openRatingDialog(id, name);
+      };
 
       if (!document.body.classList.contains('embed')) {
         topbarTabs.forEach((tab) => {
-          tab.addEventListener('click', () => showView(tab.dataset.view));
+          tab.addEventListener('click', () => {
+            const view = tab.dataset.view === 'dashboard' ? 'dashboard' : 'menu';
+            showView(view);
+            // Push a hash so the pane survives a reload, a bookmark and Back.
+            if (location.hash.replace(/^#/, '').split('?')[0] !== view) {
+              history.pushState(null, '', `#${view}`);
+            }
+          });
         });
         // A #dashboard hash (the embed's "View stats" link) opens the dashboard
-        // tab; a #menu hash, or none, opens the widget.
-        const openDashboard = () => showView(location.hash === '#dashboard' ? 'dashboard' : 'menu');
+        // tab; a #menu hash, or none, opens the widget. The dashboard writes its
+        // filters into the same hash, so match the name, not the whole string.
+        const openDashboard = () =>
+          showView(location.hash.replace(/^#/, '').split('?')[0] === 'dashboard' ? 'dashboard' : 'menu');
         openDashboard();
         window.addEventListener('hashchange', openDashboard);
       } else {
@@ -2300,6 +2633,11 @@
       // ranked on the day's own ratings instead — see `split()`.
       const MIN_RATINGS = 3;
 
+      // How often the dashboard refreshes itself. A page left open on a
+      // projector or a phone has to keep up without anyone pressing anything;
+      // the poll is silent, so it never flashes or moves the scroll position.
+      const DASH_POLL_MS = 30 * 1000;
+
       const statusEl = document.getElementById('status');
       const cardsEl = document.getElementById('cards');
       const sidesEl = document.getElementById('sides');
@@ -2316,11 +2654,16 @@
       // The dashboard pane lives under .dash, so scope the query to it: the
       // widget's own meal tabs also carry data-period and must not be caught.
       const periodBtns = [...document.querySelectorAll('.dash [data-period]')];
-      const periodLabelEl = document.getElementById('periodLabel');
       const volumeEl = document.getElementById('volume');
       const volumeCountEl = document.getElementById('volumeCount');
       const volumeBtns = [...document.querySelectorAll('[data-vol-meal]')];
       const volumeCategoryEl = document.getElementById('volCategory');
+      const scopeDateEl = document.getElementById('scopeDate');
+      const scopeDateWrapEl = document.getElementById('scopeDateWrap');
+      const piesEl = document.getElementById('pies');
+      const searchEl = document.getElementById('dishSearch');
+      const sortEl = document.getElementById('dishSort');
+      const dashPaneEl = document.getElementById('dashPane');
 
       // The three meals, in the order the dining hall serves them. Used for
       // labels and for the per-meal cards; the Worker sends the same set.
@@ -2331,15 +2674,24 @@
         scope: 'all',
         // '' means every meal; otherwise one of PERIODS.
         period: '',
+        // The day the Today scope shows; '' means the actual today, so a page
+        // left open overnight rolls over with the calendar. The API takes any
+        // date, so a past service can be looked at rather than only this one.
+        date: '',
+        // The ranked table's own controls. They order and filter what is
+        // already in memory, so they never refetch anything.
+        sort: 'average',
+        query: '',
         stats: null,
         dishes: { all: [], today: [] },
+        todaySupported: false,
         expanded: new Set(),
         // Drill-down and side graphs are fetched once and kept until a refresh,
         // so reopening a row is instant.
         histories: new Map(),
         // The ratings-per-day volume graph keeps its own filters, independent of
         // the scope/meal pair above.
-        volume: { meal: '', category: '', days: [], loaded: false, error: '' }
+        volume: { meal: '', category: '', days: [], error: '' }
       };
 
       // The volume graph's category control lists every section a dish can be
@@ -2364,9 +2716,13 @@
 
       // The rating window has to be the day the hall is living in, not the UTC
       // day: at 8pm Eastern the UTC date has rolled over already.
-      const localDate = () => new Date().toLocaleDateString('en-CA');
+      const todayYmd = () => new Date().toLocaleDateString('en-CA');
       const tzOffset = () => new Date().getTimezoneOffset();
-      const scopeQuery = () => `date=${localDate()}&offset=${tzOffset()}`;
+      const scopeDate = () => state.date || todayYmd();
+      const onToday = () => scopeDate() === todayYmd();
+      const scopeQuery = () => `date=${scopeDate()}&offset=${tzOffset()}`;
+      // "today" reads wrong once a past day has been picked.
+      const dayWord = () => (onToday() ? 'today' : `on ${fmtDay(scopeDate())}`);
 
       function esc(value) {
         return String(value).replace(/[&<>"']/g, (c) => ({
@@ -2378,22 +2734,37 @@
         return Number(value).toLocaleString('en-US');
       }
 
+      // role="img" makes the row of ★ characters presentational, so a screen
+      // reader gets the label instead of "black star" five times. The label was
+      // ignored before: it sat on a span with no role.
       function stars(average) {
-        const filled = Math.round(average);
+        const value = Number(average);
+        const filled = Math.round(value);
         let out = '';
         for (let i = 1; i <= 5; i += 1) {
           out += i <= filled ? '★' : '<span class="empty">★</span>';
         }
-        return `<span class="stars" aria-label="${average} out of 5">${out}</span>`;
+        return `<span class="stars" role="img" aria-label="${value.toFixed(1)} out of 5">${out}</span>`;
       }
+
+      // One decimal everywhere: the API rounds to a tenth, and printing 3 next
+      // to 3.2 made the column jitter.
+      const oneDecimal = (value) =>
+        Number.isFinite(Number(value)) ? Number(value).toFixed(1) : '—';
 
       function card(value, label, extra) {
         return `<div class="card"><div class="value">${value}</div>${extra || ''}` +
           `<div class="label">${label}</div></div>`;
       }
 
-      function pct(average) {
-        return Math.round((average / 5) * 100);
+      // The one card a reader can act on: the best dish of the current scope,
+      // named rather than counted.
+      function topCard(dish, labelText) {
+        if (!dish) return card('—', labelText);
+        return `<div class="card"><div class="value name">${esc(dish.name)}</div>` +
+          `${stars(dish.average)}` +
+          `<div class="label">${esc(labelText)} · ${oneDecimal(dish.average)} from ` +
+          `${fmt(dish.count)} rating${dish.count === 1 ? '' : 's'}</div></div>`;
       }
 
       // A history point's minute, in the reader's own clock. The API buckets in
@@ -2466,7 +2837,7 @@
               `<line x1="${left}" y1="${y(tick)}" x2="${W - right}" y2="${y(tick)}" ` +
               `stroke="rgba(17,17,17,0.08)" stroke-width="1"/>` +
               `<text x="${left - 4}" y="${y(tick) + 3}" text-anchor="end" ` +
-              `font-size="9" fill="#7d8591">${tick}</text>`
+              `font-size="9" fill="#5b6470">${tick}</text>`
           )
           .join('');
 
@@ -2481,8 +2852,8 @@
             const when = timed ? fmtMoment(p.at) : fmtDay(p.day);
             const label = `${when} · ${p.running} avg · ${p.count} rating${p.count === 1 ? '' : 's'}`;
             return (
-              `<g class="point" data-x="${x(i)}" data-y="${y(p.running)}" ` +
-              `data-label="${esc(label)}">` +
+              `<g class="point" tabindex="0" role="img" aria-label="${esc(label)}" ` +
+              `data-x="${x(i)}" data-y="${y(p.running)}" data-label="${esc(label)}">` +
               `<rect x="${Math.max(0, x(i) - 6)}" y="${top}" width="12" height="${innerH}" fill="transparent"/>` +
               `<circle cx="${x(i)}" cy="${y(p.running)}" r="2.6" fill="#1a7f37"/>` +
               `</g>`
@@ -2509,8 +2880,8 @@
         // One quiet line naming the span, rather than a label per point.
         const dayLine =
           days.length === 1
-            ? `<text x="${left}" y="${H - 3}" font-size="8.5" fill="#7d8591">${esc(fmtDay(days[0]))}</text>`
-            : `<text x="${left}" y="${H - 3}" font-size="8.5" fill="#7d8591">` +
+            ? `<text x="${left}" y="${H - 3}" font-size="8.5" fill="#5b6470">${esc(fmtDay(days[0]))}</text>`
+            : `<text x="${left}" y="${H - 3}" font-size="8.5" fill="#5b6470">` +
               `${esc(`${fmtDay(days[0])} – ${fmtDay(days[days.length - 1])}`)}</text>`;
 
         const total = points[points.length - 1].runningCount;
@@ -2522,7 +2893,7 @@
           ' · hover a point for its time';
 
         return `<div class="chart">
-          <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Average rating over time">
+          <svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Average rating over time">
             ${grid}
             ${dayMarks}
             <path d="${path}" fill="none" stroke="#1a7f37" stroke-width="2" stroke-linejoin="round"/>
@@ -2574,7 +2945,7 @@
               `<line x1="${left}" y1="${y(t)}" x2="${W - right}" y2="${y(t)}" ` +
               `stroke="rgba(17,17,17,0.08)" stroke-width="1"/>` +
               `<text x="${left - 4}" y="${y(t) + 3}" text-anchor="end" ` +
-              `font-size="9" fill="#7d8591">${t}</text>`
+              `font-size="9" fill="#5b6470">${t}</text>`
           )
           .join('');
 
@@ -2582,9 +2953,11 @@
           .map((d, i) => {
             const cx = left + slot * (i + 0.5);
             const h = d.count === 0 ? 0 : Math.max(1, innerH - (y(d.count) - top));
+            const label = `${fmtDay(d.day)} · ${d.count} rating${d.count === 1 ? '' : 's'}`;
             return (
-              `<g class="point" data-x="${cx}" data-y="${Math.max(top, y(d.count))}" ` +
-              `data-label="${esc(`${fmtDay(d.day)} · ${d.count} rating${d.count === 1 ? '' : 's'}`)}">` +
+              `<g class="point" tabindex="0" role="img" aria-label="${esc(label)}" ` +
+              `data-x="${cx}" data-y="${Math.max(top, y(d.count))}" ` +
+              `data-label="${esc(label)}">` +
               `<rect class="bar-hit" x="${cx - slot / 2}" y="${top}" width="${slot}" height="${innerH}"/>` +
               `<rect class="bar-fill" x="${cx - barW / 2}" y="${y(d.count)}" width="${barW}" height="${h}"/>` +
               `</g>`
@@ -2602,13 +2975,13 @@
             const cx = left + slot * (i + 0.5);
             const anchor = i === 0 ? 'start' : i === days.length - 1 ? 'end' : 'middle';
             return (
-              `<text x="${cx}" y="${H - 6}" text-anchor="${anchor}" font-size="8.5" fill="#7d8591">` +
+              `<text x="${cx}" y="${H - 6}" text-anchor="${anchor}" font-size="8.5" fill="#5b6470">` +
               `${esc(fmtDay(d.day))}</text>`
             );
           })
           .join('');
 
-        return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ratings per day">
+        return `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Ratings per day">
           ${grid}
           <g class="bars">${bars}</g>
           ${labels}
@@ -2624,6 +2997,55 @@
        * than as an HTML popover so it cannot be clipped by the panel, and sized
        * from the label length since SVG text cannot be measured synchronously.
        */
+      // Slice colours: green leads because it is the page's accent; the rest are
+      // picked to stay distinguishable, never to encode a judgement.
+      const PIE_COLORS = ['#1a7f37', '#3f9142', '#7cb87f', '#e3a008', '#b4593a', '#6b7280'];
+
+      /**
+       * A donut for one breakdown. Inline SVG, like the line charts, and the
+       * legend carries every number as text so the figure is readable without
+       * seeing the ring.
+       */
+      function pieChart(slices, label) {
+        const size = 160;
+        const cx = size / 2;
+        const cy = size / 2;
+        const r = 58;
+        const width = 22;
+        const circumference = 2 * Math.PI * r;
+        const total = slices.reduce((sum, slice) => sum + slice.value, 0);
+        if (!total) return '<div class="pie-body"><p class="muted">No ratings yet.</p></div>';
+        // Each arc is a dash of the circle's stroke: the dash length is the
+        // slice's share, and the offset walks around the ring.
+        let offset = 0;
+        const arcs = slices
+          .filter((slice) => slice.value > 0)
+          .map((slice) => {
+            const length = (slice.value / total) * circumference;
+            const arc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" aria-hidden="true" ` +
+              `stroke="${slice.color}" stroke-width="${width}" ` +
+              `stroke-dasharray="${Math.max(0.5, length - 1.5)} ${circumference}" ` +
+              `stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+            offset += length;
+            return arc;
+          })
+          .join('');
+        const legend = slices
+          .map((slice) => `<li><span class="swatch" style="background:${slice.color}"></span>` +
+            `<span>${esc(slice.label)}</span><span class="n">${fmt(slice.value)}</span>` +
+            `<span class="pct">${Math.round((slice.value / total) * 100)}%</span></li>`)
+          .join('');
+        return `<div class="pie-body">
+          <svg viewBox="0 0 ${size} ${size}" role="img" aria-label="${esc(label)}">
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(17,17,17,0.06)" stroke-width="${width}"/>
+            ${arcs}
+            <text x="${cx}" y="${cy + 1}" text-anchor="middle" class="pie-total">${fmt(total)}</text>
+            <text x="${cx}" y="${cy + 15}" text-anchor="middle" font-size="9" fill="#5b6470">ratings</text>
+          </svg>
+          <ul class="pie-legend">${legend}</ul>
+        </div>`;
+      }
+
       function showTip(target) {
         const svg = target.closest('svg');
         const tip = svg && svg.querySelector('.chart-tip');
@@ -2655,6 +3077,37 @@
         if (tip) tip.setAttribute('hidden', '');
       }
 
+      /** True when a row matches the ranked table's search box. */
+      const matchesQuery = (dish) =>
+        !state.query || dish.name.toLowerCase().includes(state.query.toLowerCase());
+
+      // The ranked table's sort control. `average` is what the page always did;
+      // the others are what you reach for when looking for the most-rated dish,
+      // a dish by name, or the one that needs help.
+      function sortRanked(list) {
+        const sorted = list.slice();
+        if (state.sort === 'ratings') {
+          sorted.sort((a, b) => b.count - a.count || b.average - a.average);
+        } else if (state.sort === 'name') {
+          sorted.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (state.sort === 'lowest') {
+          sorted.sort((a, b) => a.average - b.average || b.count - a.count);
+        } else {
+          sorted.sort((a, b) => b.average - a.average || b.count - a.count);
+        }
+        return sorted;
+      }
+
+      /** Everything that counts as ranked in the current scope, unsorted. */
+      function rankedFor(scope) {
+        if (scope === 'today') {
+          return state.dishes.today.filter((d) => d.count > 0 && d.average !== null);
+        }
+        return state.dishes.all.filter(
+          (d) => d.count > 0 && d.average !== null && d.count >= MIN_RATINGS
+        );
+      }
+
       /**
        * Splits the current scope's dishes into "ranked" and "still gathering".
        *
@@ -2668,21 +3121,21 @@
         if (scope === 'today') {
           const served = state.dishes.today;
           return {
-            ranked: served
-              .filter((d) => d.count > 0 && d.average !== null)
-              .sort((a, b) => b.average - a.average || b.count - a.count),
+            ranked: sortRanked(
+              served.filter((d) => d.count > 0 && d.average !== null).filter(matchesQuery)
+            ),
             unranked: served
               .filter((d) => !(d.count > 0 && d.average !== null))
+              .filter(matchesQuery)
               .sort((a, b) => a.name.localeCompare(b.name))
           };
         }
         const rated = state.dishes.all.filter((d) => d.count > 0 && d.average !== null);
         return {
-          ranked: rated
-            .filter((d) => d.count >= MIN_RATINGS)
-            .sort((a, b) => b.average - a.average || b.count - a.count),
+          ranked: sortRanked(rated.filter((d) => d.count >= MIN_RATINGS).filter(matchesQuery)),
           unranked: rated
             .filter((d) => d.count < MIN_RATINGS)
+            .filter(matchesQuery)
             .sort((a, b) => b.count - a.count || b.average - a.average)
         };
       }
@@ -2703,29 +3156,50 @@
         const mealBlock = meal ? (today && meal.today ? meal.today : meal) : null;
         const periodSuffix = state.period ? ` at ${periodName(state.period).toLowerCase()}` : '';
 
+        const when = today ? ` ${dayWord()}` : '';
+
+        // Nothing to rank yet: five zeroed cards read like a broken page, so say
+        // what to do instead of printing 0 five times.
+        if (!stats.totalRatings) {
+          cardsEl.innerHTML = `<div class="card wide empty-cta">
+            <h2>No ratings yet</h2>
+            <p>Open the menu, tap a dish’s stars and pick a score. This page fills in as soon as the first ratings land.</p>
+            <a href="#menu">Go to the menu →</a>
+          </div>`;
+          return;
+        }
+
         const c = mealBlock
           ? {
               ratings: mealBlock.ratings,
               dishes: mealBlock.dishes,
               raters: mealBlock.raters,
-              perRater: mealBlock.ratingsPerRater,
               average: mealBlock.average
             }
           : {
               ratings: block.totalRatings,
               dishes: block.ratedDishes,
               raters: block.raters,
-              perRater: block.ratingsPerRater,
               average: block.average
             };
 
-        const avg = c.average ? `${stars(c.average)} ${c.average}` : '—';
+        // The top dish ignores the search box and the sort control: it answers
+        // "what is best", not "of what is currently listed".
+        const top =
+          rankedFor(state.scope)
+            .slice()
+            .sort((a, b) => b.average - a.average || b.count - a.count)[0] || null;
+
         cardsEl.innerHTML = [
-          card(fmt(c.ratings), today ? `Ratings cast today${periodSuffix}` : `Ratings cast${periodSuffix}`),
-          card(fmt(c.dishes), today ? `Dishes rated today${periodSuffix}` : `Dishes rated${periodSuffix}`),
-          card(fmt(c.raters), today ? `Rater IDs today${periodSuffix}` : `Rater IDs${periodSuffix}`),
-          card(fmt(c.perRater), 'Ratings per rater'),
-          card(avg, 'Average rating')
+          card(fmt(c.ratings), `Ratings cast${when}${periodSuffix}`),
+          card(fmt(c.dishes), `Dishes rated${when}${periodSuffix}`),
+          card(fmt(c.raters), `Rater IDs${when}${periodSuffix}`),
+          card(
+            c.average ? oneDecimal(c.average) : '—',
+            `Average rating${periodSuffix}`,
+            c.average ? stars(c.average) : ''
+          ),
+          topCard(top, `Top rated${when}${periodSuffix}`)
         ].join('');
       }
 
@@ -2759,13 +3233,16 @@
           return;
         }
         const byName = new Map(stations.map((s) => [s.station, s]));
-        const card = (name) => sectionCard(name, byName.get(name) || emptyStation(name));
+        const section = (name) => sectionCard(name, byName.get(name) || emptyStation(name));
+        // The two kitchens first, then the featured static section, then the
+        // rest — the order the comments and the README describe, and the one
+        // that reads as "these two change daily, the others do not".
         sidesEl.innerHTML =
-          card(FEATURED_SECTION) +
           DAILY_STATIONS.map((name) =>
             sideCard(`station:${name}`, name, byName.get(name) || emptyStation(name))
           ).join('') +
-          OTHER_SECTIONS.map(card).join('');
+          section(FEATURED_SECTION) +
+          OTHER_SECTIONS.map(section).join('');
       }
 
       /** The zero shape for a kitchen the Worker has not reported yet. */
@@ -2802,7 +3279,7 @@
         const allValue = all.ratings === 0 ? '—' : all.average;
         const day = today.ratings === 0 ? '—' : today.average;
         const shown = state.expanded.has(key);
-        return `<div class="side">
+        return `<div class="side${shown ? ' expanded' : ''}">
           <div class="side-head">
             <span>${esc(label)}</span>
             <button class="twist" type="button" data-graph="${esc(key)}"
@@ -2820,7 +3297,7 @@
                 <td class="num">${fmt(all.raters)}</td>
               </tr>
               <tr>
-                <td>Today</td>
+                <td>${onToday() ? 'Today' : esc(fmtDay(scopeDate()))}</td>
                 <td class="num">${day === '—' ? '—' : `${stars(today.average)} ${day}`}</td>
                 <td class="num">${fmt(today.ratings)}</td>
                 <td class="num">${fmt(today.raters)}</td>
@@ -2837,14 +3314,21 @@
        */
       function dishRow(d) {
         const expanded = state.expanded.has(d.id);
-        const pctWidth = d.average === null ? 0 : pct(d.average);
-        const value = d.average === null ? '—' : `${stars(d.average)} <span>${d.average}</span>`;
-        const row = `<tr class="item" data-dish="${esc(d.id)}" aria-expanded="${expanded}">
-          <td class="dish">${esc(d.name)}<div class="bar"><span style="width:${pctWidth}%"></span></div></td>
+        // One encoding of the score: the stars beside the number. The bar that
+        // used to sit under the dish name said the same thing a third time.
+        const value =
+          d.average === null ? '—' : `${stars(d.average)} <span>${oneDecimal(d.average)}</span>`;
+        const row = `<tr class="item" data-dish="${esc(d.id)}">
+          <td class="dish">${esc(d.name)}</td>
           <td class="num">${fmt(d.count)}</td>
           <td class="num">${value}</td>
-          <td class="num"><button class="twist" type="button" data-dish="${esc(d.id)}"
-            aria-label="${expanded ? 'Hide' : 'Show'} ratings for ${esc(d.name)}">${expanded ? 'Hide' : 'Details'}</button></td>
+          <td class="num actions">
+            <button class="twist rate" type="button" data-rate="${esc(d.id)}"
+              data-name="${esc(d.name)}" aria-label="Rate ${esc(d.name)}">Rate</button>
+            <button class="twist" type="button" data-dish="${esc(d.id)}"
+              aria-expanded="${expanded}"${expanded ? ` aria-controls="detail-${esc(d.id)}"` : ''}
+              aria-label="${expanded ? 'Hide' : 'Show'} ratings for ${esc(d.name)}">${expanded ? 'Hide' : 'Details'}</button>
+          </td>
         </tr>`;
         if (!expanded) return row;
         return row + `<tr class="detail"><td colspan="4">
@@ -2859,41 +3343,159 @@
         const today = state.scope === 'today';
         const periodSuffix = state.period ? ` · ${periodName(state.period)}` : '';
 
-        rankedTitleEl.textContent = (today ? 'Today’s rankings' : 'Ranked') + periodSuffix;
-        unrankedTitleEl.textContent = (today ? 'Served today, no ratings yet' : 'Still gathering ratings') + periodSuffix;
+        const daySuffix = today ? (onToday() ? ' · today' : ` · ${fmtDay(scopeDate())}`) : '';
+
+        rankedTitleEl.textContent =
+          (today ? 'The day’s rankings' : 'Ranked') + periodSuffix + daySuffix;
+        // Say the rule out loud: a 5.0 with two ratings that is missing from the
+        // ranking otherwise looks like a bug.
+        unrankedTitleEl.textContent =
+          (today ? 'Served, no ratings yet' : `Still gathering ratings · needs ${MIN_RATINGS}`) +
+          periodSuffix +
+          daySuffix;
 
         rankedCountEl.textContent = ranked.length ? ` · ${fmt(ranked.length)}` : '';
         unrankedCountEl.textContent = unranked.length ? ` · ${fmt(unranked.length)}` : '';
 
+        const searching = state.query ? ` matching “${state.query}”` : '';
         const emptyRanked = today
           ? state.todaySupported
-            ? 'Nobody has rated anything served today yet.'
+            ? `Nobody has rated anything served ${dayWord()} yet.`
             : 'Waiting for the ratings backend to publish today’s data.'
           : `No dish has ${MIN_RATINGS} ratings yet.`;
         const emptyUnranked = today
           ? state.todaySupported
-            ? 'Nothing served today.'
+            ? `Nothing served ${dayWord()}.`
             : 'Waiting for the ratings backend to publish today’s data.'
           : 'Nothing waiting.';
 
         rowsEl.innerHTML = ranked.length
           ? ranked.map(dishRow).join('')
-          : `<tr><td class="message" colspan="4">${emptyRanked}</td></tr>`;
+          : `<tr><td class="message" colspan="4">${esc(emptyRanked + searching)}</td></tr>`;
         unrankedRowsEl.innerHTML = unranked.length
           ? unranked.map(dishRow).join('')
-          : `<tr><td class="message" colspan="4">${emptyUnranked}</td></tr>`;
+          : `<tr><td class="message" colspan="4">${esc(emptyUnranked + searching)}</td></tr>`;
+      }
+
+      // Two donuts between the per-side cards and the ranked table: where the
+      // ratings came from, and which meal they were cast at. Both follow the
+      // scope toggle; the meal donut steps aside when the page is already
+      // filtered to one meal, where it would be a single slice.
+      function renderPies() {
+        const stats = state.stats;
+        if (!stats) {
+          piesEl.innerHTML = '';
+          return;
+        }
+        const blockFor = (row) => (state.scope === 'today' ? (row && row.today) || null : row);
+        const stations = Array.isArray(stats.stations) ? stats.stations : [];
+        const periods = Array.isArray(stats.periods) ? stats.periods : [];
+        const when = state.scope === 'today' ? ` ${dayWord()}` : ' all-time';
+
+        const sections = CATEGORIES.map((name, i) => {
+          const block = blockFor(stations.find((row) => row.station === name));
+          return {
+            label: name,
+            value: block ? Number(block.ratings) || 0 : 0,
+            color: PIE_COLORS[i % PIE_COLORS.length]
+          };
+        });
+
+        const meals = PERIODS.map((period, i) => {
+          const block = blockFor(periods.find((row) => row.period === period));
+          return {
+            label: periodName(period),
+            value: block ? Number(block.ratings) || 0 : 0,
+            color: PIE_COLORS[i % PIE_COLORS.length]
+          };
+        });
+
+        const panels = [];
+        if (stations.length) panels.push(piePanel(`Ratings by section${when}`, sections));
+        if (periods.length && !state.period) panels.push(piePanel(`Ratings by meal${when}`, meals));
+
+        piesEl.className = panels.length > 1 ? 'pies' : 'pies single';
+        piesEl.innerHTML = panels.join('');
+      }
+
+      function piePanel(title, slices) {
+        const total = slices.reduce((sum, slice) => sum + slice.value, 0);
+        return `<div class="panel">
+          <div class="panel-title"><span>${esc(title)}</span><span class="count">${
+            total ? `${fmt(total)} rating${total === 1 ? '' : 's'}` : ''
+          }</span></div>
+          ${pieChart(slices, title)}
+        </div>`;
       }
 
       function render() {
+        // A hash change can arrive before the first fetch resolves.
+        if (!state.stats) return;
         scopeAllBtn.setAttribute('aria-pressed', String(state.scope === 'all'));
         scopeTodayBtn.setAttribute('aria-pressed', String(state.scope === 'today'));
         periodBtns.forEach((btn) =>
           btn.setAttribute('aria-pressed', String(btn.getAttribute('data-period') === state.period))
         );
-        periodLabelEl.textContent = state.period ? `${periodName(state.period)} only` : 'Meal';
+        // The label names the control; it used to swap to "Dinner only" and just
+        // repeat the pill the reader had already picked.
+        scopeDateWrapEl.hidden = state.scope !== 'today';
+        if (state.scope === 'today') {
+          scopeDateEl.value = scopeDate();
+          scopeDateEl.max = todayYmd();
+        }
         renderCards();
         renderSides();
+        renderPies();
         renderTables();
+        writeHash();
+      }
+
+      /**
+       * The dashboard's filters live in the hash, so a reload, a bookmark or a
+       * shared link lands on the same view. The tab bar writes `#dashboard`;
+       * these params ride behind a `?`.
+       */
+      function writeHash() {
+        if (dashPaneEl.hidden) return;
+        const params = new URLSearchParams();
+        if (state.scope === 'today') {
+          params.set('scope', 'today');
+          if (state.date && state.date !== todayYmd()) params.set('date', state.date);
+        }
+        if (state.period) params.set('period', state.period);
+        if (state.sort !== 'average') params.set('sort', state.sort);
+        if (state.query) params.set('q', state.query);
+        if (state.volume.meal) params.set('vmeal', state.volume.meal);
+        if (state.volume.category) params.set('vcat', state.volume.category);
+        const query = params.toString();
+        const next = `#dashboard${query ? `?${query}` : ''}`;
+        if (location.hash !== next) history.replaceState(null, '', next);
+      }
+
+      /** Applies `#dashboard?…` to the state. Returns false when it is not ours. */
+      function applyHash() {
+        const [view, query] = location.hash.replace(/^#/, '').split('?');
+        if (view !== 'dashboard') return false;
+        const params = new URLSearchParams(query || '');
+        state.scope = params.get('scope') === 'today' ? 'today' : 'all';
+        state.date = params.get('date') || '';
+        const period = params.get('period');
+        state.period = PERIODS.includes(period) ? period : '';
+        const sort = params.get('sort');
+        state.sort = ['average', 'lowest', 'ratings', 'name'].includes(sort) ? sort : 'average';
+        state.query = params.get('q') || '';
+        const volMeal = params.get('vmeal');
+        state.volume.meal = PERIODS.includes(volMeal) ? volMeal : '';
+        const volCategory = params.get('vcat');
+        state.volume.category = CATEGORIES.includes(volCategory) ? volCategory : '';
+        searchEl.value = state.query;
+        sortEl.value = state.sort;
+        state.histories.clear();
+        fillCategories();
+        volumeBtns.forEach((btn) =>
+          btn.setAttribute('aria-pressed', String((btn.getAttribute('data-vol-meal') || '') === state.volume.meal))
+        );
+        return true;
       }
 
       async function historyFor(key) {
@@ -2931,7 +3533,7 @@
                 (r) => `<tr>
                   <td>${esc(new Date(r.updatedAt).toLocaleString('en-US'))}</td>
                   <td><code>${esc(r.rater)}</code></td>
-                  <td class="rate-value">${stars(r.rating)} <span>${r.rating}</span></td>
+                  <td class="rate-value">${stars(r.rating)} <span>${oneDecimal(r.rating)}</span></td>
                 </tr>`
               )
               .join('')
@@ -3000,6 +3602,21 @@
       }
 
       document.addEventListener('click', (event) => {
+        // "Rate" crosses into the widget's half of the page, where the rating
+        // dialog lives. Seeing a 1.6-star dish with nowhere to click was the
+        // biggest gap on this page.
+        const rateButton = event.target.closest('button[data-rate]');
+        if (rateButton) {
+          event.stopPropagation();
+          const id = rateButton.getAttribute('data-rate');
+          const name = rateButton.getAttribute('data-name') || id;
+          if (typeof window.hilltoppersOpenRating === 'function') {
+            window.hilltoppersOpenRating(id, name);
+          } else {
+            location.hash = '#menu';
+          }
+          return;
+        }
         const button = event.target.closest('button[data-dish]');
         if (button) {
           event.stopPropagation();
@@ -3032,8 +3649,8 @@
        * Meal and category are mutually exclusive: the API narrows by one, so
        * picking one clears the other rather than silently ignoring it.
        */
-      async function loadVolume() {
-        volumeEl.innerHTML = '<div class="loading">Loading…</div>';
+      async function loadVolume({ silent = false } = {}) {
+        if (!silent) volumeEl.innerHTML = '<div class="loading">Loading…</div>';
         const query = [scopeQuery()];
         if (state.volume.meal) query.push(`period=${encodeURIComponent(state.volume.meal)}`);
         else if (state.volume.category) query.push(`category=${encodeURIComponent(state.volume.category)}`);
@@ -3069,6 +3686,10 @@
         // whatever they need has to be painted again — cached history fills
         // instantly, anything new is fetched.
         hydrate();
+        // The daily volume graph is scoped too. It used to keep the other
+        // scope's data on screen until the next Refresh, so "Today" sat above
+        // an all-time histogram.
+        loadVolume();
       }
 
       /** Switching meal changes which dishes are on the page, so it refetches. */
@@ -3081,6 +3702,33 @@
 
       scopeAllBtn.addEventListener('click', () => setScope('all'));
       scopeTodayBtn.addEventListener('click', () => setScope('today'));
+
+      // Looking at a past service: the API has always taken a date, and "Today"
+      // was the only day the page could ever show.
+      scopeDateEl.addEventListener('change', () => {
+        state.date = scopeDateEl.value || todayYmd();
+        state.histories.clear();
+        load();
+        loadVolume();
+      });
+
+      sortEl.addEventListener('change', () => {
+        state.sort = sortEl.value;
+        renderTables();
+        writeHash();
+      });
+
+      // Debounced: the table rebuilds on every keystroke otherwise, and it can
+      // hold a few hundred rows.
+      let searchTimer = null;
+      searchEl.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          state.query = searchEl.value.trim();
+          renderTables();
+          writeHash();
+        }, 120);
+      });
       periodBtns.forEach((btn) =>
         btn.addEventListener('click', () => setPeriod(btn.getAttribute('data-period')))
       );
@@ -3100,6 +3748,7 @@
             b.setAttribute('aria-pressed', String((b.getAttribute('data-vol-meal') || '') === state.volume.meal))
           );
           loadVolume();
+          writeHash();
         })
       );
       volumeCategoryEl.addEventListener('change', () => {
@@ -3111,6 +3760,7 @@
           );
         }
         loadVolume();
+        writeHash();
       });
 
       // Grey tooltip on the line charts and the histogram. Delegated so it
@@ -3124,10 +3774,23 @@
         // Moving between a point's own children is not leaving the point.
         if (target && !target.contains(event.relatedTarget)) hideTip(target);
       });
+      // The same tooltip on keyboard focus: the points are tabbable, so a
+      // keyboard user can read every value without a mouse.
+      document.addEventListener('focusin', (event) => {
+        const target = event.target.closest && event.target.closest('.point');
+        if (target) showTip(target);
+      });
+      document.addEventListener('focusout', (event) => {
+        const target = event.target.closest && event.target.closest('.point');
+        if (target) hideTip(target);
+      });
 
-      async function load() {
-        refreshBtn.disabled = true;
-        statusEl.textContent = 'Loading…';
+      async function load({ silent = false } = {}) {
+        if (!silent) {
+          refreshBtn.disabled = true;
+          refreshBtn.setAttribute('aria-busy', 'true');
+          statusEl.textContent = 'Refreshing…';
+        }
         const query = scopeQuery();
         // The all-time dish list honours the meal filter; the today list also
         // honours it (and narrows it to that day's meal, not any day's).
@@ -3156,32 +3819,84 @@
           render();
           await hydrate();
 
+          // One short line, then the technical caveats behind a disclosure. The
+          // footer used to open with a UTC offset no reader asked for.
           footnoteEl.innerHTML =
             `${fmt(state.stats.catalogue)} dishes in the catalogue, including ones nobody has rated. ` +
-            'A "rater ID" is a random value stored per browser, so it counts browsers rather than people — ' +
-            'clearing site data or rating from a second device adds another. ' +
-            'Today is the local day with a ' +
-            `${tzOffset()} minute UTC offset, and only counts ratings cast that day.`;
-          statusEl.textContent = `Updated ${new Date().toLocaleTimeString('en-US')}`;
+            '“Rater IDs” counts browsers rather than people.' +
+            '<details><summary>How these numbers are counted</summary>' +
+            '<p class="fine">A rater ID is a random value stored in one browser, so clearing site data ' +
+            'or rating from a second device adds another. “Today” is the local day, at a ' +
+            `${tzOffset()} minute UTC offset, and only counts ratings cast that day. ` +
+            'A dish served at two stations counts toward both, so the per-section figures can add up ' +
+            `to more than the totals. A dish needs ${MIN_RATINGS} ratings to enter the ranked list.</p></details>`;
+          statusEl.textContent = `Updated ${new Date().toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit'
+          })}`;
         } catch (error) {
-          cardsEl.innerHTML = '';
-          sidesEl.innerHTML = '';
-          rowsEl.innerHTML =
-            `<tr><td class="message error" colspan="4">Could not reach the ratings API.<br>${esc(error.message)}</td></tr>`;
-          unrankedRowsEl.innerHTML = '';
-          rankedCountEl.textContent = '';
-          unrankedCountEl.textContent = '';
-          footnoteEl.textContent = '';
-          statusEl.textContent = 'Failed to load.';
+          const message = `Could not reach the ratings API. ${error.message}`;
+          if (state.stats) {
+            // Keep the last good render: a failed poll must not blank a screen
+            // someone is watching during service.
+            statusEl.textContent = `${message} Showing the last data it had.`;
+          } else {
+            cardsEl.innerHTML = '';
+            sidesEl.innerHTML = '';
+            piesEl.innerHTML = '';
+            rowsEl.innerHTML =
+              `<tr><td class="message error" colspan="4">${esc(message)}</td></tr>`;
+            unrankedRowsEl.innerHTML = '';
+            rankedCountEl.textContent = '';
+            unrankedCountEl.textContent = '';
+            footnoteEl.textContent = '';
+            statusEl.textContent = 'Failed to load — retrying.';
+          }
         } finally {
           refreshBtn.disabled = false;
+          refreshBtn.removeAttribute('aria-busy');
         }
       }
 
+      // A page left open — a classroom projector, a phone on a table — keeps up
+      // on its own. The poll is silent, so it never flashes the status line or
+      // moves the scroll position, and it is skipped while the tab is hidden or
+      // the menu pane is showing.
+      let dashBusy = false;
+
+      async function refreshSilently() {
+        if (dashBusy || dashPaneEl.hidden || document.visibilityState !== 'visible') return;
+        dashBusy = true;
+        try {
+          await load({ silent: true });
+          await loadVolume({ silent: true });
+        } finally {
+          dashBusy = false;
+        }
+      }
+
+      setInterval(refreshSilently, DASH_POLL_MS);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') refreshSilently();
+      });
+      window.addEventListener('focus', refreshSilently);
+
+      // Back and Forward between saved filter states. The tab switch itself is
+      // handled by the widget's own hashchange listener.
+      window.addEventListener('hashchange', () => {
+        if (!applyHash()) return;
+        render();
+        load();
+        loadVolume();
+      });
+
+      applyHash();
+      searchEl.value = state.query;
+      sortEl.value = state.sort;
       fillCategories();
       load();
       loadVolume();
-    
+
       })();
     </script>
     <script src="./resize.js" defer></script>
