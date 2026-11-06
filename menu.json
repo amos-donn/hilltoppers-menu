@@ -1,16 +1,14 @@
 {
-  "updatedAt": "2026-11-05T08:29:23.616Z",
+  "updatedAt": "2026-11-06T09:35:15.731Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-05",
+  "menuDate": "2026-11-06",
   "menus": {
     "breakfast": {
       "globalFare": [
-        "Pork Bacon",
-        "Cheese Quesadilla",
         "Scrambled Eggs",
-        "Black Forest Ham",
-        "Breakfast Quesadilla",
-        "Home Fried Potatoes"
+        "Buttermilk Pancake(s)",
+        "Mild Pork Sausage Link",
+        "Hashbrown Patty"
       ],
       "classicKitchen": [
         "Mild Shredded Cheddar Cheese",
@@ -26,35 +24,34 @@
     },
     "lunch": {
       "globalFare": [
-        "Breaded Korean Chicken",
+        "BBQ Chicken Wings",
+        "Honey Garlic Chicken Wings",
         "Brown Rice",
-        "Stir Fry Vegetables"
+        "BBQ Lime Cauliflower Bites"
       ],
       "classicKitchen": [
-        "Taco Meat",
-        "Potato Baked Bar",
-        "Vegetarian Picadillo",
-        "Mexican Potato Bar",
-        "Cumin Black Beans",
-        "Roasted Confetti Corn",
-        "Nacho Cheese Sauce"
+        "Meatball Sub",
+        "Beer Battered Onion Ring",
+        "Green Beans & Peppers"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Grilled Chicken w/ Tomato Basil Relish",
-        "Roasted Eggplant"
+        "Grilled Pesto-Marinated Chicken Breast",
+        "Garlic Breadstick",
+        "Cavatappi Pasta",
+        "Fresh Roasted Broccoli",
+        "Pesto Cream Sauce"
       ],
       "classicKitchen": [
-        "Beef Pot Roast",
-        "Confetti Lentils",
-        "Red Skin Mashed Potatoes",
-        "Sauteed Carrots & Parsnips",
-        "Greek Salad"
+        "Poutine",
+        "Bacon Cheeseburger",
+        "Black Bean Patty",
+        "Seasoned Corn on the Cob"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-05T08:29:23.616Z",
+  "daysUpdatedAt": "2026-11-06T09:35:15.731Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2201,6 +2198,50 @@
           "Honey Glazed Pork Loin",
           "Fresh Roasted Broccoli",
           "White Cheese Sauce"
+        ]
+      }
+    },
+    "2026-11-13": {
+      "breakfast": {
+        "globalFare": [
+          "Pork Bacon",
+          "Biscuit with Sausage Gravy",
+          "Scrambled Eggs",
+          "French Waffles",
+          "Hashbrowns"
+        ],
+        "classicKitchen": [
+          "Blueberry Muffin",
+          "Oatmeal with Berries"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Whole Grain Corn Dog",
+          "Waffle Fries",
+          "Peas & Carrots"
+        ],
+        "classicKitchen": [
+          "TVP Vegan Meatballs",
+          "Spaghetti & Meatballs",
+          "Roasted Broccoli",
+          "Grilled Balsamic Yellow Squash",
+          "Marinara Sauce"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Seasoned Ground Beef",
+          "Baked Ziti",
+          "Italian Sausage",
+          "Italian Vegetables",
+          "Marinara Sauce"
+        ],
+        "classicKitchen": [
+          "Western Turkey Burger",
+          "Vegan Veggie Patty",
+          "Potato Cheddar Bites",
+          "Roasted Green Beans"
         ]
       }
     }
