@@ -1,57 +1,41 @@
 {
-  "updatedAt": "2026-11-06T09:35:15.731Z",
+  "updatedAt": "2026-11-07T07:15:23.834Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-06",
+  "menuDate": "2026-11-07",
   "menus": {
     "breakfast": {
-      "globalFare": [
-        "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Mild Pork Sausage Link",
-        "Hashbrown Patty"
-      ],
-      "classicKitchen": [
-        "Mild Shredded Cheddar Cheese",
-        "Fresh Clipped Spinach",
-        "Cheese Omelet",
-        "Sliced Smoked Ham",
-        "Sliced Mushrooms",
-        "Red Onions",
-        "Bell Peppers",
-        "Bacon Bits",
-        "Shredded Mozzarella Cheese"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
       "globalFare": [
-        "BBQ Chicken Wings",
-        "Honey Garlic Chicken Wings",
-        "Brown Rice",
-        "BBQ Lime Cauliflower Bites"
+        "Scrambled Eggs",
+        "Buttermilk Pancake(s)",
+        "Sausage Patty",
+        "Hashbrown Patty"
       ],
       "classicKitchen": [
-        "Meatball Sub",
-        "Beer Battered Onion Ring",
-        "Green Beans & Peppers"
+        "Mac & Cheese Bites",
+        "Kentucky Hot Brown Sandwich",
+        "Mixed Vegetables"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Grilled Pesto-Marinated Chicken Breast",
-        "Garlic Breadstick",
-        "Cavatappi Pasta",
-        "Fresh Roasted Broccoli",
-        "Pesto Cream Sauce"
+        "Slow-Cooked Tomato & Herb White Beans",
+        "Poblano Stuffed Pork Loin",
+        "Confetti Rice",
+        "Green Beans With Tomatoes"
       ],
       "classicKitchen": [
-        "Poutine",
-        "Bacon Cheeseburger",
-        "Black Bean Patty",
-        "Seasoned Corn on the Cob"
+        "Onion Crusted Chicken Aioli",
+        "Baked Italian Tofu",
+        "Fresh Garlic Mashed Potatoes",
+        "Carrot Baby Peeled Tri-Color"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-06T09:35:15.731Z",
+  "daysUpdatedAt": "2026-11-07T07:15:23.834Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2242,6 +2226,36 @@
           "Vegan Veggie Patty",
           "Potato Cheddar Bites",
           "Roasted Green Beans"
+        ]
+      }
+    },
+    "2026-11-14": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [],
+        "classicKitchen": [
+          "Plant-Based Chik'n Tenders",
+          "Grilled Chicago Chicken Sandwich",
+          "Seasoned Tater Tots",
+          "Zucchini & Tomatoes"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Oriental Chicken",
+          "Asian Marinated Tofu",
+          "Vegetable Rice",
+          "Sauteed Mushrooms",
+          "Sauteed Peppers & Onions"
+        ],
+        "classicKitchen": [
+          "London Broil",
+          "Risotto Stuffed Portobello",
+          "Baked Sweet Potatoes & Apples",
+          "Brussel Sprouts"
         ]
       }
     }
