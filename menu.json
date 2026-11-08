@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-11-07T07:15:23.834Z",
+  "updatedAt": "2026-11-08T07:38:35.166Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-07",
+  "menuDate": "2026-11-08",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -9,33 +9,34 @@
     },
     "lunch": {
       "globalFare": [
+        "Pork Bacon",
+        "Cinnamon French Toast Homemade",
         "Scrambled Eggs",
-        "Buttermilk Pancake(s)",
-        "Sausage Patty",
-        "Hashbrown Patty"
+        "Home Fried Potatoes"
       ],
       "classicKitchen": [
-        "Mac & Cheese Bites",
-        "Kentucky Hot Brown Sandwich",
-        "Mixed Vegetables"
+        "Battered Cod Sandwich",
+        "Potato Wedges",
+        "Sauteed Spinach"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Slow-Cooked Tomato & Herb White Beans",
-        "Poblano Stuffed Pork Loin",
-        "Confetti Rice",
-        "Green Beans With Tomatoes"
+        "Roasted Red Pepper Hummus",
+        "Chicken Curry",
+        "Naan Bread",
+        "Indian Baked Rice",
+        "Oven Roasted Cauliflower with Turmeric"
       ],
       "classicKitchen": [
-        "Onion Crusted Chicken Aioli",
-        "Baked Italian Tofu",
-        "Fresh Garlic Mashed Potatoes",
-        "Carrot Baby Peeled Tri-Color"
+        "Meatless Stuffed Bell Peppers",
+        "Chimichurri Flank Steak",
+        "Roasted Fingerling Potatoes",
+        "Roasted Garlic Butter Mushrooms"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-07T07:15:23.834Z",
+  "daysUpdatedAt": "2026-11-08T07:38:35.166Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2256,6 +2257,35 @@
           "Risotto Stuffed Portobello",
           "Baked Sweet Potatoes & Apples",
           "Brussel Sprouts"
+        ]
+      }
+    },
+    "2026-11-15": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [],
+        "classicKitchen": [
+          "Plant-Based Chik'n Tenders",
+          "Chicken Parmesan Sandwich",
+          "Italian Vegetables",
+          "Vegetable Tortellini Soup"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Dhaba Chicken Curry",
+          "Vegetable Lo Mein",
+          "Steamed Green Beans and Carrots",
+          "Roasted Curried Cauliflower"
+        ],
+        "classicKitchen": [
+          "Confetti Lentils",
+          "Roasted Garlic Chicken",
+          "Fresh Roasted Broccoli",
+          "Garlic & Herb Tofu Spread"
         ]
       }
     }
