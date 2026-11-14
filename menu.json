@@ -1,52 +1,38 @@
 {
-  "updatedAt": "2026-11-13T06:52:21.072Z",
+  "updatedAt": "2026-11-14T07:41:52.074Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-13",
+  "menuDate": "2026-11-14",
   "menus": {
     "breakfast": {
-      "globalFare": [
-        "Pork Bacon",
-        "Biscuit with Sausage Gravy",
-        "Scrambled Eggs",
-        "French Waffles",
-        "Hashbrowns"
-      ],
-      "classicKitchen": [
-        "Blueberry Muffin",
-        "Oatmeal with Berries"
-      ]
+      "classicKitchen": [],
+      "globalFare": []
     },
     "lunch": {
-      "globalFare": [
-        "Whole Grain Corn Dog",
-        "Waffle Fries",
-        "Peas & Carrots"
-      ],
+      "globalFare": [],
       "classicKitchen": [
-        "TVP Vegan Meatballs",
-        "Spaghetti & Meatballs",
-        "Roasted Broccoli",
-        "Grilled Balsamic Yellow Squash",
-        "Marinara Sauce"
+        "Patty Melt",
+        "Plant-Based Chik'n Tenders",
+        "Seasoned Tater Tots",
+        "Zucchini & Tomatoes"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Seasoned Ground Beef",
-        "Baked Ziti",
-        "Italian Sausage",
-        "Italian Vegetables",
-        "Marinara Sauce"
+        "Oriental Chicken",
+        "Asian Marinated Tofu",
+        "Vegetable Rice",
+        "Sauteed Mushrooms",
+        "Sauteed Peppers & Onions"
       ],
       "classicKitchen": [
-        "Western Turkey Burger",
-        "Vegan Veggie Patty",
-        "Potato Cheddar Bites",
-        "Roasted Green Beans"
+        "London Broil",
+        "Risotto Stuffed Portobello",
+        "Baked Sweet Potatoes & Apples",
+        "Brussel Sprouts"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-13T06:52:21.072Z",
+  "daysUpdatedAt": "2026-11-14T07:41:52.074Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2550,6 +2536,43 @@
           "Dinner Roll",
           "Ham & Navy Bean Soup",
           "Vegetable Lentil Soup"
+        ]
+      }
+    },
+    "2026-11-21": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [
+          "Scrambled Eggs",
+          "Buttermilk Pancake(s)",
+          "Sausage Patty 2 Oz",
+          "Hashbrown Patty"
+        ],
+        "classicKitchen": [
+          "Classic Reuben",
+          "Mixed Vegetables",
+          "Seasoned French Fries",
+          "French Fry Seasoning"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Fried Chicken Tenders",
+          "Plant-Based Chik'n Tenders",
+          "Seasoned White Rice",
+          "Stir Fry Vegetables"
+        ],
+        "classicKitchen": [
+          "Fried Pork Chop",
+          "Baked Beans",
+          "Red Skin Mashed Garlic Potatoes",
+          "Brussel Sprouts",
+          "Dinner Roll",
+          "Tomato Soup",
+          "Boston Clam Chowder"
         ]
       }
     }
