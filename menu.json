@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-11-14T07:41:52.074Z",
+  "updatedAt": "2026-11-15T09:51:01.466Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-14",
+  "menuDate": "2026-11-15",
   "menus": {
     "breakfast": {
       "classicKitchen": [],
@@ -10,29 +10,26 @@
     "lunch": {
       "globalFare": [],
       "classicKitchen": [
-        "Patty Melt",
         "Plant-Based Chik'n Tenders",
-        "Seasoned Tater Tots",
-        "Zucchini & Tomatoes"
+        "Chicken Parmesan Sandwich",
+        "Italian Vegetables",
+        "Vegetable Tortellini Soup"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Oriental Chicken",
-        "Asian Marinated Tofu",
-        "Vegetable Rice",
-        "Sauteed Mushrooms",
-        "Sauteed Peppers & Onions"
+        "Vegetable Lo Mein"
       ],
       "classicKitchen": [
-        "London Broil",
-        "Risotto Stuffed Portobello",
-        "Baked Sweet Potatoes & Apples",
-        "Brussel Sprouts"
+        "Confetti Lentils",
+        "Roasted Garlic Chicken",
+        "Red Skin Mashed Potatoes",
+        "Fresh Roasted Broccoli",
+        "Garlic & Herb Tofu Spread"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-14T07:41:52.074Z",
+  "daysUpdatedAt": "2026-11-15T09:51:01.466Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2573,6 +2570,41 @@
           "Dinner Roll",
           "Tomato Soup",
           "Boston Clam Chowder"
+        ]
+      }
+    },
+    "2026-11-22": {
+      "breakfast": {
+        "classicKitchen": [],
+        "globalFare": []
+      },
+      "lunch": {
+        "globalFare": [
+          "Cinnamon French Toast Homemade",
+          "Scrambled Eggs",
+          "Home Fried Potatoes",
+          "Bacon"
+        ],
+        "classicKitchen": [
+          "Meatballs TVP Vegan GF",
+          "All-Beef Meatball Sub",
+          "Garlic Breadstick"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Classic Swiss Steak",
+          "Stewed Chickpea",
+          "Red Skin Mashed Garlic Potatoes",
+          "Sautéed Garden Fresh Green Beans"
+        ],
+        "classicKitchen": [
+          "Pasta with Chicken & Wild Mushroom Sauce",
+          "Turkey Tetrazzini",
+          "Spaghetti Noodles",
+          "Peas & Mushrooms",
+          "Dinner Roll",
+          "Baked Potato Soup"
         ]
       }
     }
