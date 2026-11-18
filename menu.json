@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-18T06:52:02.330Z",
+  "updatedAt": "2026-11-18T16:00:45.073Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-11-18",
   "menus": {
@@ -26,6 +26,12 @@
     },
     "lunch": {
       "globalFare": [
+        "Grilled Cheese",
+        "Grilled Ham and Cheese",
+        "Peas & Carrots",
+        "Tomato Soup"
+      ],
+      "classicKitchen": [
         "Taco Meat",
         "Vegan Chorizo",
         "Cumin Black Beans",
@@ -33,12 +39,6 @@
         "Nacho Cheese Sauce",
         "Chips Doritos Cool Ranch RF WG 1 Oz",
         "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
-      ],
-      "classicKitchen": [
-        "Grilled Cheese",
-        "Grilled Ham and Cheese",
-        "Peas & Carrots",
-        "Tomato Soup"
       ]
     },
     "dinner": {
@@ -59,7 +59,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-18T06:52:02.330Z",
+  "daysUpdatedAt": "2026-11-18T16:00:45.073Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2430,6 +2430,12 @@
       },
       "lunch": {
         "globalFare": [
+          "Grilled Cheese",
+          "Grilled Ham and Cheese",
+          "Peas & Carrots",
+          "Tomato Soup"
+        ],
+        "classicKitchen": [
           "Taco Meat",
           "Vegan Chorizo",
           "Cumin Black Beans",
@@ -2437,12 +2443,6 @@
           "Nacho Cheese Sauce",
           "Chips Doritos Cool Ranch RF WG 1 Oz",
           "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
-        ],
-        "classicKitchen": [
-          "Grilled Cheese",
-          "Grilled Ham and Cheese",
-          "Peas & Carrots",
-          "Tomato Soup"
         ]
       },
       "dinner": {
