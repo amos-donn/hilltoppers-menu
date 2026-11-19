@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-18T16:00:45.073Z",
+  "updatedAt": "2026-11-19T03:53:36.941Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-11-18",
   "menus": {
@@ -59,7 +59,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-18T16:00:45.073Z",
+  "daysUpdatedAt": "2026-11-19T03:53:36.941Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2623,10 +2623,8 @@
       },
       "dinner": {
         "globalFare": [
-          "Classic Swiss Steak",
-          "Stewed Chickpea",
-          "Red Skin Mashed Garlic Potatoes",
-          "Sautéed Garden Fresh Green Beans"
+          "Patty Melt",
+          "Seasoned French Fries"
         ],
         "classicKitchen": [
           "Pasta with Chicken & Wild Mushroom Sauce",
