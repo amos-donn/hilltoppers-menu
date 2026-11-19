@@ -1,16 +1,16 @@
 {
-  "updatedAt": "2026-11-19T03:53:36.941Z",
+  "updatedAt": "2026-11-19T12:15:39.868Z",
   "source": "menus.tenkites.com",
-  "menuDate": "2026-11-18",
+  "menuDate": "2026-11-19",
   "menus": {
     "breakfast": {
       "globalFare": [
+        "Pork Bacon",
         "Scrambled Eggs",
-        "Chicken Sausage Patty",
-        "Pancakes",
-        "Tater Tots",
-        "Banana",
-        "Toasted Pecans"
+        "Black Forest Ham",
+        "Breakfast Quesadilla",
+        "Home Fried Potatoes",
+        "Bacon Bits"
       ],
       "classicKitchen": [
         "Mild Shredded Cheddar Cheese",
@@ -26,40 +26,33 @@
     },
     "lunch": {
       "globalFare": [
-        "Grilled Cheese",
-        "Grilled Ham and Cheese",
-        "Peas & Carrots",
-        "Tomato Soup"
+        "Buffalo Cauliflower Bites",
+        "Boneless Breaded Chicken Wings",
+        "Seasoned White Rice",
+        "Cranberry Broccoli Salad"
       ],
       "classicKitchen": [
-        "Taco Meat",
-        "Vegan Chorizo",
-        "Cumin Black Beans",
-        "Corn with Peppers and Onions",
-        "Nacho Cheese Sauce",
-        "Chips Doritos Cool Ranch RF WG 1 Oz",
-        "Chips Doritos Nacho Cheese RF WG 1.4 Oz"
+        "Baked Spaghetti Casserole",
+        "Meat Sauce",
+        "Garlic Knots",
+        "Steamed Broccoli"
       ]
     },
     "dinner": {
       "globalFare": [
-        "Grilled Chipotle Chicken",
-        "Seasoned White Rice",
-        "Green Beans with Sauteed Mushrooms"
+        "Plant-Based Chik'n Tenders",
+        "BLT Crispy Chicken Sandwich",
+        "Curly Fries",
+        "Buttered Corn"
       ],
       "classicKitchen": [
-        "Seasoned Ground Beef",
-        "Cheese Lasagna Casserole",
-        "Garlic Breadstick",
-        "Italian Vegetables",
-        "Marinara Sauce",
-        "Cornbread",
-        "Two Bean Turkey Chili",
-        "Potato Corn Chowder"
+        "Dinner Roll",
+        "Italian Wedding Soup",
+        "French Onion Soup"
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-19T03:53:36.941Z",
+  "daysUpdatedAt": "2026-11-19T12:15:39.868Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2764,6 +2757,55 @@
           "Chicken Brazilian Stroganoff",
           "Mushroom Stroganoff",
           "Seasoned White Rice"
+        ]
+      }
+    },
+    "2026-11-26": {
+      "breakfast": {
+        "globalFare": [
+          "Pork Bacon",
+          "Scrambled Eggs",
+          "Black Forest Ham",
+          "Breakfast Quesadilla",
+          "Home Fried Potatoes"
+        ],
+        "classicKitchen": [
+          "Mild Shredded Cheddar Cheese",
+          "Fresh Clipped Spinach",
+          "Cheese Omelet",
+          "Sliced Smoked Ham",
+          "Sliced Mushrooms",
+          "Bacon Bits",
+          "Shredded Mozzarella Cheese"
+        ]
+      },
+      "lunch": {
+        "globalFare": [
+          "Beef Tex Mex Casserole",
+          "Vegetarian Picadillo",
+          "Black Beans & Rice",
+          "Corn with Peppers and Onions"
+        ],
+        "classicKitchen": [
+          "Chicken Stew",
+          "Mediterranean Vegetable Stew",
+          "White Rice",
+          "Grilled Zucchini"
+        ]
+      },
+      "dinner": {
+        "globalFare": [
+          "Beef Bulgogi",
+          "Vegan Chorizo",
+          "Korean Baked Cheese Corn",
+          "Edamame Steamed",
+          "Waffle Fries",
+          "Gochujang Sauce"
+        ],
+        "classicKitchen": [
+          "Beef and Mac Casserole",
+          "Garlic Breadstick",
+          "Sauce Tomato Cream"
         ]
       }
     }
