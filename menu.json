@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T11:39:14.075Z",
+  "updatedAt": "2026-11-25T04:28:55.577Z",
   "source": "menus.tenkites.com",
   "menuDate": "2026-11-24",
   "menus": {
@@ -44,7 +44,7 @@
       ]
     }
   },
-  "daysUpdatedAt": "2026-11-24T11:39:14.075Z",
+  "daysUpdatedAt": "2026-11-25T04:28:55.577Z",
   "days": {
     "2026-09-25": {
       "breakfast": {
@@ -2926,7 +2926,7 @@
         "classicKitchen": [
           "Ham Diced",
           "Macaroni & Cheese",
-          "Broccoli",
+          "Broccoli  Florets Mini Fresh",
           "Bacon Bits",
           "Cheese Sauce"
         ]
@@ -2975,10 +2975,9 @@
           "Roasted Buffalo Cauliflower"
         ],
         "classicKitchen": [
-          "Ramen Noodles Spicy Veg",
-          "Beef Meatball Teriyaki",
-          "Teriyaki Tofu",
-          "Sesame Snap Peas"
+          "Swedish Meatballs",
+          "Parslied Noodles",
+          "Peas & Mushrooms"
         ]
       },
       "dinner": {
@@ -2989,6 +2988,7 @@
           "Tortilla Chips",
           "Seasoned White Rice",
           "Corn with Peppers and Onions",
+          "Chili Con Carne",
           "Nacho Cheese Sauce"
         ],
         "classicKitchen": [
